@@ -55,6 +55,7 @@ evidence:
 - tests/system/test_firmware.py::test_firmware_vector_table_binds_timer_isrs
 - tests/system/test_firmware.py::test_hal_init_runs_before_main
 - tests/system/test_firmware.py::test_hello_world_prints_on_usart1_in_simavr
+- tests/unit/test_length_model.py::test_target_pulses_match_firmware_constants
 designated_repro_test: null
 acceptance:
 - text: Given the source tree, when it is inspected, then there is no assembly startup
@@ -75,7 +76,8 @@ acceptance:
   - tests/system/test_firmware.py::test_hello_world_prints_on_usart1_in_simavr
 - text: Given the length model in main.cpp, when recomputed in float32 on the host,
     then the target is 165011 pulses for 30.0 yd (CTP-001, UT-0302)
-  evidence: []
+  evidence:
+  - tests/unit/test_length_model.py::test_target_pulses_match_firmware_constants
 threat: null
 component: firmware
 anchor: false

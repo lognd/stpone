@@ -10,10 +10,11 @@ from stpone.logging import get_logger
 _log = get_logger(__name__)
 
 
-# frob:waive WIRE001 reason="typing Protocol used in annotations only" \
 # follow_up="T-0007"
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0508
 # frob:tests tests/unit/test_flash_proc.py::test_run_command_never_raises kind="unit"
+# frob:waive WIRE001 reason="typing Protocol used in annotations only" \
+# follow_up="T-0007"
 class Runner(Protocol):
     """Anything that runs an argv and returns a CompletedProcess (real or fake)."""
 

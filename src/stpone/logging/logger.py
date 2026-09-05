@@ -31,10 +31,11 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(name)
 
 
-# frob:waive WIRE001 reason="logging API the M2 desktop code consumes" \
 # follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-06-desktop-core.md#comp-0601
 # frob:tests tests/unit/test_logging.py::test_error_ctx_logs_and_reraises kind="unit"
+# frob:waive WIRE001 reason="logging API the M2 desktop code consumes" \
+# follow_up="T-0006"
 @contextmanager
 def error_ctx(
     logger: logging.Logger,

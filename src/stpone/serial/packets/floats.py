@@ -72,9 +72,9 @@ class _StructFloat(_FloatRoot):
         return cls.model_validate(struct.unpack(cls._struct_format, data)[0])
 
 
-# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0703
 # frob:tests tests/unit/test_serial_packets.py::test_float_widths kind="unit"
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 @final
 class F16(_StructFloat):
     _struct_format: ClassVar[str] = "<e"
@@ -82,10 +82,10 @@ class F16(_StructFloat):
 
 
 # kind="unit"
-# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0703
 # frob:tests tests/unit/test_serial_packets.py::test_float_overflow_and_bool_rejected \
 # kind="unit"
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 @final
 class F32(_StructFloat):
     _struct_format: ClassVar[str] = "<f"
@@ -93,10 +93,10 @@ class F32(_StructFloat):
 
 
 # kind="unit"
-# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0703
 # frob:tests tests/unit/test_serial_packets.py::test_float_overflow_and_bool_rejected \
 # kind="unit"
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 @final
 class F64(_StructFloat):
     _struct_format: ClassVar[str] = "<d"

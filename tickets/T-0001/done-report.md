@@ -1,9 +1,10 @@
 ## Done report
 
-M1 landed as one bootstrap (DEC-002): firmware HAL on avr-libc ISR() bindings (T-0004), the single flash entrypoint (T-0003), the desktop core on typani (T-0002), the process tests (T-0005), and the V-model itself. frob check is green (FLAGCOV unresolved is frob-side, FROBLEMS F-012). Bench acceptance (P1..P6) is the customer's next step and is recorded as manual runnables.
+M1 landed as one bootstrap (DEC-002): firmware HAL on avr-libc ISR() bindings (T-0004), the single flash entrypoint (T-0003), the desktop core on typani (T-0002), the process tests (T-0005), and the V-model itself. frob check is green (FLAGCOV unresolved is frob-side, FROBLEMS F-012). Bench acceptance P1..P6 is the customer's next step and stays a manual runnable.
 
 ### Changed
 ```
+ .github/workflows/ci.yml                           |   5 +
  CLAUDE.md                                          |   4 +-
  CMakeLists.txt                                     | 142 +++++++++++
  README.md                                          |   8 +-
@@ -31,6 +32,7 @@ M1 landed as one bootstrap (DEC-002): firmware HAL on avr-libc ISR() bindings (T
  .../L5-component-design/SUB-07-serial-protocol.md  | 106 ++++++++
  docs/spec/L5-component-design/SUB-08-process.md    |  22 ++
  docs/spec/README.md                                |  70 ++++++
+ frob-coverage.lock.json                            |  30 +++
  frob.toml                                          |  16 ++
  include/stpalpha/hal/lcd.h                         |  23 ++
  include/stpalpha/hal/setup.h                       |  74 ++++++
@@ -92,7 +94,8 @@ M1 landed as one bootstrap (DEC-002): firmware HAL on avr-libc ISR() bindings (T
  tests/unit/test_logging.py                         |  50 ++++
  tests/unit/test_serial_generic.py                  |  96 +++++++
  tests/unit/test_serial_packets.py                  | 176 +++++++++++++
- tickets/T-0001/ticket.md                           | 145 ++++++++++-
+ tickets/T-0001/done-report.md                      | 116 +++++++++
+ tickets/T-0001/ticket.md                           | 150 ++++++++++-
  tickets/T-0002/done-report.md                      | 110 +++++++++
  tickets/T-0002/ticket.md                           |  17 +-
  tickets/T-0003/done-report.md                      | 113 +++++++++
@@ -104,13 +107,16 @@ M1 landed as one bootstrap (DEC-002): firmware HAL on avr-libc ISR() bindings (T
  tickets/T-0006/ticket.md                           |  30 +++
  tickets/T-0007/ticket.md                           |  31 +++
  uv.lock                                            |  24 ++
- 100 files changed, 6082 insertions(+), 23 deletions(-)
+ 103 files changed, 6238 insertions(+), 23 deletions(-)
 ```
 
 ### Evidence
-(no evidence recorded)
+- `tests/system/test_firmware.py::test_firmware_vector_table_binds_timer_isrs` (pytest node id, verified passing when recorded)
+- `tests/unit/test_flash_app.py::test_flash_on_wsl_attaches_first` (pytest node id, verified passing when recorded)
+- `tests/integration/test_serial_stream.py::test_handshake_round_trip` (pytest node id, verified passing when recorded)
+- `tests/system/test_process.py::test_trace_tables_are_closed` (pytest node id, verified passing when recorded)
 
 ### Captured claims
-- tests: 0 passed (from 0 evidence id(s))
+- tests: 4 passed (from 4 evidence id(s))
 - gates: 0 error(s), 99 warning(s), 44 waived
 - error-findings: none (measured, zero errors)

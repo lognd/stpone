@@ -1,5 +1,5 @@
 ---
-id: T-draft-b01eba92
+id: T-0006
 title: 'M2: desktop monitor over USB serial (roadmap, unscheduled)'
 state: queued
 kind: feature

@@ -46,6 +46,7 @@ scope_changes:
   at: '2026-09-05'
 evidence:
 - tests/integration/test_wiring.py::test_package_exports_typani_vocabulary
+- tests/unit/test_logging.py::test_error_ctx_logs_and_reraises
 designated_repro_test: null
 acceptance:
 - text: Given the stpone package, when it is imported, then Result/Ok/Err/Unreachable
@@ -54,7 +55,8 @@ acceptance:
   - tests/integration/test_wiring.py::test_package_exports_typani_vocabulary
 - text: Given the logging package, when get_logger and error_ctx are used, then DEBUG/INFO
     go to stdout, WARNING+ to stderr, and error_ctx logs then re-raises (UT-0601)
-  evidence: []
+  evidence:
+  - tests/unit/test_logging.py::test_error_ctx_logs_and_reraises
 - text: Given the carried-over serial types, when every wire type round-trips and
     a composite packet streams through an in-memory transport, then decode errors
     yield None with one error() call and the handshake constants are singletons (UT-0701..0706,

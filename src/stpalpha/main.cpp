@@ -22,6 +22,9 @@ static constexpr uint8_t kBeepCount = 3;
 static constexpr uint16_t kBeepMs = 300;   // duration of each beep
 static constexpr uint8_t kBeepGapMs = 150; // silence between beeps
 
+// Sentinel for "no count rendered yet", forcing the first winding redraw.
+static constexpr uint32_t kNoCount = 0xFFFFFFFFu;
+
 // ---- Atomics ----
 
 static uint32_t read_enc(void) {
@@ -131,7 +134,7 @@ static void render_winding(LCDPacket& p, uint32_t count) {
 static MachineState g_state = MachineState::IDLE;
 static MachineState g_prev_state = MachineState::WINDING; // force first render
 static LCDPacket g_lcd;
-static uint32_t g_last_count = UINT32_MAX;
+static uint32_t g_last_count = kNoCount;
 
 static void run_idle(void) {
     bool on_entry = (g_prev_state != MachineState::IDLE);
@@ -147,7 +150,7 @@ static void run_idle(void) {
     if (btn_consume(1 << 0)) {
         cancel_beep();
         g_state = MachineState::WINDING;
-        g_last_count = UINT32_MAX;
+        g_last_count = kNoCount;
         reset_enc();
         relay_on();
         set_leds(0b1111);
@@ -159,7 +162,7 @@ static void run_winding(void) {
 
     uint32_t count = read_enc();
 
-    if (count != g_last_count || g_last_count == UINT32_MAX) {
+    if (count != g_last_count || g_last_count == kNoCount) {
         render_winding(g_lcd, count);
         g_last_count = count;
     }

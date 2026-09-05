@@ -14,6 +14,8 @@ _POLL_S = 0.5
 
 
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0504
+# frob:tests tests/unit/test_flash_port.py::test_wait_for_port_times_out kind="unit"
+# frob:tests tests/unit/test_flash_port.py::test_wait_for_port_returns_first_match_sorted kind="unit"  # noqa: E501
 def wait_for_port(
     pattern: str,
     timeout_s: float,

@@ -24,6 +24,7 @@ _ATTACH_RETRY_S = 1.0
 
 
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0503
+# frob:tests tests/unit/test_flash_host.py::test_detect_host_other_os kind="unit"
 class HostKind(str, Enum):
     """Where we are running; decides whether the USB device needs forwarding."""
 
@@ -32,7 +33,11 @@ class HostKind(str, Enum):
     OTHER = "other"
 
 
+# kind="unit"
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0503
+# frob:tests tests/unit/test_flash_host.py::test_detect_host_plain_linux_and_missing_banner kind="unit"  # noqa: E501
+# frob:tests tests/unit/test_flash_host.py::test_detect_host_wsl_from_proc_version \
+# kind="unit"
 def detect_host(
     proc_version: Path = Path("/proc/version"), system: str | None = None
 ) -> HostKind:
@@ -51,7 +56,13 @@ def detect_host(
     return kind
 
 
+# kind="unit"
+# kind="unit"
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0503
+# frob:tests tests/unit/test_flash_host.py::test_attach_times_out_and_lists_devices \
+# kind="unit"
+# frob:tests tests/unit/test_flash_host.py::test_attach_retries_until_success \
+# kind="unit"
 def attach_bootloader(
     cfg: FlashConfig,
     runner: Runner = run_command,
@@ -90,7 +101,13 @@ def attach_bootloader(
         sleep(_ATTACH_RETRY_S)
 
 
+# kind="unit"
+# kind="unit"
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0503
+# frob:tests tests/unit/test_flash_host.py::test_bind_failure_and_missing_powershell \
+# kind="unit"
+# frob:tests tests/unit/test_flash_host.py::test_bind_elevates_through_powershell \
+# kind="unit"
 def bind_bootloader(
     cfg: FlashConfig,
     runner: Runner = run_command,

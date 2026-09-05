@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-# frob:waive WIRE001 reason="M2 wire types with no M1 caller by design (SUB-07 carry-over)" follow_up="T-0006"
 from typing import ClassVar, final
 
 from pydantic import RootModel, field_validator
@@ -64,16 +63,26 @@ class _IntRoot(RootModel[int], FixedWidth):
         )
 
 
+# kind="unit"
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0702
+# frob:tests tests/unit/test_serial_packets.py::test_integer_round_trip_and_range \
+# kind="unit"
 @final
 class U8(_IntRoot):
     _byte_width: ClassVar[int] = 1
     _signed: ClassVar[bool] = False
 
 
+# kind="unit"
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0702
+# frob:tests tests/unit/test_serial_packets.py::test_bool_accepts_only_zero_and_one \
+# kind="unit"
 @final
 class Bool(_IntRoot):
+    # frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" \
+    # follow_up="T-0006"
     @field_validator("root")
     @classmethod
     def validate_range(cls, value: int) -> int:
@@ -88,49 +97,65 @@ class Bool(_IntRoot):
     _signed: ClassVar[bool] = False
 
 
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0702
+# frob:tests tests/unit/test_serial_packets.py::test_wide_integer_types_are_little_endian kind="unit"  # noqa: E501
 @final
 class U16(_IntRoot):
     _byte_width: ClassVar[int] = 2
     _signed: ClassVar[bool] = False
 
 
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0702
+# frob:tests tests/unit/test_serial_packets.py::test_wide_integer_types_are_little_endian kind="unit"  # noqa: E501
 @final
 class U32(_IntRoot):
     _byte_width: ClassVar[int] = 4
     _signed: ClassVar[bool] = False
 
 
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0702
+# frob:tests tests/unit/test_serial_packets.py::test_signed_and_64_bit_types kind="unit"
 @final
 class U64(_IntRoot):
     _byte_width: ClassVar[int] = 8
     _signed: ClassVar[bool] = False
 
 
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0702
+# frob:tests tests/unit/test_serial_packets.py::test_signed_and_64_bit_types kind="unit"
 @final
 class I8(_IntRoot):
     _byte_width: ClassVar[int] = 1
     _signed: ClassVar[bool] = True
 
 
+# kind="unit"
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0702
+# frob:tests tests/unit/test_serial_packets.py::test_integer_round_trip_and_range \
+# kind="unit"
 @final
 class I16(_IntRoot):
     _byte_width: ClassVar[int] = 2
     _signed: ClassVar[bool] = True
 
 
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0702
+# frob:tests tests/unit/test_serial_packets.py::test_remaining_signed_types kind="unit"
 @final
 class I32(_IntRoot):
     _byte_width: ClassVar[int] = 4
     _signed: ClassVar[bool] = True
 
 
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0702
+# frob:tests tests/unit/test_serial_packets.py::test_remaining_signed_types kind="unit"
 @final
 class I64(_IntRoot):
     _byte_width: ClassVar[int] = 8

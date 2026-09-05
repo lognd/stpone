@@ -4,6 +4,7 @@ from typani.error_set import ErrorSet
 
 
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0509
+# frob:tests tests/unit/test_flash_proc.py::test_every_error_has_a_remedy kind="unit"
 class FlashError(ErrorSet):
     """Everything that can go wrong between a source tree and a flashed Pro Micro."""
 

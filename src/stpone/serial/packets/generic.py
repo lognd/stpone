@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-# frob:waive WIRE001 reason="M2 protocol base classes with no M1 caller by design (SUB-07 carry-over)" follow_up="T-0006"
 from abc import ABC, abstractmethod
 from enum import IntEnum
 from typing import Any, Optional, cast
@@ -17,8 +16,14 @@ from stpone.serial.rdt import RDTCommunication
 LOGGER = get_logger("serial")
 
 
+# frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+# follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
+# frob:tests tests/unit/test_serial_generic.py::test_base_classes_unit kind="unit"
+# frob:tests tests/integration/test_serial_stream.py::test_serializable_base_contract kind="integration"  # noqa: E501
 class Serializable(ABC):
+    # frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+    # follow_up="T-0006"
     @abstractmethod
     # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
     def to_bytes(self) -> bytes: ...
@@ -26,6 +31,8 @@ class Serializable(ABC):
     def __bytes__(self) -> bytes:
         return self.to_bytes()
 
+    # frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+    # follow_up="T-0006"
     async def to_stream(self, stream: RDTCommunication) -> Result[None, IntEnum]:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
         status = await stream.write(self.to_bytes())
@@ -34,24 +41,38 @@ class Serializable(ABC):
             stream.error(status.danger_err)
         return status
 
+    # frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+    # follow_up="T-0006"
     @classmethod
     @abstractmethod
     # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
     async def from_stream(cls, stream: RDTCommunication) -> Optional[Self]: ...
 
 
+# kind="integration"
+# frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+# follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
+# frob:tests tests/unit/test_serial_generic.py::test_base_classes_unit kind="unit"
+# frob:tests tests/integration/test_serial_stream.py::test_fixed_width_contract \
+# kind="integration"
 class FixedWidth(Serializable, ABC):
+    # frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+    # follow_up="T-0006"
     @classmethod
     @abstractmethod
     # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
     def get_byte_width(cls) -> int: ...
 
+    # frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+    # follow_up="T-0006"
     @classmethod
     @abstractmethod
     # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
     def from_bytes(cls, data: bytes) -> Self: ...
 
+    # frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+    # follow_up="T-0006"
     @classmethod
     async def from_stream(cls, stream: RDTCommunication) -> Optional[Self]:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
@@ -63,17 +84,27 @@ class FixedWidth(Serializable, ABC):
         return cls.from_bytes(res.danger_ok)
 
 
+# frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+# follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
+# frob:tests tests/unit/test_serial_generic.py::test_constant_base_unit kind="unit"
+# frob:tests tests/integration/test_serial_stream.py::test_constant_mismatch_yields_none kind="integration"  # noqa: E501
 class Constant(Serializable, ABC):
+    # frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+    # follow_up="T-0006"
     @staticmethod
     @abstractmethod
     # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
     def get_value() -> bytes: ...
 
+    # frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+    # follow_up="T-0006"
     def to_bytes(self) -> bytes:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
         return self.get_value()
 
+    # frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+    # follow_up="T-0006"
     @classmethod
     async def from_stream(cls, stream: RDTCommunication) -> Optional[Self]:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
@@ -95,7 +126,11 @@ class Constant(Serializable, ABC):
         return cls()
 
 
+# frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+# follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
+# frob:tests tests/unit/test_serial_generic.py::test_pydantic_to_stream_unit kind="unit"
+# frob:tests tests/integration/test_serial_stream.py::test_composite_packet_round_trip kind="integration"  # noqa: E501
 class Pydantic(BaseModel, Serializable):
     @classmethod
     def __pydantic_init_subclass__(cls, **kwargs: Any) -> None:
@@ -115,6 +150,8 @@ class Pydantic(BaseModel, Serializable):
                     f"{field.annotation!r}"
                 )
 
+    # frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+    # follow_up="T-0006"
     def to_bytes(self) -> bytes:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
         buf = bytearray()
@@ -122,6 +159,8 @@ class Pydantic(BaseModel, Serializable):
             buf.extend(value.to_bytes())
         return bytes(buf)
 
+    # frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+    # follow_up="T-0006"
     async def to_stream(self, stream: RDTCommunication) -> Result[None, IntEnum]:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
         for _name, value in self:
@@ -130,6 +169,8 @@ class Pydantic(BaseModel, Serializable):
                 return status
         return Ok(None)
 
+    # frob:waive WIRE001 reason="M2 protocol base, no M1 caller by design" \
+    # follow_up="T-0006"
     @classmethod
     async def from_stream(cls, stream: RDTCommunication) -> Optional[Self]:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701

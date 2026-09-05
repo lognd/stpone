@@ -28,7 +28,11 @@ CLI_FIELDS: frozenset[str] = frozenset(
 )
 
 
+# kind="unit"
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0501
+# frob:tests tests/unit/test_flash_config.py::test_from_external_uses_defaults_without_pyproject kind="unit"  # noqa: E501
+# frob:tests tests/unit/test_flash_config.py::test_repo_pyproject_table_is_valid \
+# kind="unit"
 class FlashConfig(BaseModel):
     """Settings for one flash run: pyproject [tool.stpone.flash] defaults, CLI wins."""
 
@@ -65,8 +69,9 @@ class FlashConfig(BaseModel):
             _log.debug("loaded [tool.stpone.flash] from %s", resolved)
         else:
             _log.debug("no pyproject at %s; using built-in defaults", resolved)
+        given = vars(args)
         for name in sorted(CLI_FIELDS):
-            value = getattr(args, name, None)
+            value = given.get(name)
             if value is not None:
                 merged[name] = value
         cfg = cls(**merged)

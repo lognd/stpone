@@ -18,7 +18,11 @@ _log = get_logger(__name__)
 _REPO_PYPROJECT = Path(__file__).resolve().parents[3] / "pyproject.toml"
 
 
+# kind="integration"
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0507
+# frob:tests tests/integration/test_flash_cli.py::test_parser_leaves_unset_options_as_none kind="integration"  # noqa: E501
+# frob:tests tests/integration/test_flash_cli.py::test_help_exits_zero \
+# kind="integration"
 def build_parser() -> argparse.ArgumentParser:
     """CLI for scripts/flash.py; every option defaults to None so pyproject wins."""
     p = argparse.ArgumentParser(
@@ -71,7 +75,11 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+# kind="integration"
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0507
+# frob:tests tests/integration/test_flash_cli.py::test_main_reports_missing_image \
+# kind="integration"
+# frob:tests tests/integration/test_flash_cli.py::test_all_target_requires_build_only kind="integration"  # noqa: E501
 def main(argv: Sequence[str] | None = None) -> int:
     """Entry point for scripts/flash.py; returns the process exit code."""
     load_dotenv()

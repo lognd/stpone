@@ -32,6 +32,7 @@ def test_detect_host_plain_linux_and_missing_banner(tmp_path: Path) -> None:
 
 def test_detect_host_other_os() -> None:
     # frob:tests src/stpone/flash/host.py::detect_host kind="unit"
+    # frob:tests src/stpone/flash/host.py::HostKind kind="unit"
     assert detect_host(system="Windows") is HostKind.OTHER
 
 

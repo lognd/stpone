@@ -10,6 +10,7 @@ from stpone.flash.proc import run_command
 
 def test_run_command_never_raises() -> None:
     # frob:tests src/stpone/flash/proc.py::run_command kind="unit"
+    # frob:tests src/stpone/flash/proc.py::Runner kind="unit"
     ok = run_command([sys.executable, "-c", "print('hi')"])
     assert ok.returncode == 0
     assert ok.stdout.strip() == "hi"

@@ -15,6 +15,7 @@ _log = get_logger(__name__)
 
 
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0505
+# frob:tests tests/unit/test_flash_build.py::test_avrdude_argv_matches_legacy_upload_script kind="unit"  # noqa: E501
 def avrdude_argv(cfg: FlashConfig, port: str, image: Path) -> list[str]:
     """The exact avrdude invocation the old upload.sh used (Caterina, avr109)."""
     return [
@@ -30,6 +31,7 @@ def avrdude_argv(cfg: FlashConfig, port: str, image: Path) -> list[str]:
 
 
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0505
+# frob:tests tests/unit/test_flash_build.py::test_flash_image_outcomes kind="unit"
 def flash_image(
     cfg: FlashConfig,
     port: str,

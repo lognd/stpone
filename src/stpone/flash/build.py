@@ -20,13 +20,20 @@ ALL_TARGET = "all"
 TOOLCHAIN_FILE = Path("cmake") / "avr-gcc-toolchain.cmake"
 
 
+# kind="unit"
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0502
+# frob:tests tests/unit/test_flash_build.py::test_hex_path_follows_cmake_layout \
+# kind="unit"
 def hex_path(cfg: FlashConfig, target: str) -> Path:
     """Where cmake's post-build objcopy step leaves the Intel HEX for a target."""
     return cfg.build_dir / f"{target}.hex"
 
 
+# kind="unit"
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0502
+# frob:tests tests/unit/test_flash_build.py::test_build_errors kind="unit"
+# frob:tests tests/unit/test_flash_build.py::test_configure_argv_uses_toolchain_file \
+# kind="unit"
 def configure(
     cfg: FlashConfig,
     runner: Runner = run_command,
@@ -55,6 +62,8 @@ def configure(
 
 
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0502
+# frob:tests tests/unit/test_flash_build.py::test_build_errors kind="unit"
+# frob:tests tests/unit/test_flash_build.py::test_build_target_and_all kind="unit"
 def build(
     cfg: FlashConfig,
     target: str,

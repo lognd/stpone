@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-# frob:waive WIRE001 reason="M2 wire types with no M1 caller by design (SUB-07 carry-over)" follow_up="T-0006"
 import math
 import struct
 from abc import ABC
@@ -73,21 +72,31 @@ class _StructFloat(_FloatRoot):
         return cls.model_validate(struct.unpack(cls._struct_format, data)[0])
 
 
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0703
+# frob:tests tests/unit/test_serial_packets.py::test_float_widths kind="unit"
 @final
 class F16(_StructFloat):
     _struct_format: ClassVar[str] = "<e"
     _byte_width: ClassVar[int] = 2
 
 
+# kind="unit"
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0703
+# frob:tests tests/unit/test_serial_packets.py::test_float_overflow_and_bool_rejected \
+# kind="unit"
 @final
 class F32(_StructFloat):
     _struct_format: ClassVar[str] = "<f"
     _byte_width: ClassVar[int] = 4
 
 
+# kind="unit"
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0703
+# frob:tests tests/unit/test_serial_packets.py::test_float_overflow_and_bool_rejected \
+# kind="unit"
 @final
 class F64(_StructFloat):
     _struct_format: ClassVar[str] = "<d"

@@ -22,7 +22,11 @@ _log = get_logger(__name__)
 _SETTLE_S = 0.5
 
 
+# kind="unit"
 # frob:doc docs/spec/L5-component-design/SUB-05-flash-tool.md#comp-0506
+# frob:tests tests/unit/test_flash_app.py::test_build_only_configures_and_builds \
+# kind="unit"
+# frob:tests tests/unit/test_flash_app.py::test_setup_only_binds kind="unit"
 class FlashApp:
     """Config in, flashed board out: build, attach (WSL), wait for port, avrdude."""
 

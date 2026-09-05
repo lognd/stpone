@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-# frob:waive WIRE001 reason="M2 wire types with no M1 caller by design (SUB-07 carry-over)" follow_up="T-0006"
 from typing import Optional
 
 from pydantic import PrivateAttr, RootModel, model_validator
@@ -10,24 +9,37 @@ from stpone.serial.packets.generic import FixedWidth, Serializable
 from stpone.serial.rdt import RDTCommunication
 
 
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0704
+# frob:tests tests/unit/test_serial_packets.py::test_fast_string_round_trip kind="unit"
+# frob:tests tests/unit/test_serial_packets.py::test_fast_string_is_64_wide kind="unit"
 class FastString(RootModel[str], FixedWidth):
+    # frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" \
+    # follow_up="T-0006"
     @classmethod
     def get_byte_width(cls) -> int:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0704
         return 64
 
+    # frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" \
+    # follow_up="T-0006"
     @classmethod
     def from_bytes(cls, data: bytes) -> Self:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0704
         return cls.model_validate(data.decode("utf-8", errors="ignore"))
 
+    # frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" \
+    # follow_up="T-0006"
     def to_bytes(self) -> bytes:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0704
         return self.root.encode("utf-8", errors="ignore")
 
 
+# kind="unit"
+# frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" follow_up="T-0006"
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0704
+# frob:tests tests/unit/test_serial_packets.py::test_string_is_length_prefixed \
+# kind="unit"
 class String(RootModel[str], Serializable):
     _byte_cache: Optional[bytes] = PrivateAttr(default=None)
 
@@ -37,6 +49,8 @@ class String(RootModel[str], Serializable):
             self._byte_cache = self.root.encode(encoding="utf-8", errors="ignore")
         return self._byte_cache
 
+    # frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" \
+    # follow_up="T-0006"
     @model_validator(mode="after")
     def validate_string_length(self) -> Self:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0704
@@ -47,6 +61,8 @@ class String(RootModel[str], Serializable):
             )
         return self
 
+    # frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" \
+    # follow_up="T-0006"
     def to_bytes(self) -> bytes:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0704
         return (
@@ -54,6 +70,8 @@ class String(RootModel[str], Serializable):
             + self._byte_repr
         )
 
+    # frob:waive WIRE001 reason="M2 wire type, no M1 caller by design" \
+    # follow_up="T-0006"
     @classmethod
     async def from_stream(cls, stream: RDTCommunication) -> Optional[Self]:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0704

@@ -1,7 +1,7 @@
 ---
 id: T-0004
 title: Port the firmware HAL from startup.asm to avr-libc ISR() bindings
-state: queued
+state: in-progress
 kind: feature
 origin: human
 created: '2026-09-05'

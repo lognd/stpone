@@ -10,7 +10,7 @@ parent: null
 tier: story
 sprint: null
 runs_last: false
-milestone: null
+milestone: 2.0.0
 runs_last_parallel_safe: false
 runs_last_parallel_safe_reason: null
 scope:

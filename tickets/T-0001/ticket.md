@@ -36,6 +36,7 @@ scope:
 - tickets/**
 - .clang-tidy
 - cmake/**
+- CLAUDE.md
 scope_breadth_ack: false
 scope_breadth_ack_reason: null
 no_scope_declared: false
@@ -154,6 +155,11 @@ scope_changes:
 - op: add
   glob: cmake/**
   reason: root files of the bootstrap belong to the epic
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: CLAUDE.md
+  reason: the agent contract is part of the bootstrap
   actor: logan
   at: '2026-09-05'
 designated_repro_test: null

@@ -1,7 +1,7 @@
 ---
 id: T-0001
 title: 'M1: modernize stp-upgrade into stpone (firmware v1)'
-state: queued
+state: in-progress
 kind: feature
 origin: human
 created: '2026-09-05'

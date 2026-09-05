@@ -1,7 +1,7 @@
 ---
 id: T-0003
 title: 'Single flash entrypoint: build, usbipd attach on WSL, avrdude'
-state: in-progress
+state: done
 kind: feature
 origin: human
 created: '2026-09-05'

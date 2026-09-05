@@ -40,9 +40,12 @@ def test_every_integer_type_round_trips(kind: type[U8]) -> None:
 
 def test_integer_bounds_and_width() -> None:
     # frob:tests src/stpone/serial/packets/integers.py::_IntRoot.min_value kind="unit"
-    # frob:tests src/stpone/serial/packets/integers.py::_IntRoot.max_value_exclusive kind="unit"
-    # frob:tests src/stpone/serial/packets/integers.py::_IntRoot.get_byte_width kind="unit"
-    # frob:tests src/stpone/serial/packets/integers.py::_IntRoot.validate_range kind="unit"
+    # frob:tests src/stpone/serial/packets/integers.py::_IntRoot.max_value_exclusive \
+    # kind="unit"
+    # frob:tests src/stpone/serial/packets/integers.py::_IntRoot.get_byte_width \
+    # kind="unit"
+    # frob:tests src/stpone/serial/packets/integers.py::_IntRoot.validate_range \
+    # kind="unit"
     assert (U8.min_value(), U8.max_value_exclusive()) == (0, 256)
     assert (I8.min_value(), I8.max_value_exclusive()) == (-128, 128)
     assert U32.get_byte_width() == 4
@@ -89,7 +92,8 @@ def test_bool_accepts_only_zero_and_one() -> None:
 @pytest.mark.parametrize("kind", (F16, F32, F64))
 def test_every_float_type_round_trips(kind: type[F32]) -> None:
     # frob:tests src/stpone/serial/packets/floats.py::_StructFloat.to_bytes kind="unit"
-    # frob:tests src/stpone/serial/packets/floats.py::_StructFloat.from_bytes kind="unit"
+    # frob:tests src/stpone/serial/packets/floats.py::_StructFloat.from_bytes \
+    # kind="unit"
     packed = kind(1.5).to_bytes()
     assert len(packed) == kind.get_byte_width()
     assert kind.from_bytes(packed).root == 1.5
@@ -102,7 +106,8 @@ def test_every_float_type_round_trips(kind: type[F32]) -> None:
 
 
 def test_float_widths() -> None:
-    # frob:tests src/stpone/serial/packets/floats.py::_StructFloat.get_byte_width kind="unit"
+    # frob:tests src/stpone/serial/packets/floats.py::_StructFloat.get_byte_width \
+    # kind="unit"
     # frob:tests src/stpone/serial/packets/floats.py::F16 kind="unit"
     assert (F16.get_byte_width(), F32.get_byte_width(), F64.get_byte_width()) == (
         2,
@@ -129,13 +134,15 @@ def test_string_is_length_prefixed() -> None:
 
 
 def test_string_length_validator_accepts_normal_text() -> None:
-    # frob:tests src/stpone/serial/packets/string.py::String.validate_string_length kind="unit"
+    # frob:tests src/stpone/serial/packets/string.py::String.validate_string_length \
+    # kind="unit"
     assert String("x" * 1000).root == "x" * 1000
 
 
 def test_fast_string_is_64_wide() -> None:
     # frob:tests src/stpone/serial/packets/string.py::FastString kind="unit"
-    # frob:tests src/stpone/serial/packets/string.py::FastString.get_byte_width kind="unit"
+    # frob:tests src/stpone/serial/packets/string.py::FastString.get_byte_width \
+    # kind="unit"
     assert FastString.get_byte_width() == 64
     assert FastString("abc").to_bytes() == b"abc"
 
@@ -163,6 +170,7 @@ def test_handshake_values() -> None:
 
 def test_syn_values() -> None:
     # frob:tests src/stpone/serial/packets/handshake.py::SynPacket.get_value kind="unit"
-    # frob:tests src/stpone/serial/packets/handshake.py::SynAckPacket.get_value kind="unit"
+    # frob:tests src/stpone/serial/packets/handshake.py::SynAckPacket.get_value \
+    # kind="unit"
     assert SynPacket.get_value() == b"u up?"
     assert SynAckPacket.get_value() == b"ye; wbu?"

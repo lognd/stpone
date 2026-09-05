@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# frob:waive WIRE001 reason="M2 handshake packets with no M1 caller by design (SUB-07 carry-over)" follow_up="T-0006"
 from typing import final
 
 from typani.singleton import singleton

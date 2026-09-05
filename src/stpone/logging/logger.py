@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# frob:waive WIRE001 reason="error_ctx is the carried-over logging API the M2 desktop code consumes" follow_up="T-0006"
 import logging
 import logging.config
 import tomllib

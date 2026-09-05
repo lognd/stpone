@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# frob:waive WIRE001 reason="instantiated by logging.config.dictConfig from logging/config.toml -- the caller is a config string not a code reference"
 import logging
 
 

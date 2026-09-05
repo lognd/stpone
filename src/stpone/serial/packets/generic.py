@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# frob:waive WIRE001 reason="M2 protocol base classes with no M1 caller by design (SUB-07 carry-over)" follow_up="T-0006"
 from abc import ABC, abstractmethod
 from enum import IntEnum
 from typing import Any, Optional, cast
@@ -19,7 +20,7 @@ LOGGER = get_logger("serial")
 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
 class Serializable(ABC):
     @abstractmethod
-                                 # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
+    # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
     def to_bytes(self) -> bytes: ...
 
     def __bytes__(self) -> bytes:
@@ -35,7 +36,7 @@ class Serializable(ABC):
 
     @classmethod
     @abstractmethod
-                                                                            # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
+    # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
     async def from_stream(cls, stream: RDTCommunication) -> Optional[Self]: ...
 
 
@@ -43,12 +44,12 @@ class Serializable(ABC):
 class FixedWidth(Serializable, ABC):
     @classmethod
     @abstractmethod
-                                    # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
+    # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
     def get_byte_width(cls) -> int: ...
 
     @classmethod
     @abstractmethod
-                                              # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
+    # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
     def from_bytes(cls, data: bytes) -> Self: ...
 
     @classmethod
@@ -66,7 +67,7 @@ class FixedWidth(Serializable, ABC):
 class Constant(Serializable, ABC):
     @staticmethod
     @abstractmethod
-                              # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
+    # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
     def get_value() -> bytes: ...
 
     def to_bytes(self) -> bytes:
@@ -117,14 +118,14 @@ class Pydantic(BaseModel, Serializable):
     def to_bytes(self) -> bytes:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
         buf = bytearray()
-        for attr in type(self).model_fields:
-            buf.extend(getattr(self, attr).to_bytes())
+        for _name, value in self:  # pydantic yields fields in declaration order
+            buf.extend(value.to_bytes())
         return bytes(buf)
 
     async def to_stream(self, stream: RDTCommunication) -> Result[None, IntEnum]:
         # frob:doc docs/spec/L5-component-design/SUB-07-serial-protocol.md#comp-0701
-        for attr in type(self).model_fields:
-            status = await getattr(self, attr).to_stream(stream)
+        for _name, value in self:
+            status = await value.to_stream(stream)
             if status.is_err:
                 return status
         return Ok(None)

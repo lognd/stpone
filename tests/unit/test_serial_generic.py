@@ -16,7 +16,8 @@ def test_constant_bytes() -> None:
 
 def test_fixed_width_bytes() -> None:
     # frob:tests src/stpone/serial/packets/generic.py::FixedWidth.from_bytes kind="unit"
-    # frob:tests src/stpone/serial/packets/generic.py::FixedWidth.get_byte_width kind="unit"
+    # frob:tests src/stpone/serial/packets/generic.py::FixedWidth.get_byte_width \
+    # kind="unit"
     assert U16.get_byte_width() == 2
     assert U16.from_bytes(b"\x01\x02").root == 0x0201
 
@@ -31,8 +32,10 @@ def test_serializable_bytes_protocol() -> None:
 
 
 async def test_stream_methods_unit() -> None:
-    # frob:tests src/stpone/serial/packets/generic.py::Serializable.to_stream kind="unit"
-    # frob:tests src/stpone/serial/packets/generic.py::FixedWidth.from_stream kind="unit"
+    # frob:tests src/stpone/serial/packets/generic.py::Serializable.to_stream \
+    # kind="unit"
+    # frob:tests src/stpone/serial/packets/generic.py::FixedWidth.from_stream \
+    # kind="unit"
     stream = MemoryStream()
     assert (await U8(9).to_stream(stream)).is_ok
     decoded = await U8.from_stream(stream)

@@ -36,8 +36,10 @@ async def test_handshake_round_trip() -> None:
 
 
 async def test_fixed_width_and_string_from_stream() -> None:
-    # frob:tests src/stpone/serial/packets/generic.py::FixedWidth.from_stream kind="integration"
-    # frob:tests src/stpone/serial/packets/string.py::String.from_stream kind="integration"
+    # frob:tests src/stpone/serial/packets/generic.py::FixedWidth.from_stream \
+    # kind="integration"
+    # frob:tests src/stpone/serial/packets/string.py::String.from_stream \
+    # kind="integration"
     stream = MemoryStream(U16(513).to_bytes() + String("hey").to_bytes())
     number = await U16.from_stream(stream)
     text = await String.from_stream(stream)
@@ -48,7 +50,8 @@ async def test_fixed_width_and_string_from_stream() -> None:
 
 
 async def test_constant_mismatch_yields_none() -> None:
-    # frob:tests src/stpone/serial/packets/generic.py::Constant.from_stream kind="integration"
+    # frob:tests src/stpone/serial/packets/generic.py::Constant.from_stream \
+    # kind="integration"
     # frob:tests src/stpone/serial/packets/generic.py::Constant kind="integration"
     assert await SynPacket.from_stream(MemoryStream(b"nope!")) is None
     assert await SynPacket.from_stream(MemoryStream(b"")) is None
@@ -56,7 +59,8 @@ async def test_constant_mismatch_yields_none() -> None:
 
 async def test_composite_packet_round_trip() -> None:
     # frob:tests src/stpone/serial/packets/generic.py::Pydantic kind="integration"
-    # frob:tests src/stpone/serial/packets/generic.py::Pydantic.from_stream kind="integration"
+    # frob:tests src/stpone/serial/packets/generic.py::Pydantic.from_stream \
+    # kind="integration"
     stream = MemoryStream()
     packet = Telemetry(count=U16(4096), state=U8(1))
     assert packet.to_bytes() == b"\x00\x10\x01"
@@ -67,8 +71,10 @@ async def test_composite_packet_round_trip() -> None:
 
 
 async def test_composite_to_stream_and_bytes() -> None:
-    # frob:tests src/stpone/serial/packets/generic.py::Pydantic.to_stream kind="integration"
-    # frob:tests src/stpone/serial/packets/generic.py::Pydantic.to_bytes kind="integration"
+    # frob:tests src/stpone/serial/packets/generic.py::Pydantic.to_stream \
+    # kind="integration"
+    # frob:tests src/stpone/serial/packets/generic.py::Pydantic.to_bytes \
+    # kind="integration"
     stream = MemoryStream()
     packet = Telemetry(count=U16(1), state=U8(2))
     assert (await packet.to_stream(stream)).is_ok
@@ -85,7 +91,8 @@ def test_non_serializable_field_is_a_developer_error() -> None:
 
 
 async def test_serializable_base_contract() -> None:
-    # frob:tests src/stpone/serial/packets/generic.py::Serializable.to_stream kind="integration"
+    # frob:tests src/stpone/serial/packets/generic.py::Serializable.to_stream \
+    # kind="integration"
     # frob:tests src/stpone/serial/packets/generic.py::Serializable kind="integration"
     stream = MemoryStream()
     assert (await U8(7).to_stream(stream)).is_ok
@@ -95,7 +102,8 @@ async def test_serializable_base_contract() -> None:
 
 async def test_fixed_width_contract() -> None:
     # frob:tests src/stpone/serial/packets/generic.py::FixedWidth kind="integration"
-    # frob:tests src/stpone/serial/packets/generic.py::FixedWidth.get_byte_width kind="integration"
+    # frob:tests src/stpone/serial/packets/generic.py::FixedWidth.get_byte_width \
+    # kind="integration"
     assert U8.get_byte_width() == 1
     assert U8.from_bytes(b"\x09").root == 9
 

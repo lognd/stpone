@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# frob:waive WIRE001 reason="M2 wire types with no M1 caller by design (SUB-07 carry-over)" follow_up="T-0006"
 from typing import ClassVar, final
 
 from pydantic import RootModel, field_validator

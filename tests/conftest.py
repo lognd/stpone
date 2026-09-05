@@ -62,10 +62,5 @@ class MemoryStream(RDTCommunication[Status]):
 
 
 @pytest.fixture
-def fake_runner() -> FakeRunner:
-    return FakeRunner()
-
-
-@pytest.fixture
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[1]

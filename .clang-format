@@ -17,4 +17,7 @@ NamespaceIndentation: All
 
 SortIncludes: true
 
-Standard: c++20\n\n# frob: directive comments must stay on one line.\nReflowComments: false\n
+Standard: c++20
+
+# frob: directive comments must stay on one line.
+ReflowComments: false

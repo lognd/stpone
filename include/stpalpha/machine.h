@@ -1,5 +1,6 @@
 #pragma once
-// frob:waive PARSE002 reason="C++-only enum class header kept as .h to match the include convention -- tree-sitter-c salvages around it"
+// frob:waive PARSE002 reason="C++-only enum class header kept as .h to match the include \
+// convention -- tree-sitter-c salvages around it"
 
 #include <stdint.h>
 

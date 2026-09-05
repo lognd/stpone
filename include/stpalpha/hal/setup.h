@@ -1,5 +1,5 @@
 #pragma once
-// frob:waive PARSE002 reason="extern C guard is C++ syntax inside a C header -- tree-sitter-c salvages around it and every declaration still parses"
+// frob:waive PARSE002 reason="extern C guard is C++ syntax inside a C header -- tree-sitter-c \
 // salvages around it and every declaration still parses"
 
 // Board HAL for the Sandkey paper winder (ATmega32U4 Pro Micro).

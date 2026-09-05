@@ -39,6 +39,7 @@ scope_changes:
   at: '2026-09-05'
 evidence:
 - tests/unit/test_flash_app.py::test_flash_on_wsl_attaches_first
+- tests/unit/test_flash_app.py::test_flash_on_linux_skips_attach
 designated_repro_test: null
 acceptance:
 - text: Given a WSL host, when scripts/flash.py runs, then it builds, polls usbipd
@@ -48,7 +49,8 @@ acceptance:
   - tests/unit/test_flash_app.py::test_flash_on_wsl_attaches_first
 - text: Given a plain Linux host, when scripts/flash.py runs, then no usbipd or PowerShell
     step is attempted (CT-021)
-  evidence: []
+  evidence:
+  - tests/unit/test_flash_app.py::test_flash_on_linux_skips_attach
 - text: Given --setup on WSL, when it runs, then usbipd bind is executed elevated
     through powershell.exe Start-Process -Verb RunAs (SPEC-021, UT-0503)
   evidence: []

@@ -11,8 +11,8 @@ interrupt handlers with `ISR(TIMER0_COMPA_vect)`,
 `_start` into `hal_init()`, called from the `.init8` section so it still
 runs before `main()` with interrupts enabled at the end, exactly where
 the assembly version called `.Lsetup` and `sei`. The 43-entry vector
-table, `WEAK_VECTOR` macro, `.bss` clear and `.data` copy loops of
-`stp-upgrade/src/stpalpha/startup.asm` are gone.
+table, `WEAK_VECTOR` macro, `.bss` clear and `.data` copy loops of the
+previous repository's `startup.asm` are gone.
 
 ## Why
 

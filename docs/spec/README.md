@@ -18,7 +18,9 @@ at the paired level.
 
 1. L1 through L4 are written and closed for the WHOLE product before
    milestone code is accepted (the waterfall half). They change only
-   through a decision record (`docs/decisions/DEC-nnn.md`) that carries a
+   through a decision record under `docs/decisions/` (see
+   [DEC-001](../decisions/DEC-001-avr-libc-startup.md) and
+   [DEC-002](../decisions/DEC-002-m1-port-bootstrap.md)) that carries a
    `supersedes` line with a reason -- never by silently editing a
    requirement.
 2. L5 and the code are produced per milestone (the agile half): for each

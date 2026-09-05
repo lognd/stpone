@@ -1,6 +1,7 @@
 # Agent playbook (per-ticket checklist)
 
-You are a leaf worker: do all the work of your ticket yourself and report
+The contract is `CLAUDE.md` at the repository root; this is the
+per-ticket checklist it points to. You are a leaf worker: do all the work of your ticket yourself and report
 back in at most 15 lines.
 
 ## 0. Setup

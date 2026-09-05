@@ -81,5 +81,21 @@ path = "tests/conftest.py"
 reason = "pytest's own fixture-discovery entry point, loaded by path convention"
 
 [[refs.entrypoint]]
+path = ".gitattributes"
+reason = "read by git by convention (line-ending normalization)"
+
+[[refs.entrypoint]]
+path = ".python-version"
+reason = "read by uv to pick the interpreter"
+
+[[refs.entrypoint]]
+path = "src/stpone/py.typed"
+reason = "PEP 561 marker read by type checkers; pyproject package-data is its one legitimate mention"
+
+[[refs.entrypoint]]
+path = "tickets/**"
+reason = "frob's own ticket ledger, read by frob ticket, never referenced from source"
+
+[[refs.entrypoint]]
 path = "scripts/flash.py"
 reason = "the operator entrypoint, run by humans and CI by path, never imported"

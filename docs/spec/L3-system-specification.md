@@ -23,7 +23,7 @@ transport).
 | ID | Specification | satisfies | verified-by |
 |---|---|---|---|
 | SYS-010 | One CMake project (`CMakeLists.txt`, toolchain `cmake/avr-gcc-toolchain.cmake`) produces eight images: `firmware`, `hello_world`, `test_buttons_leds`, `test_buzzer`, `test_encoder`, `test_lcd`, `test_leds_pins`, `test_timer0`; each links `src/stpalpha/hal/setup.c`; images that show text also link `src/stpalpha/hal/lcd.c`; each yields `<name>.elf` and `<name>.hex` in the build directory. `ctest` runs the simavr smoke. | SPEC-016, SPEC-024 | SIT-010 |
-| SYS-011 | Flash workflow as a state machine (`stpone.flash.app.FlashApp`): `setup?` -> `build?` (configure, build target) -> `build_only?` -> image exists? -> host kind -> `attach` (WSL only) -> `port` (given or waited) -> `avrdude`. Every step returns `Result[None, FlashError]`; the CLI maps `Err` to exit 1 plus a remedy line, `Ok` to exit 0. | SPEC-020, SPEC-021, SPEC-022 | SIT-011 |
+| SYS-011 | Flash workflow as a state machine (`src/stpone/flash/app.py::FlashApp`): `setup?` -> `build?` (configure, build target) -> `build_only?` -> image exists? -> host kind -> `attach` (WSL only) -> `port` (given or waited) -> `avrdude`. Every step returns `Result[None, FlashError]`; the CLI maps `Err` to exit 1 plus a remedy line, `Ok` to exit 0. | SPEC-020, SPEC-021, SPEC-022 | SIT-011 |
 | SYS-012 | Host environments: `wsl` (attach through `usbipd.exe`, setup through `powershell.exe`), `linux` (no forwarding), `other` (no forwarding, best effort). Detection reads `/proc/version`; tool presence is checked with `shutil.which` before any call, never by trying and crashing. | SPEC-021 | SIT-012 |
 
 ## Desktop link (M2)

@@ -31,7 +31,7 @@ runs avrdude. The logic lives in `src/stpone/flash/` (SUB-05).
    -Uflash:w:<hex>:i`.
 
 Exit code 0 means avrdude verified the flash. Exit 1 prints the error
-and a "next step" line (the `REMEDIES` table in `stpone/flash/errors.py`).
+and a "next step" line (the `REMEDIES` table in `src/stpone/flash/errors.py`).
 
 ## Options
 

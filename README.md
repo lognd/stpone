@@ -19,8 +19,12 @@ repositories. Changes here are limited to bug fixes against the
 specification in `docs/spec` and to keeping the flash tooling working
 on the developer machines.
 
-Start with [docs/index.md](docs/index.md). Agents start at
-[CLAUDE.md](CLAUDE.md).
+Start with [docs/index.md](docs/index.md); flashing is described in
+[docs/runbooks/flash.md](docs/runbooks/flash.md) and the two design
+decisions behind this repository in
+[docs/decisions/DEC-001-avr-libc-startup.md](docs/decisions/DEC-001-avr-libc-startup.md)
+and [docs/decisions/DEC-002-m1-port-bootstrap.md](docs/decisions/DEC-002-m1-port-bootstrap.md).
+Agents start at [CLAUDE.md](CLAUDE.md).
 
 ## Layout
 

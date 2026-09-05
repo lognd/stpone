@@ -37,5 +37,11 @@ Start with the specification cascade; everything else hangs off it.
 
 ## Working in this repository
 
-- `CLAUDE.md` at the root is the agent contract; `docs/guides/agent-playbook.md` is the per-ticket checklist.
+- [CLAUDE.md](../CLAUDE.md) at the root is the agent contract; [docs/guides/agent-playbook.md](guides/agent-playbook.md) is the per-ticket checklist.
 - `FROBLEMS.md` (gitignored) records friction with frob itself.
+- Root directories read by tools outside the source graph:
+
+<!-- frob:external-reader dir=".github" reason="GitHub Actions reads the workflows under .github/workflows" -->
+<!-- frob:external-reader dir="cmake" reason="cmake reads the AVR toolchain file named on the scripts/flash.py command line" -->
+<!-- frob:external-reader dir="invariants" reason="frob's invariant gate reads invariants/ by convention" -->
+<!-- frob:external-reader dir="tickets" reason="frob's ticket ledger, read by frob ticket" -->

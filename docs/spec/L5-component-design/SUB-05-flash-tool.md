@@ -1,8 +1,8 @@
 # L5 -- SUB-05 flash-tool
 
 Satisfies SUB-05. Owned code: `src/stpone/flash/**`, `scripts/flash.py`,
-`CMakeLists.txt`, `cmake/**`. Replaces `setup_usb.bat` + `flash.bat` +
-`scripts/upload.sh` + the Makefile upload targets of `stp-upgrade`.
+`CMakeLists.txt`, `cmake/**`. Replaces the `setup_usb.bat`, `flash.bat`
+and `upload.sh` scripts and the Makefile upload targets of `stp-upgrade`.
 
 ## Components
 

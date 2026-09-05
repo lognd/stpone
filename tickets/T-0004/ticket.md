@@ -53,6 +53,7 @@ scope_changes:
   at: '2026-09-05'
 evidence:
 - tests/system/test_firmware.py::test_firmware_vector_table_binds_timer_isrs
+- tests/system/test_firmware.py::test_hal_init_runs_before_main
 designated_repro_test: null
 acceptance:
 - text: Given the source tree, when it is inspected, then there is no assembly startup
@@ -64,7 +65,8 @@ acceptance:
     slots 17 and 21 bind __vector_17/__vector_21 and every other slot jumps to __bad_interrupt,
     and hal_init is called from .init8 before main (CTP-015, CTP-023, SIT-002, SIT-006,
     UT-0101..0104)
-  evidence: []
+  evidence:
+  - tests/system/test_firmware.py::test_hal_init_runs_before_main
 - text: Given the test suite on a machine with avr-gcc and simavr, when it runs, then
     every image builds and hello_world prints on the simulated USART1 (CT-023, CTP-016,
     CTP-024, UT-0401, UT-0402)

@@ -1,7 +1,7 @@
 ---
 id: T-0005
 title: 'Process tests: trace closure, waiver evidence, ignore rules'
-state: in-progress
+state: done
 kind: feature
 origin: human
 created: '2026-09-05'

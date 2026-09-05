@@ -41,6 +41,7 @@ evidence:
 - tests/unit/test_flash_app.py::test_flash_on_wsl_attaches_first
 - tests/unit/test_flash_app.py::test_flash_on_linux_skips_attach
 - tests/unit/test_flash_host.py::test_bind_elevates_through_powershell
+- tests/integration/test_flash_cli.py::test_all_target_requires_build_only
 designated_repro_test: null
 acceptance:
 - text: Given a WSL host, when scripts/flash.py runs, then it builds, polls usbipd
@@ -58,7 +59,8 @@ acceptance:
   - tests/unit/test_flash_host.py::test_bind_elevates_through_powershell
 - text: Given the CLI, when --help / --target all / a missing image are used, then
     exit codes are 0 / 2 / 1 with a remedy line (UT-0507, CTP-020)
-  evidence: []
+  evidence:
+  - tests/integration/test_flash_cli.py::test_all_target_requires_build_only
 threat: null
 component: flash-tool
 anchor: false

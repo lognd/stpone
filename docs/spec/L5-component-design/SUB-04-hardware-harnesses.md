@@ -1,7 +1,8 @@
 # L5 -- SUB-04 hardware-harnesses
 
-Satisfies SUB-04. Owned code: `tests/avr/*.cpp`. Each file is a `main`
-that links the HAL (and the LCD driver where it shows text). Screens and
+Satisfies SUB-04. Owned code: `tests/avr/*.cpp`, including the simulator
+smoke image [tests/avr/hello_world.cpp](../../../tests/avr/hello_world.cpp).
+Each file is a `main` that links the HAL (and the LCD driver where it shows text). Screens and
 expected readings are in `docs/runbooks/hardware-tests.md`.
 
 ## Components

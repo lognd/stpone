@@ -1,7 +1,7 @@
 # stpone -- agent contract
 
-Specification-first, frob-enforced. Read `docs/spec/README.md` before
-touching anything; read `docs/guides/agent-playbook.md` before every
+Specification-first, frob-enforced. Read [docs/index.md](docs/index.md) and
+then [docs/spec/README.md](docs/spec/README.md) before touching anything; read `docs/guides/agent-playbook.md` before every
 ticket. The global rules in `~/.claude/CLAUDE.md` apply unchanged (ASCII
 only, no emojis, no Co-Authored-By, typani Result for fallible
 operations, pydantic v2, log everything, document as you go, no

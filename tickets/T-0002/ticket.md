@@ -1,7 +1,7 @@
 ---
 id: T-0002
 title: Port the desktop core to typani and the house logging layout
-state: in-progress
+state: done
 kind: feature
 origin: human
 created: '2026-09-05'

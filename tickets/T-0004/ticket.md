@@ -54,6 +54,7 @@ scope_changes:
 evidence:
 - tests/system/test_firmware.py::test_firmware_vector_table_binds_timer_isrs
 - tests/system/test_firmware.py::test_hal_init_runs_before_main
+- tests/system/test_firmware.py::test_hello_world_prints_on_usart1_in_simavr
 designated_repro_test: null
 acceptance:
 - text: Given the source tree, when it is inspected, then there is no assembly startup
@@ -70,7 +71,8 @@ acceptance:
 - text: Given the test suite on a machine with avr-gcc and simavr, when it runs, then
     every image builds and hello_world prints on the simulated USART1 (CT-023, CTP-016,
     CTP-024, UT-0401, UT-0402)
-  evidence: []
+  evidence:
+  - tests/system/test_firmware.py::test_hello_world_prints_on_usart1_in_simavr
 - text: Given the length model in main.cpp, when recomputed in float32 on the host,
     then the target is 165011 pulses for 30.0 yd (CTP-001, UT-0302)
   evidence: []

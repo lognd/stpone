@@ -6,13 +6,13 @@
  *
  * Phase 2 (loop): Display the raw hardware pin level for each button pin
  *   AND the debounced btn_state byte, updating every 50 ms.
- *   LEDs mirror btn_state so you can cross-check both at once.
+ *   LEDs mirror btn_state so both can be cross-checked at once.
  *
  *   Row 1: D6=PD7 (BTN_1)  D7=PE6 (BTN_2)   -- raw PIND/PINE reads
  *   Row 2: D8=PB4 (BTN_3)  D9=PB5 (BTN_4)   -- raw PINB reads
  *   Row 3: btn_state hex                       -- debounced ISR value
  *
- * If LEDs light in Phase 1 but not when you press buttons in Phase 2:
+ * If LEDs light in Phase 1 but not when buttons are pressed in Phase 2:
  *   -> btn_state is not being set -> check ISR / wiring / pull-downs.
  * If raw pins stay L when buttons are pressed:
  *   -> hardware wiring or pull-down resistor problem.

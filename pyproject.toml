@@ -36,11 +36,6 @@ dev = [
 Homepage = "https://github.com/lognd/stpone"
 Issues = "https://github.com/lognd/stpone/issues"
 
-# Sibling checkouts under ../ are the source of truth while typani is being
-# modernized alongside this repo (PyPI still carries 0.0.4).
-[tool.uv.sources]
-typani = { path = "../typani", editable = true }
-
 [tool.setuptools]
 packages = { find = { where = ["src"] } }
 

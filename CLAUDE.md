@@ -4,7 +4,7 @@ Specification-first, frob-enforced. Read [docs/index.md](docs/index.md) and
 then [docs/spec/README.md](docs/spec/README.md) before touching anything; read `docs/guides/agent-playbook.md` before every
 ticket. The global rules in `~/.claude/CLAUDE.md` apply unchanged (ASCII
 only, no emojis, no Co-Authored-By, typani Result for fallible
-operations, pydantic v2, log everything, document as you go, no
+operations, pydantic v2, log everything, document alongside the code, no
 duplication).
 
 ## Status
@@ -24,7 +24,7 @@ belongs to their own repositories.
    repository, `../stp-upgrade`): pin map, timers, screens, beeps, LED
    patterns are all specified in L2/L3 and must not drift without a
    decision record.
-4. `frob check` must be green for your ticket. Gate findings are fixed
+4. `frob check` must be green for the ticket being closed. Gate findings are fixed
    genuinely; a `frob:waive` needs a specific, honest reason (the AVR-only
    symbols carry TEST001 waivers because host unit tests cannot execute
    them -- the bench runbook and the simavr system tests are their
@@ -46,7 +46,7 @@ docs/runbooks/                                flashing, bench hardware tests
 ```
 frob ticket doable               what to work on
 frob check                       the whole gate (also runs cmake + ctest)
-frob test --base main            tests bound to what you touched
+frob test --base main            tests bound to the touched set
 uv run python scripts/flash.py   build + flash (see README)
 ```
 

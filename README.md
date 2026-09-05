@@ -45,9 +45,8 @@ cmake/, CMakeLists.txt   AVR build (avr-gcc + avr-libc crt)
   `cmake` >= 3.20, `simavr` (for the simulator tests), `clang-format`.
 - `uv` (Python 3.11 is pinned in `.python-version`).
 - WSL only: `usbipd-win` on the Windows side (`usbipd.exe` on PATH).
-- The sibling checkouts `../typani` and `../frob` (see pyproject
-  `[tool.uv.sources]`; typani is consumed from its local tree while it is
-  modernized alongside this repo).
+- typani >= 0.1.0 from PyPI; frob as a global uv tool (built from `../frob`
+  on the developer machine).
 
 ## Everyday commands
 
@@ -58,7 +57,7 @@ uv run python scripts/flash.py            # build firmware, double-tap RST, flas
 uv run python scripts/flash.py --target test_lcd      # flash a hardware harness instead
 uv run python scripts/flash.py --build-only --target all
 frob check                                # the aggregate gate (ruff, ty, cmake+ctest, frob gates)
-frob test                                 # tests bound to what you touched (--all for everything)
+frob test                                 # tests bound to the touched set (--all for everything)
 frob format                               # ruff fix + format
 cmake --build build --target format       # clang-format the firmware
 cmake --build build --target tidy         # clang-tidy the firmware
@@ -66,7 +65,7 @@ cmake --build build --target tidy         # clang-tidy the firmware
 
 On plain Linux the bootloader appears directly as `/dev/ttyACM*`, so the
 usbipd attach step is skipped automatically; only the double-tap on RST
-is still yours to do.
+remains a manual step.
 
 ## Reference documentation
 

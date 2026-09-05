@@ -427,7 +427,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.12" },
     { name = "pyserial", specifier = ">=3.5" },
     { name = "python-dotenv", specifier = ">=1.0" },
-    { name = "typani", editable = "../typani" },
+    { name = "typani", specifier = ">=0.1.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -523,27 +523,10 @@ wheels = [
 [[package]]
 name = "typani"
 version = "0.1.0"
-source = { editable = "../typani" }
-
-[package.metadata]
-requires-dist = [
-    { name = "pydantic", marker = "extra == 'pydantic'", specifier = ">=2.0" },
-    { name = "typani-core", marker = "extra == 'native'", directory = "../typani/crates/typani-core" },
-]
-provides-extras = ["pydantic", "native"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "hypothesis", specifier = ">=6" },
-    { name = "maturin", specifier = ">=1.7,<2" },
-    { name = "mypy", specifier = ">=1.10" },
-    { name = "pydantic", specifier = ">=2.12" },
-    { name = "pytest", specifier = ">=8" },
-    { name = "pytest-cov", specifier = ">=5" },
-    { name = "pytest-xdist", specifier = ">=3" },
-    { name = "ruff", specifier = ">=0.8" },
-    { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=2" },
-    { name = "ty", specifier = ">=0.0.1a8" },
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/59/c1/1dc701ca40295ebb17d85752b69ba100a6f425dd78c19029525d9be19c70/typani-0.1.0.tar.gz", hash = "sha256:876240befe78202cee3662c622a1f1dd33da71851102f843203e0645812a9442", size = 57222, upload-time = "2026-09-05T14:30:35.185Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/af/15/7433a34ec14000ba6841020d0b60ceb20df36768678711c1b036fc2d4f6a/typani-0.1.0-py3-none-any.whl", hash = "sha256:24347157466f251dbe1e4ebe43455e11a60fe51ce2a75f9d283fcfff6dd433a5", size = 39059, upload-time = "2026-09-05T14:30:27.893Z" },
 ]
 
 [[package]]

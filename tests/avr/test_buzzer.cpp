@@ -5,7 +5,7 @@
  *   If buzz_ticks counts down to 0 but PB3 stays H, the cbi is not executing.
  *   If buzz_ticks stays nonzero, the Timer0 ISR is not decrementing it.
  *
- * Row 1: btn_state (raw) so you can see which buttons are active.
+ * Row 1: btn_state (raw), showing which buttons are active.
  *
  * Row 2: blank
  *

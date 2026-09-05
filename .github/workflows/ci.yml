@@ -26,11 +26,6 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      # pyproject's [tool.uv.sources] takes typani from the sibling checkout
-      # (see README: the modernized dependencies live under ../).
-      - name: fetch sibling typani checkout
-        run: git clone --depth 1 https://github.com/lognd/typani ../typani
-
       - name: install
         run: uv sync
 

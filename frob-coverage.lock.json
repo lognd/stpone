@@ -1,0 +1,30 @@
+{
+  "module_line": {
+    "src/stpone/__init__.py": 0.0,
+    "src/stpone/common/__init__.py": 0.0,
+    "src/stpone/exception.py": 0.0,
+    "src/stpone/flash/__init__.py": 0.0,
+    "src/stpone/flash/app.py": 0.0,
+    "src/stpone/flash/avrdude.py": 0.0,
+    "src/stpone/flash/build.py": 0.0,
+    "src/stpone/flash/cli.py": 0.0,
+    "src/stpone/flash/config.py": 0.0,
+    "src/stpone/flash/errors.py": 0.0,
+    "src/stpone/flash/host.py": 0.0,
+    "src/stpone/flash/port.py": 0.0,
+    "src/stpone/flash/proc.py": 0.0,
+    "src/stpone/logging/__init__.py": 0.0,
+    "src/stpone/logging/filter.py": 0.0,
+    "src/stpone/logging/formatter.py": 0.0,
+    "src/stpone/logging/logger.py": 0.0,
+    "src/stpone/serial/__init__.py": 0.0,
+    "src/stpone/serial/packets/__init__.py": 0.0,
+    "src/stpone/serial/packets/floats.py": 0.0,
+    "src/stpone/serial/packets/generic.py": 0.0,
+    "src/stpone/serial/packets/handshake.py": 0.0,
+    "src/stpone/serial/packets/integers.py": 0.0,
+    "src/stpone/serial/packets/string.py": 0.0,
+    "src/stpone/serial/rdt.py": 0.0
+  },
+  "source_sha": "00f23ae650fcf5e5267ae11fe35f44b424f4d9cfef47df13c4139808e7d5738a"
+}

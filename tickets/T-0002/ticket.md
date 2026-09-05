@@ -27,10 +27,23 @@ scope:
 - tests/integration/test_serial_stream.py
 - tests/integration/test_wiring.py
 - tests/system/test_package.py
+- docs/spec/L5-component-design/SUB-06-desktop-core.md
+- docs/spec/L5-component-design/SUB-07-serial-protocol.md
 scope_breadth_ack: false
 scope_breadth_ack_reason: null
 no_scope_declared: false
 no_scope_declared_reason: null
+scope_changes:
+- op: add
+  glob: docs/spec/L5-component-design/SUB-06-desktop-core.md
+  reason: the L5 rows are the doc anchors of the scoped symbols
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: docs/spec/L5-component-design/SUB-07-serial-protocol.md
+  reason: the L5 rows are the doc anchors of the scoped symbols
+  actor: logan
+  at: '2026-09-05'
 designated_repro_test: null
 acceptance:
 - text: Given the stpone package, when it is imported, then Result/Ok/Err/Unreachable

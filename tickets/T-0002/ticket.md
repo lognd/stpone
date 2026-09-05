@@ -47,6 +47,8 @@ scope_changes:
 evidence:
 - tests/integration/test_wiring.py::test_package_exports_typani_vocabulary
 - tests/unit/test_logging.py::test_error_ctx_logs_and_reraises
+- tests/integration/test_serial_stream.py::test_handshake_round_trip
+- tests/integration/test_serial_stream.py::test_composite_packet_round_trip
 designated_repro_test: null
 acceptance:
 - text: Given the stpone package, when it is imported, then Result/Ok/Err/Unreachable
@@ -61,7 +63,9 @@ acceptance:
     a composite packet streams through an in-memory transport, then decode errors
     yield None with one error() call and the handshake constants are singletons (UT-0701..0706,
     SIT-020, SIT-021, CT-030)
-  evidence: []
+  evidence:
+  - tests/integration/test_serial_stream.py::test_handshake_round_trip
+  - tests/integration/test_serial_stream.py::test_composite_packet_round_trip
 threat: null
 component: desktop-core
 anchor: false

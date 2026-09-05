@@ -51,12 +51,15 @@ scope_changes:
   reason: the L5 rows are the doc anchors of the scoped symbols
   actor: logan
   at: '2026-09-05'
+evidence:
+- tests/system/test_firmware.py::test_firmware_vector_table_binds_timer_isrs
 designated_repro_test: null
 acceptance:
 - text: Given the source tree, when it is inspected, then there is no assembly startup
     file and the two timer ISRs are ISR() functions in src/stpalpha/hal/setup.c (CT-022,
     SPEC-023)
-  evidence: []
+  evidence:
+  - tests/system/test_firmware.py::test_firmware_vector_table_binds_timer_isrs
 - text: Given the built firmware.elf, when its vector table is disassembled, then
     slots 17 and 21 bind __vector_17/__vector_21 and every other slot jumps to __bad_interrupt,
     and hal_init is called from .init8 before main (CTP-015, CTP-023, SIT-002, SIT-006,

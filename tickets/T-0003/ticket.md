@@ -37,12 +37,15 @@ scope_changes:
   reason: the L5 rows are the doc anchors of the scoped symbols
   actor: logan
   at: '2026-09-05'
+evidence:
+- tests/unit/test_flash_app.py::test_flash_on_wsl_attaches_first
 designated_repro_test: null
 acceptance:
 - text: Given a WSL host, when scripts/flash.py runs, then it builds, polls usbipd
     attach by hardware id, waits for /dev/ttyACM*, and runs the legacy avrdude invocation
     (CT-020, CTP-021, CTP-022, UT-0503, UT-0506)
-  evidence: []
+  evidence:
+  - tests/unit/test_flash_app.py::test_flash_on_wsl_attaches_first
 - text: Given a plain Linux host, when scripts/flash.py runs, then no usbipd or PowerShell
     step is attempted (CT-021)
   evidence: []

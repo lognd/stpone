@@ -28,12 +28,15 @@ scope_changes:
   reason: the L5 rows are the doc anchors of the scoped symbols
   actor: logan
   at: '2026-09-05'
+evidence:
+- tests/system/test_process.py::test_trace_tables_are_closed
 designated_repro_test: null
 acceptance:
 - text: Given docs/spec, when the trace tables are parsed, then every referenced id
     exists, every artifact row has a verifier, every test row verifies something,
     and every non-manual runnable collects (CT-040, CTP-040, SIT-030, UT-0801)
-  evidence: []
+  evidence:
+  - tests/system/test_process.py::test_trace_tables_are_closed
 - text: Given the firmware sources, when TEST001 waivers are scanned, then each names
     docs/runbooks/hardware-tests.md (CT-041, UT-0802)
   evidence: []

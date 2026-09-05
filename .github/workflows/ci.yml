@@ -54,7 +54,12 @@ jobs:
       # be first on PATH (FROBLEMS F-017); the stamp it writes is what TEST006
       # checks and it lives in the gitignored .frob/.
       - name: frob coverage
-        run: PATH="$PWD/.venv/bin:$PATH" frob coverage --full
+        run: |
+          PATH="$PWD/.venv/bin:$PATH" frob coverage --full
+          # The refresh rewrites the tracked coverage lock for the runner's
+          # own numbers; the stamp it leaves in .frob/ is what the gate needs.
+          git checkout -- frob-coverage.lock.json
 
+      # ruff and ty live in the project venv, and frob looks for them on PATH.
       - name: frob check
-        run: frob check "$PWD"
+        run: PATH="$PWD/.venv/bin:$PATH" frob check "$PWD"

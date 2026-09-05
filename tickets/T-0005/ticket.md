@@ -17,10 +17,17 @@ runs_last_parallel_safe: false
 runs_last_parallel_safe_reason: null
 scope:
 - tests/system/test_process.py
+- docs/spec/L5-component-design/SUB-08-process.md
 scope_breadth_ack: false
 scope_breadth_ack_reason: null
 no_scope_declared: false
 no_scope_declared_reason: null
+scope_changes:
+- op: add
+  glob: docs/spec/L5-component-design/SUB-08-process.md
+  reason: the L5 rows are the doc anchors of the scoped symbols
+  actor: logan
+  at: '2026-09-05'
 designated_repro_test: null
 acceptance:
 - text: Given docs/spec, when the trace tables are parsed, then every referenced id

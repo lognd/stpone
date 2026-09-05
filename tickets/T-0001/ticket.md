@@ -25,6 +25,17 @@ scope:
 - frob.toml
 - uv.lock
 - .clang-format
+- README.md
+- LICENSE
+- Makefile
+- .github/**
+- .gitignore
+- .gitattributes
+- .python-version
+- invariants/**
+- tickets/**
+- .clang-tidy
+- cmake/**
 scope_breadth_ack: false
 scope_breadth_ack_reason: null
 no_scope_declared: false
@@ -88,6 +99,61 @@ scope_changes:
   glob: .clang-format
   reason: the epic owns the whole M1 port landed as one bootstrap (DEC-002); the leaves
     own their subsets
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: README.md
+  reason: root files of the bootstrap belong to the epic
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: LICENSE
+  reason: root files of the bootstrap belong to the epic
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: Makefile
+  reason: root files of the bootstrap belong to the epic
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: .github/**
+  reason: root files of the bootstrap belong to the epic
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: .gitignore
+  reason: root files of the bootstrap belong to the epic
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: .gitattributes
+  reason: root files of the bootstrap belong to the epic
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: .python-version
+  reason: root files of the bootstrap belong to the epic
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: invariants/**
+  reason: root files of the bootstrap belong to the epic
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: tickets/**
+  reason: root files of the bootstrap belong to the epic
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: .clang-tidy
+  reason: root files of the bootstrap belong to the epic
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: cmake/**
+  reason: root files of the bootstrap belong to the epic
   actor: logan
   at: '2026-09-05'
 designated_repro_test: null

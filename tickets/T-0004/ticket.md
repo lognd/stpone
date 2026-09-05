@@ -22,10 +22,35 @@ scope:
 - CMakeLists.txt
 - tests/system/test_firmware.py
 - tests/unit/test_length_model.py
+- docs/spec/L5-component-design/SUB-01-firmware-hal.md
+- docs/spec/L5-component-design/SUB-02-firmware-lcd.md
+- docs/spec/L5-component-design/SUB-03-firmware-app.md
+- docs/spec/L5-component-design/SUB-04-hardware-harnesses.md
 scope_breadth_ack: false
 scope_breadth_ack_reason: null
 no_scope_declared: false
 no_scope_declared_reason: null
+scope_changes:
+- op: add
+  glob: docs/spec/L5-component-design/SUB-01-firmware-hal.md
+  reason: the L5 rows are the doc anchors of the scoped symbols
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: docs/spec/L5-component-design/SUB-02-firmware-lcd.md
+  reason: the L5 rows are the doc anchors of the scoped symbols
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: docs/spec/L5-component-design/SUB-03-firmware-app.md
+  reason: the L5 rows are the doc anchors of the scoped symbols
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: docs/spec/L5-component-design/SUB-04-hardware-harnesses.md
+  reason: the L5 rows are the doc anchors of the scoped symbols
+  actor: logan
+  at: '2026-09-05'
 designated_repro_test: null
 acceptance:
 - text: Given the source tree, when it is inspected, then there is no assembly startup

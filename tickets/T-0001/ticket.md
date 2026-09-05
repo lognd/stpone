@@ -15,10 +15,81 @@ runs_last_parallel_safe: false
 runs_last_parallel_safe_reason: null
 scope:
 - docs/spec/README.md
+- src/**
+- include/**
+- tests/**
+- scripts/**
+- docs/**
+- CMakeLists.txt
+- pyproject.toml
+- frob.toml
+- uv.lock
+- .clang-format
 scope_breadth_ack: false
 scope_breadth_ack_reason: null
 no_scope_declared: false
 no_scope_declared_reason: null
+scope_changes:
+- op: add
+  glob: src/**
+  reason: the epic owns the whole M1 port landed as one bootstrap (DEC-002); the leaves
+    own their subsets
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: include/**
+  reason: the epic owns the whole M1 port landed as one bootstrap (DEC-002); the leaves
+    own their subsets
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: tests/**
+  reason: the epic owns the whole M1 port landed as one bootstrap (DEC-002); the leaves
+    own their subsets
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: scripts/**
+  reason: the epic owns the whole M1 port landed as one bootstrap (DEC-002); the leaves
+    own their subsets
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: docs/**
+  reason: the epic owns the whole M1 port landed as one bootstrap (DEC-002); the leaves
+    own their subsets
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: CMakeLists.txt
+  reason: the epic owns the whole M1 port landed as one bootstrap (DEC-002); the leaves
+    own their subsets
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: pyproject.toml
+  reason: the epic owns the whole M1 port landed as one bootstrap (DEC-002); the leaves
+    own their subsets
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: frob.toml
+  reason: the epic owns the whole M1 port landed as one bootstrap (DEC-002); the leaves
+    own their subsets
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: uv.lock
+  reason: the epic owns the whole M1 port landed as one bootstrap (DEC-002); the leaves
+    own their subsets
+  actor: logan
+  at: '2026-09-05'
+- op: add
+  glob: .clang-format
+  reason: the epic owns the whole M1 port landed as one bootstrap (DEC-002); the leaves
+    own their subsets
+  actor: logan
+  at: '2026-09-05'
 designated_repro_test: null
 threat: null
 component: null

@@ -1,3 +1,4 @@
+/* frob:waive PARSE002 reason="ISR(vector) macro handlers trip the pure-Python tree-sitter path -- the native parser reads the file fully" */
 /*
  * Board HAL for the Sandkey paper winder (ATmega32U4 Pro Micro).
  *

@@ -40,6 +40,7 @@ scope_changes:
 evidence:
 - tests/unit/test_flash_app.py::test_flash_on_wsl_attaches_first
 - tests/unit/test_flash_app.py::test_flash_on_linux_skips_attach
+- tests/unit/test_flash_host.py::test_bind_elevates_through_powershell
 designated_repro_test: null
 acceptance:
 - text: Given a WSL host, when scripts/flash.py runs, then it builds, polls usbipd
@@ -53,7 +54,8 @@ acceptance:
   - tests/unit/test_flash_app.py::test_flash_on_linux_skips_attach
 - text: Given --setup on WSL, when it runs, then usbipd bind is executed elevated
     through powershell.exe Start-Process -Verb RunAs (SPEC-021, UT-0503)
-  evidence: []
+  evidence:
+  - tests/unit/test_flash_host.py::test_bind_elevates_through_powershell
 - text: Given the CLI, when --help / --target all / a missing image are used, then
     exit codes are 0 / 2 / 1 with a remedy line (UT-0507, CTP-020)
   evidence: []

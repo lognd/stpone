@@ -1,5 +1,5 @@
 ---
-id: T-draft-33ed0ada
+id: T-0007
 title: Revisit WIRE001 waivers on framework-wired symbols once frob can declare them
 state: queued
 kind: docs

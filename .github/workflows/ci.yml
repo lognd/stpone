@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install AVR toolchain and simulator
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-avr avr-libc binutils-avr avrdude cmake ninja-build simavr clang-format clang-tidy
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: install
+        run: uv sync
+
+      - name: lint
+        run: uv run ruff check src/ tests/ scripts/ && uv run ruff format --check src/ tests/ scripts/
+
+      - name: typecheck
+        run: uv run ty check src/
+
+      - name: firmware format check
+        run: clang-format --dry-run --Werror $(git ls-files 'src/stpalpha/*' 'include/*' 'tests/avr/*' | grep -E '\.(c|cpp|h)$')
+
+      - name: firmware build
+        run: uv run python scripts/flash.py --build-only --target all
+
+      - name: test
+        run: uv run pytest tests/ --cov=src --cov-report=term-missing
+
+      - name: install frob
+        run: uv tool install frob || true
+
+      - name: frob check
+        run: |
+          if command -v frob >/dev/null 2>&1 && frob graph --help >/dev/null 2>&1; then
+            frob check
+          else
+            echo "::error::frob check could not run -- frob is not installed or not working (install: uv tool install frob). This gate is UNMEASURED, not clean."
+            exit 1
+          fi

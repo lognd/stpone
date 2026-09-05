@@ -1,0 +1,19 @@
+Checks: >
+  bugprone-*,
+  clang-analyzer-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  portability-*,
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length,
+  -clang-diagnostic-gnu-zero-variadic-macro-arguments,
+  -modernize-avoid-c-arrays
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: 'src/|tests/'
+
+AnalyzeTemporaryDtors: false
+
+FormatStyle: file

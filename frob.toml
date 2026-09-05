@@ -1,0 +1,85 @@
+# stpone -- frob configuration. Two stacks share this root: the AVR
+# firmware (CMake, src/stpalpha + include/stpalpha + tests/avr) and the
+# Python tooling/desktop package (src/stpone). pytest is the only test
+# runner frob drives; the firmware is built and simulated from pytest
+# system tests (tests/system/test_firmware.py) so its evidence is an
+# ordinary pytest node id too.
+check_base = "main"
+
+# Brand-new repo: rapid profile, one-way auto-ratchet to standard once the
+# repo grows (frob docs/modules/tickets.md#development-profiles).
+[profile]
+profile = "rapid"
+
+[gates.severity]
+
+[testing]
+min_unit_cases = 1
+min_integration = 1
+unit_branch_cov = 50
+module_line_cov = 50
+system_line_cov = 50
+
+[[test.runner]]
+language = "python"
+command = ["uv", "run", "pytest", "-q", "{ids}"]
+all_command = ["uv", "run", "pytest", "-q"]
+cwd = "."
+
+# The one CLI (scripts/flash.py): lets DOC004/FLAGCOV001 verify that every
+# flag build_parser() accepts really reaches FlashConfig.
+[[docblocks.commands]]
+prog = "flash.py"
+parser = "stpone.flash.cli:build_parser"
+config = "stpone.flash.config:FlashConfig"
+forwarded = "stpone.flash.config:CLI_FIELDS"
+
+# Files read by something outside this repo's tracked-file graph (humans,
+# GitHub Actions, cmake, uv), never referenced by name from source.
+[[refs.entrypoint]]
+path = ".github/workflows/*.yml"
+reason = "read by GitHub Actions outside this repo's own tracked-file graph"
+
+[[refs.entrypoint]]
+path = "Makefile"
+reason = "bootstrap target invoked by humans, not referenced from source"
+
+[[refs.entrypoint]]
+path = "invariants/.gitkeep"
+reason = "keeps the empty invariants/ directory tracked by git"
+
+[[refs.entrypoint]]
+path = "README.md"
+reason = "read by humans/GitHub; a single pyproject.toml reference is expected"
+
+[[refs.entrypoint]]
+path = "src/stpone/__init__.py"
+reason = "the package's own root module, imported by convention"
+
+[[refs.entrypoint]]
+path = "uv.lock"
+reason = "read by uv outside this repo's own tracked-file graph"
+
+[[refs.entrypoint]]
+path = "CMakeLists.txt"
+reason = "read by cmake; driven by scripts/flash.py and the firmware system tests by path convention"
+
+[[refs.entrypoint]]
+path = "cmake/avr-gcc-toolchain.cmake"
+reason = "named on the cmake command line by scripts/flash.py and CI, not referenced from source"
+
+[[refs.entrypoint]]
+path = ".clang-format"
+reason = "read by clang-format by file-discovery convention"
+
+[[refs.entrypoint]]
+path = ".clang-tidy"
+reason = "read by clang-tidy by file-discovery convention"
+
+[[refs.entrypoint]]
+path = "tests/conftest.py"
+reason = "pytest's own fixture-discovery entry point, loaded by path convention"
+
+[[refs.entrypoint]]
+path = "scripts/flash.py"
+reason = "the operator entrypoint, run by humans and CI by path, never imported"

@@ -44,11 +44,14 @@ scope_changes:
   reason: the L5 rows are the doc anchors of the scoped symbols
   actor: logan
   at: '2026-09-05'
+evidence:
+- tests/integration/test_wiring.py::test_package_exports_typani_vocabulary
 designated_repro_test: null
 acceptance:
 - text: Given the stpone package, when it is imported, then Result/Ok/Err/Unreachable
     resolve to typani's types and no homebrew copy remains (UT-0602, SUBT-06)
-  evidence: []
+  evidence:
+  - tests/integration/test_wiring.py::test_package_exports_typani_vocabulary
 - text: Given the logging package, when get_logger and error_ctx are used, then DEBUG/INFO
     go to stdout, WARNING+ to stderr, and error_ctx logs then re-raises (UT-0601)
   evidence: []

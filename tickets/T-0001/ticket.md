@@ -162,6 +162,11 @@ scope_changes:
   reason: the agent contract is part of the bootstrap
   actor: logan
   at: '2026-09-05'
+evidence:
+- tests/system/test_firmware.py::test_firmware_vector_table_binds_timer_isrs
+- tests/unit/test_flash_app.py::test_flash_on_wsl_attaches_first
+- tests/integration/test_serial_stream.py::test_handshake_round_trip
+- tests/system/test_process.py::test_trace_tables_are_closed
 designated_repro_test: null
 threat: null
 component: null

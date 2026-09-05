@@ -31,6 +31,7 @@ scope_changes:
 evidence:
 - tests/system/test_process.py::test_trace_tables_are_closed
 - tests/system/test_process.py::test_waivers_name_their_evidence
+- tests/system/test_process.py::test_froblems_is_gitignored
 designated_repro_test: null
 acceptance:
 - text: Given docs/spec, when the trace tables are parsed, then every referenced id
@@ -44,7 +45,8 @@ acceptance:
   - tests/system/test_process.py::test_waivers_name_their_evidence
 - text: Given the repository, when git check-ignore runs, then FROBLEMS.md, .frob/
     and build/ are ignored (CT-042, UT-0803)
-  evidence: []
+  evidence:
+  - tests/system/test_process.py::test_froblems_is_gitignored
 threat: null
 component: process
 anchor: false

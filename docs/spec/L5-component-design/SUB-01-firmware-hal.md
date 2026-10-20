@@ -8,8 +8,8 @@ Satisfies SUB-01. Owned code: `src/stpalpha/hal/setup.c`,
 | ID | Component | Path | Responsibility | satisfies | verified-by | Milestone |
 |---|---|---|---|---|---|---|
 | COMP-0101 | boot | src/stpalpha/hal/setup.c | `hal_init` from `.init8`: IVSEL clear, USB off, pin map, Timer0/Timer1, `sei`. | SUB-01, SYS-002 | UT-0101 | M1 |
-| COMP-0102 | 1 kHz tick | src/stpalpha/hal/setup.c | `TIMER0_COMPA_vect`: 8-sample debounce per button, edge latch into `btn_events`, buzzer countdown, `timer0_ticks`. | SUB-01, SPEC-011, SPEC-012 | UT-0102 | M1 |
-| COMP-0103 | encoder poll | src/stpalpha/hal/setup.c | `TIMER1_COMPA_vect`: 10 kHz sample, PROGMEM transition table, saturating 32-bit count, `enc_isr_count`. | SUB-01, SPEC-006 | UT-0103 | M1 |
+| COMP-0102 | 1 kHz tick | src/stpalpha/hal/setup.c | `TIMER0_COMPA_vect`: 16-sample debounce per button, edge latch into `btn_events`, buzzer countdown, `timer0_ticks`. | SUB-01, SPEC-011, SPEC-012 | UT-0102 | M1 |
+| COMP-0103 | encoder poll | src/stpalpha/hal/setup.c | `TIMER1_COMPA_vect`: 40 kHz sample, PROGMEM transition table, signed 32-bit count, two-bit-jump recovery into `enc_errors`, `enc_isr_count`. | SUB-01, SPEC-006 | UT-0103 | M1 |
 | COMP-0104 | fault handling | src/stpalpha/hal/setup.c | `BADISR_vect` (fault LED, return) and `panic` (fault LED, halt). | SUB-01, SPEC-015 | UT-0104 | M1 |
 | COMP-0105 | actuator API | src/stpalpha/hal/setup.c | `set_leds`, `relay_on`, `relay_off`, `buzz` (atomic countdown write), `btn_consume` (cli/sei read-and-clear). | SUB-01, SYS-004 | UT-0105 | M1 |
 

@@ -25,8 +25,12 @@ def test_target_pulses_match_firmware_constants() -> None:
     src = _MAIN.read_text()
     wheel = _const(src, "kWheelDiamIn")
     cpr = _const(src, "kCountsPerRev")
-    length = _const(src, "kTargetLengthIn")
+    short_len = _const(src, "kShortLengthIn")
+    long_len = _const(src, "kLongLengthIn")
     circ = _f32(_f32(3.14159265) * wheel)
-    assert (wheel, cpr, length) == (5.0, 2400.0, 1080.0)
-    assert int(_f32(_f32(length * cpr) / circ)) == 165011
-    assert round(length / 36.0, 1) == 30.0
+    assert (wheel, cpr) == (_f32(4.0015), 2400.0)
+    assert (short_len, long_len) == (1080.0, 3240.0)
+    assert int(_f32(_f32(short_len * cpr) / circ)) == 206187
+    assert int(_f32(_f32(long_len * cpr) / circ)) == 618562
+    assert round(short_len / 36.0, 1) == 30.0
+    assert round(long_len / 36.0, 1) == 90.0

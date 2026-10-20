@@ -8,13 +8,15 @@
  * Row 1: Raw pin levels + ISR fire counter
  *   ENA = PD4 (D4): should toggle as encoder moves
  *   ENB = PC6 (D5): should toggle as encoder moves
- *   ISR = enc_isr_count: wrapping counter incremented at 10 kHz.
+ *   ISR = enc_isr_count: wrapping counter incremented at 40 kHz.
  *     Should increment rapidly even with no encoder movement.
  *     If ISR stays 0 -> Timer1 not running or vector wrong.
  *
- * Row 2: Encoder count and estimated revolutions (2400 counts/rev)
+ * Row 2: Signed encoder count and estimated revolutions (2400 counts/rev);
+ *   negative means the wheel is turning the other way.
  *
- * Row 3: BTN_1 resets count to zero.
+ * Row 3: BTN_1 resets count to zero. "E=" is enc_errors: skipped quadrature
+ *   states the 40 kHz poll had to repair. It must stay 0 at 90 RPM.
  *
  * Diagnosis guide:
  *   TIMSK1=0x00 -> Timer1 interrupt not enabled
@@ -29,13 +31,14 @@
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include <stdint.h>
 #include <stdio.h>
 
 static constexpr float kCountsPerRev = 2400.0f;
 
-static uint32_t read_enc_atomic(void) {
+static int32_t read_enc_atomic(void) {
     cli();
-    uint32_t v = enc_count;
+    int32_t v = enc_count;
     sei();
     return v;
 }
@@ -46,7 +49,7 @@ int main(void) {
     lcd_clear();
 
     uint8_t last_isr = 0;
-    uint32_t last_count = 0xFFFFFFFFUL;
+    int32_t last_count = INT32_MIN;
 
     for (;;) {
         char buf[21];
@@ -70,12 +73,13 @@ int main(void) {
         lcd_write_str(buf);
 
         // Row 2: count + revolutions
-        uint32_t count = read_enc_atomic();
+        int32_t count = read_enc_atomic();
         if (count != last_count || isr_cnt != last_isr) {
-            float revs = (float)count / kCountsPerRev;
+            float revs = (float)(count < 0 ? -count : count) / kCountsPerRev;
             uint32_t rev_int = (uint32_t)revs;
             uint16_t rev_frac = (uint16_t)((revs - (float)rev_int) * 100.0f);
-            snprintf(buf, sizeof(buf), "CNT=%-8lu %3lu.%02u R ", count, rev_int, rev_frac);
+            snprintf(buf, sizeof(buf), "CNT=%-8ld %c%2lu.%02uR", count, count < 0 ? '-' : ' ',
+                     rev_int, rev_frac);
             buf[20] = '\0';
             lcd_set_cursor(0, 2);
             lcd_write_str(buf);
@@ -84,14 +88,20 @@ int main(void) {
         }
 
         // Row 3: reset button
+        cli();
+        uint16_t errs = enc_errors;
+        sei();
+        snprintf(buf, sizeof(buf), "[BTN1] RESET  E=%-4u", errs);
+        buf[20] = '\0';
         lcd_set_cursor(0, 3);
-        lcd_write_str("  [BTN1] RESET      ");
+        lcd_write_str(buf);
 
         if (btn_consume(1 << 0)) {
             cli();
             enc_count = 0;
+            enc_errors = 0;
             sei();
-            last_count = 0xFFFFFFFFUL;
+            last_count = INT32_MIN;
         }
     }
 }

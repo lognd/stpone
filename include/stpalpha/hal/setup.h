@@ -23,7 +23,9 @@ extern "C" {
 extern volatile uint8_t timer0_ticks;
 
 // Debounced button state. Bits 3:0 = BTN_4:BTN_1. 1 = pressed.
-// Updated every 1 ms by TIMER0_COMPA ISR. Single-byte; reads are atomic.
+// Updated every 1 ms by TIMER0_COMPA ISR (16 ms debounce window). Single-byte;
+// reads are atomic. The panel buttons are latching: the level toggles on each
+// push, so use edges (btn_events) for actions and the level only for "held".
 extern volatile uint8_t btn_state;
 
 // Button event latch. Each bit mirrors btn_state but is set on any edge
@@ -35,10 +37,16 @@ extern volatile uint8_t btn_events;
 // until the button changes again. Main-loop only: it re-enables interrupts.
 bool btn_consume(uint8_t bit);
 
-// Encoder count. Incremented CW, decremented CCW, saturating at zero.
-// 4x quadrature on 600 PPR encoder: 2400 counts/revolution.
-// 32-bit; read atomically with cli/sei (see read_enc() in main.cpp).
-extern volatile uint32_t enc_count;
+// Encoder count. Incremented CW, decremented CCW; signed so either mounting
+// direction works (consumers use the magnitude). 4x quadrature on a 600 PPR
+// encoder: 2400 counts/revolution. 32-bit; read atomically with cli/sei (see
+// read_enc() in main.cpp). Sampled at 40 kHz by TIMER1_COMPA.
+extern volatile int32_t enc_count;
+
+// Number of two-bit (skipped-state) transitions seen by the encoder poll. Each
+// is corrected by two steps in the last direction; any non-zero value means a
+// sample was missed and is shown on the display. Wraps at 65536.
+extern volatile uint16_t enc_errors;
 
 // Wrapping 8-bit counter incremented inside the encoder ISR on every sample.
 // If this stays 0 while the encoder spins, TIMER1_COMPA is not firing.
@@ -65,7 +73,7 @@ void buzz(uint16_t ms);
 __attribute__((noreturn)) void panic(void);
 
 // Peripheral bring-up: vector relocation, USB off, pin directions, Timer0 at
-// 1 kHz, Timer1 at 10 kHz, then sei(). Runs automatically from .init8 before
+// 1 kHz, Timer1 at 40 kHz, then sei(). Runs automatically from .init8 before
 // main(); exposed only so the boot sequence is documented and testable.
 void hal_init(void);
 

@@ -9,12 +9,12 @@ ticket attachment.
 
 | ID | Scenario (given / when / then) | verifies | runnable |
 |---|---|---|---|
-| CT-001 | Given the winder idle with paper loaded, when I press BTN1 and let it run, then the motor starts, the display counts up, and the motor stops on its own at 30.0 yd with the count frozen. | REQ-001 | `manual` (hardware-tests.md, procedure P1) |
-| CT-002 | Given a wind in progress, when I press BTN1, then the relay opens at once, the display returns to the idle screen, and the beeps play. | REQ-002 | `manual` (P1) |
-| CT-003 | Given the idle screen, then it reads "-= PAPER WINDER =-", "TARGET: 30.0 yds" and "[BTN1] START"; given a wind, then it reads "WINDING...", a "CNT:" line with a percent, a "LEN x/30.0 yd" line and "[BTN1] STOP". | REQ-003 | `manual` (P1) |
+| CT-001 | Given the winder idle with paper loaded, when I press BTN1 (or BTN2) and let it run, then the motor starts, the display counts up, and the motor stops on its own at 30.0 yd (90.0 yd) with the count frozen. | REQ-001 | `manual` (hardware-tests.md, procedure P1) |
+| CT-002 | Given a wind in progress, when I press BTN1 or BTN2, then the relay opens at once, the display returns to the idle screen, and the beeps play; when I press BTN3 the relay opens and the screen reads PAUSED, and BTN3 again resumes; given idle, BTN4 latched down runs the motor and unlatched stops it. | REQ-002 | `manual` (P1) |
+| CT-003 | Given the idle screen, then it reads "-= PAPER WINDER =-", "[1] 30yd    [2] 90yd" and "[4] JOG while down"; given a wind, then it reads "WINDING...", a "CNT:" line with a percent, a "LEN x/T yd" line and "[1/2]STOP   [3]PAUSE". | REQ-003 | `manual` (P1) |
 | CT-004 | Given a wind that just finished or was stopped, then three beeps sound with short gaps; given I press BTN1 during the beeps, then they stop and the next wind starts. | REQ-004 | `manual` (P1) |
 | CT-005 | Given a wind, then LED1..LED4 light one more at each quarter of the target; given idle, then LED1 and LED3 are lit; given a start, then all four flash on before the bargraph takes over. | REQ-005 | `manual` (P1) |
-| CT-006 | Given a wind, when I pull paper backwards, then the count goes down but not below zero; when I start the next wind, then the count restarts at zero. | REQ-006 | `manual` (P2, test_encoder) |
+| CT-006 | Given a wind, when the wheel turns either way, then the length grows with the distance travelled and no count is missed (no ERR indication); when I start the next wind, then the count restarts at zero. | REQ-006 | `manual` (P2, test_encoder) |
 | CT-010 | Given the machine as wired today, when the M1 firmware is flashed, then every panel element responds on the pins listed in `docs/hardware/pinout.md` with no wiring change. | REQ-010 | `manual` (P2..P5) |
 | CT-011 | Given the board in its enclosure, when I double-tap RST and run `scripts/flash.py`, then the new firmware is running within a minute with nothing but the USB cable. | REQ-011 | `manual` (runbooks/flash.md) |
 | CT-012 | Given firmware that deliberately triggers an unused vector or returns from main, then the fault LED (D15) comes on and the relay stays open. | REQ-012 | tests/system/test_firmware.py::test_firmware_vector_table_binds_timer_isrs |

@@ -34,6 +34,7 @@ Start with the specification cascade; everything else hangs off it.
 
 - [DEC-001 avr-libc startup and ISR() replace the hand-written vector table](decisions/DEC-001-avr-libc-startup.md)
 - [DEC-002 M1 landed as a port, later milestones are ticket-first](decisions/DEC-002-m1-port-bootstrap.md)
+- [DEC-003 four-button panel, signed count, 40 kHz encoder poll](decisions/DEC-003-buttons-signed-count-40khz-poll.md)
 
 ## Working in this repository
 

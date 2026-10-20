@@ -11,18 +11,18 @@ Wiring reference: `docs/hardware/pinout.md`.
 ## P1 -- firmware acceptance (`firmware`)
 
 1. Power on. Expect LED1 and LED3 lit and the idle screen:
-   ` -= PAPER WINDER =- ` / blank / ` TARGET: 30.0 yds   ` /
-   `   [BTN1]  START    `.
+   ` -= PAPER WINDER =- ` / blank / `[1] 30yd    [2] 90yd` /
+   `[4] JOG while down  `.
 2. Press BTN1. Expect the relay to close, all four LEDs on, and
    `     WINDING...     ` with `CNT:0  0%` and `LEN    0.0/  30.0 yd`.
 3. Turn the wheel. Expect the count to climb, the percent to follow, and
    LEDs to add one per quarter (25/50/75/100 %).
-4. Let it reach 30.0 yd (165011 counts). Expect the relay to open, the
+4. Let it reach 30.0 yd (206187 counts). Expect the relay to open, the
    idle screen to return, and three beeps (300 ms on, 150 ms off).
 5. Start again and press BTN1 mid-wind. Expect an immediate stop and the
    beeps; press BTN1 during the beeps and expect them to stop and a new
    wind to start from zero.
-6. Pull paper backwards: the count decreases but never goes below 0.
+6. Pull paper backwards: the length still grows (magnitude of the count) and `ERR` never appears. Repeat with BTN2: stops at 90.0 yd (618562 counts). Press BTN3 mid-wind: relay opens, `PAUSED`; BTN3 again resumes. With BTN4 latched down in idle the relay runs; unlatch and it stops. A BTN4 left down at power-up must not run the motor.
 
 ## P2 -- encoder (`test_encoder`)
 
@@ -59,4 +59,4 @@ Raw pins stay `L` when pressed -> wiring or pull-down; raw goes `H` but
 `test_timer0` row 0 must read `0B=03 MK=02 MC=00` (Timer0 CTC /64,
 OCIE0A on, IVSEL cleared), row 1 shows TCNT0 cycling and TIFR0 mostly
 00, row 2 says `RUN`. `test_buttons_leds` lights LEDn while BTNn is held
-and nothing else; a press shorter than 8 ms must not register.
+and nothing else; a press shorter than 16 ms must not register.

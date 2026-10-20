@@ -25,8 +25,9 @@
 #define I2C_SCL_BIT 0 /* D3 = PD0 */
 
 /* LN11-ERGA 600P/R encoder. Neither pin has external-interrupt capability
- * on the 32U4, so TIMER1_COMPA samples them at 10 kHz (4x quadrature is
- * reliable up to ~250 RPM at 2400 counts/rev). */
+ * on the 32U4, so TIMER1_COMPA samples them at 40 kHz. At the machine's
+ * 90 RPM ceiling (2400 counts/rev) a state lasts ~278 us, i.e. ~11 samples,
+ * and the poll preempts every other ISR, so a state cannot be skipped. */
 #define ENC_BIT_A 4 /* D4 = PD4 */
 #define ENC_BIT_B 6 /* D5 = PC6 */
 
@@ -45,33 +46,39 @@
 
 /* ---- Timer constants (F_CPU = 16 MHz) ---- */
 
-#define TIMER0_TOP 249  /* CTC, /64 prescaler: 16e6 / 64 / 250 = 1 kHz */
-#define TIMER1_TOP 1599 /* CTC, no prescaler: 16e6 / 1600 = 10 kHz */
+#define TIMER0_TOP 249 /* CTC, /64 prescaler: 16e6 / 64 / 250 = 1 kHz */
+#define TIMER1_TOP 399 /* CTC, no prescaler: 16e6 / 400 = 40 kHz */
 
 /* ---- Shared state (declared in setup.h) ---- */
 
 volatile uint8_t timer0_ticks;
 volatile uint8_t btn_state;
 volatile uint8_t btn_events;
-volatile uint32_t enc_count;
+volatile int32_t enc_count;
+volatile uint16_t enc_errors;
 volatile uint8_t enc_isr_count;
 volatile uint16_t buzz_ticks;
 
-/* Shift-register debounce buffers (8 samples per button, 1 ms each). */
-static uint8_t g_btn_sr[4];
+/* Shift-register debounce buffers (16 samples per button, 1 ms each). The
+ * panel buttons are latching with long, slow travel, so the contact needs a
+ * wide window to settle. */
+static uint16_t g_btn_sr[4];
 /* Previous debounced snapshot used to detect edges for btn_events. */
 static uint8_t g_btn_prev_state;
 /* Previous encoder sample (bit0 = A, bit1 = B). */
 static uint8_t g_enc_prev;
+/* Last valid direction (+1 / -1), used to resolve a two-bit jump. */
+static int8_t g_enc_dir = 1;
 
 /* Quadrature transition table. Index = (prev << 2) | cur, state = (B<<1)|A.
- * 0 = no change, 1 = CW (+1), 255 = CCW (-1). Kept in flash like the
- * original lpm-based table. */
-static const uint8_t kEncTable[16] PROGMEM = {
-    0,   1,   255, 0,   /* prev=00 */
-    255, 0,   0,   1,   /* prev=01 */
-    1,   0,   0,   255, /* prev=10 */
-    0,   255, 1,   0,   /* prev=11 */
+ * 0 = no change, +1 / -1 = one step, 2 = both lines changed between samples
+ * (a missed state: counted as two steps in the last direction). Kept in
+ * flash. */
+static const int8_t kEncTable[16] PROGMEM = {
+    0,  1,  -1, 2,  /* prev=00 */
+    -1, 0,  2,  1,  /* prev=01 */
+    1,  2,  0,  -1, /* prev=10 */
+    2,  -1, 1,  0,  /* prev=11 */
 };
 
 /* ---- ISRs ---- */
@@ -85,7 +92,7 @@ ISR(BADISR_vect) {
     PORTB |= (1 << PANIC_BIT);
 }
 
-/* 10 kHz encoder poll. */
+/* 40 kHz encoder poll: the highest-priority work in the firmware. */
 // frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P2"
 // frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0103
 ISR(TIMER1_COMPA_vect) {
@@ -102,34 +109,42 @@ ISR(TIMER1_COMPA_vect) {
     uint8_t index = (uint8_t)((g_enc_prev << 2) | cur);
     g_enc_prev = cur;
 
-    uint8_t step = pgm_read_byte(&kEncTable[index]);
-    if (step == 1) {
-        enc_count++;
-    } else if (step == 255 && enc_count != 0) {
-        /* CCW saturates at 0 rather than wrapping to 0xFFFFFFFF. */
-        enc_count--;
+    int8_t step = (int8_t)pgm_read_byte(&kEncTable[index]);
+    if (step == 0) {
+        return;
     }
+    if (step == 2) {
+        /* A state was skipped: keep the length honest and make it visible. */
+        enc_errors++;
+        step = (int8_t)(g_enc_dir * 2);
+    } else {
+        g_enc_dir = step;
+    }
+    enc_count += step;
 }
 
-/* One button's 8-sample shift register: 8 ms of 1s sets the debounced bit,
- * 8 ms of 0s clears it, anything else leaves it alone. */
+/* One button's 16-sample shift register: 16 ms of 1s sets the debounced bit,
+ * 16 ms of 0s clears it, anything else leaves it alone. */
 static inline void debounce_one(uint8_t idx, uint8_t pressed) {
-    uint8_t sr = (uint8_t)(g_btn_sr[idx] << 1);
+    uint16_t sr = (uint16_t)(g_btn_sr[idx] << 1);
     if (pressed) {
         sr |= 1;
     }
     g_btn_sr[idx] = sr;
-    if (sr == 0x00) {
+    if (sr == 0x0000) {
         btn_state &= (uint8_t) ~(1 << idx);
-    } else if (sr == 0xFF) {
+    } else if (sr == 0xFFFF) {
         btn_state |= (uint8_t)(1 << idx);
     }
 }
 
-/* 1 kHz tick: button debounce, event latch, buzzer countdown. */
+/* 1 kHz tick: button debounce, event latch, buzzer countdown. ISR_NOBLOCK
+ * re-enables interrupts on entry so the 40 kHz encoder poll can preempt it:
+ * nothing here may delay an encoder sample. Timer0 cannot re-enter itself
+ * (its body is far shorter than 1 ms). */
 // frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P6"
 // frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0102
-ISR(TIMER0_COMPA_vect) {
+ISR(TIMER0_COMPA_vect, ISR_NOBLOCK) {
     timer0_ticks++;
 
     debounce_one(0, PINB & (1 << BTN_BIT_1));
@@ -258,7 +273,7 @@ void hal_init(void) {
     TCCR0B = (1 << CS01) | (1 << CS00);
     TIMSK0 = (1 << OCIE0A);
 
-    /* Timer1: CTC, no prescaler, TOP=1599 -> 10 kHz COMPA. */
+    /* Timer1: CTC, no prescaler, TOP=399 -> 40 kHz COMPA. */
     TCCR1A = 0;
     TCCR1B = (1 << WGM12) | (1 << CS10);
     OCR1A = TIMER1_TOP;

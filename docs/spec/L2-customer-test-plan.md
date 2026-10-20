@@ -7,14 +7,14 @@ attachment on the milestone ticket.
 
 | ID | Case | verifies | runnable |
 |---|---|---|---|
-| CTP-001 | Wind to completion: the count freezes at >= 165011 and the yards line reads 30.0 (P1). Cross-check the constants against a host recomputation of SPEC-001 in float32. | SPEC-001, SPEC-002 | tests/unit/test_length_model.py::test_target_pulses_match_firmware_constants |
-| CTP-002 | Early stop and restart: BTN1 in WINDING opens the relay within one main-loop pass; the next BTN1 restarts from zero (P1). | SPEC-002 | `manual` (P1) |
+| CTP-001 | Wind to completion: BTN1 freezes the count at >= 206187 and reads 30.0 yd, BTN2 at >= 618562 and reads 90.0 yd (P1). Cross-check the constants against a host recomputation of SPEC-001 in float32. | SPEC-001, SPEC-002 | tests/unit/test_length_model.py::test_target_pulses_match_firmware_constants |
+| CTP-002 | Early stop and restart: BTN1/BTN2 in WINDING opens the relay within one main-loop pass; BTN3 pauses and resumes; BTN4 jogs while latched; the next start restarts from zero (P1). | SPEC-002 | `manual` (P1) |
 | CTP-003 | Screen text matches SPEC-003 character for character on the idle and winding screens (P1). | SPEC-003 | `manual` (P1) |
 | CTP-004 | Beep timing 300/150 ms x3 measured on D14 with a scope or by ear; BTN1 during the beeps cancels (P3, P1). | SPEC-004 | `manual` (P3) |
 | CTP-005 | LED bargraph steps at 25/50/75/100 % and the idle pattern is LED1+LED3 (P1, P5). | SPEC-005 | `manual` (P5) |
-| CTP-006 | Encoder: a full turn adds 2400 counts CW, subtracts CCW, never below 0; ISR counter increments with no movement (P2). | SPEC-006 | `manual` (P2) |
+| CTP-006 | Encoder: a full turn changes the count by 2400 in either direction, signed, shown as a length by magnitude; `E=` stays 0 at 90 RPM; ISR counter increments with no movement (P2). | SPEC-006 | `manual` (P2) |
 | CTP-010 | Every pin in SPEC-010 toggles the expected element with the harness images (P2..P6). | SPEC-010 | `manual` (P2..P6) |
-| CTP-011 | A press shorter than 8 ms is ignored; a held button produces exactly one event per edge; startup events are discarded (P4, P6). | SPEC-011 | `manual` (P6) |
+| CTP-011 | A press shorter than 16 ms is ignored; a held button produces exactly one event per edge; startup events are discarded (P4, P6). | SPEC-011 | `manual` (P6) |
 | CTP-012 | `test_timer0` shows TCCR0B=03, TIMSK0=02, MC=00 and a running tick; `test_encoder` shows TCCR1B=09, TIMSK1=02 (P6, P2). | SPEC-012 | `manual` (P6) |
 | CTP-013 | `test_lcd` screens 0..3 render correctly including corner cursors and backlight control (P4). | SPEC-013 | `manual` (P4) |
 | CTP-014 | Double-tap RST makes `2341:0036` appear (Windows `usbipd list` / Linux `dmesg`) and `/dev/ttyACM*` follows within 2 s. | SPEC-014 | `manual` (runbooks/flash.md) |

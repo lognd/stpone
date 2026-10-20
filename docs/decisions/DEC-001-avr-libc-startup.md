@@ -29,7 +29,7 @@ bytes smaller and the vector table is verified by
 - Vectors 17 and 21 bind the two timer ISRs; every other slot lands on
   the fault-LED handler that returns (same as `__bad_interrupt`).
 - Boot order: IVSEL cleared through IVCE, `USBCON = 0`, pin directions
-  and pull-ups, Timer0 (CTC, /64, 249), Timer1 (CTC, /1, 1599), `sei`.
+  and pull-ups, Timer0 (CTC, /64, 249), Timer1 (CTC, /1, 1599; 399 since DEC-003), `sei`.
 - Debounce, event latch, buzzer countdown, encoder table and saturating
   decrement are line-for-line ports of the assembly.
 - `btn_consume` still uses `cli`/`sei` (unconditional re-enable) because

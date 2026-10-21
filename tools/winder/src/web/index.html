@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Winder</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23076678'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23fbf1c7'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/tokens.css">
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main content</a>
+
+<!-- Persistent header: stop bar (only while the motor or a test is active) + status banner. -->
+<div id="stopbar" class="stopbar" role="alert" hidden>
+  <span id="stopbar-text" class="stopbar-text"></span>
+  <button id="stop-motor" class="btn btn-stop" type="button">Stop motor</button>
+</div>
+
+<div id="page" class="page">
+  <header class="top"><h1 class="top-title">Winder</h1></header>
+
+  <section id="banner" class="banner banner-wait" aria-live="polite" aria-atomic="true">
+    <div class="banner-body">
+      <p id="banner-word" class="banner-word">WAIT</p>
+      <h2 id="banner-title" class="banner-title">Starting</h2>
+      <p id="banner-next" class="banner-next">One moment, please.</p>
+    </div>
+    <button id="banner-btn" class="btn btn-main banner-btn" type="button" hidden></button>
+  </section>
+
+  <p id="error" class="alert" role="alert" hidden></p>
+
+  <!-- A failing connection check takes over the whole screen. -->
+  <section id="problem" class="problem" hidden>
+    <div id="problem-cards"></div>
+    <p id="problem-ok" class="muted"></p>
+    <p id="fix-msg" class="muted" role="status"></p>
+  </section>
+
+  <div id="app" hidden>
+    <div id="tabs" class="tabs" role="tablist" aria-label="Sections">
+      <button id="tab-home" class="tab" type="button" role="tab" aria-selected="true" aria-controls="panel-home">Home</button>
+      <button id="tab-calibrate" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-calibrate" tabindex="-1">Calibrate</button>
+      <button id="tab-settings" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-settings" tabindex="-1">Settings</button>
+      <button id="tab-advanced" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-advanced" tabindex="-1">Advanced</button>
+    </div>
+
+    <main id="main">
+
+      <!-- HOME -->
+      <section id="panel-home" class="panel" role="tabpanel" aria-labelledby="tab-home" tabindex="0">
+        <div class="live" aria-label="Machine status">
+          <div class="tile"><p class="tile-label">Machine</p><p id="live-machine" class="tile-value">-</p></div>
+          <div class="tile"><p class="tile-label">Motor</p><p id="live-motor" class="tile-value">-</p></div>
+          <div class="tile"><p class="tile-label">Length wound</p><p id="live-length" class="tile-value">-</p><p id="live-length-in" class="tile-sub"></p></div>
+        </div>
+        <div class="cta">
+          <button id="home-cal" class="btn btn-main btn-big" type="button">Calibrate the machine</button>
+          <p class="cta-text">Do this when winds come out too long or too short, or after you change the wheel.</p>
+          <p id="home-cal-state" class="muted"></p>
+        </div>
+        <p class="wheel-note"></p>
+      </section>
+
+      <!-- CALIBRATE: one guided flow -->
+      <section id="panel-calibrate" class="panel" role="tabpanel" aria-labelledby="tab-calibrate" tabindex="0" hidden>
+        <p id="practice-strip" class="practice-strip" hidden>PRACTICE - nothing moves, nothing is sent to the machine</p>
+        <div class="flow-head">
+          <ol id="stepper" class="stepper" aria-label="Calibration steps">
+            <li class="stepper-item"><span class="stepper-n">1</span> <span class="stepper-t">Get ready</span></li>
+            <li class="stepper-item"><span class="stepper-n">2</span> <span class="stepper-t">Test winds</span></li>
+            <li class="stepper-item"><span class="stepper-n">3</span> <span class="stepper-t">Check the length <span class="opt">(optional)</span></span></li>
+            <li class="stepper-item"><span class="stepper-n">4</span> <span class="stepper-t">Save</span></li>
+          </ol>
+          <button id="flow-restart" class="linkbtn" type="button">Start again</button>
+        </div>
+        <p id="flow-status" class="flow-status" aria-live="polite"></p>
+
+        <section id="st1" class="step">
+          <h2 class="step-title" tabindex="-1">Get ready</h2>
+          <ul id="prep" class="prep"></ul>
+          <p class="muted">Only for the optional length check: a ruler or tape measure, or a sheet of paper (US letter or A4).</p>
+          <div class="step-actions"><button id="st1-next" class="btn btn-main btn-big" type="button" disabled>Next</button></div>
+        </section>
+
+        <section id="st2" class="step" hidden>
+          <h2 class="step-title" tabindex="-1">Test winds</h2>
+          <div id="st2-pre">
+            <p id="st2-plan" class="lead"></p>
+            <div class="step-actions">
+              <button id="st2-start" class="btn btn-main btn-big" type="button">Start automatic test</button>
+              <button id="st2-practice" class="btn btn-big" type="button">Practice (nothing moves)</button>
+            </div>
+          </div>
+          <div id="st2-run" hidden>
+            <div id="st2-bar" class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="Test progress"><div id="st2-fill" class="bar-fill"></div></div>
+            <p id="st2-good" class="lead"></p>
+            <div id="st2-results" hidden>
+              <p id="st2-verdict" class="verdict"></p>
+              <p class="wheel-note"></p>
+              <div class="tbl-wrap"><table class="tbl">
+                <caption class="sr">Test winds</caption>
+                <thead><tr><th scope="col">Wind</th><th scope="col">Wound (in)</th><th scope="col">Coasted after stop (in)</th><th scope="col">Used</th></tr></thead>
+                <tbody id="st2-rows"></tbody>
+              </table></div>
+            </div>
+            <div id="f-graphs" class="graphs">
+              <div class="gwrap" data-g="speed"><p class="chart-title">Speed <span id="f-badge" class="badge" role="status">Waiting for data</span></p><div id="f-speed" class="chart-box chart-live"></div></div>
+              <div class="gwrap" data-g="pos"><p class="chart-title">Length</p><div id="f-pos" class="chart-box chart-live"></div></div>
+              <div class="gwrap" data-g="follow"><p class="chart-title">How far the paper coasts after the motor stops, per wind</p><div id="f-follow" class="chart-box"></div></div>
+              <div class="gwrap" data-g="resid"><p class="chart-title">Leftover error</p><div id="f-resid" class="chart-box"></div></div>
+            </div>
+            <button id="f-more" class="linkbtn" type="button" aria-expanded="false">Show more graphs</button>
+            <div class="step-actions"><button id="st2-next" class="btn btn-main btn-big" type="button" hidden>Next</button></div>
+          </div>
+        </section>
+
+        <section id="st3" class="step" hidden>
+          <h2 class="step-title" tabindex="-1">Check the length (optional)</h2>
+          <p class="wheel-note"></p>
+          <div id="st3-card"></div>
+          <div class="step-actions"><button id="st3-next" class="btn btn-main btn-big" type="button" hidden>Next</button></div>
+        </section>
+
+        <section id="st4" class="step" hidden>
+          <h2 class="step-title" tabindex="-1">Save</h2>
+          <div id="st4-sum">
+            <p class="lead">What changed:</p>
+            <ul id="st4-lines" class="steps"></ul>
+            <p class="wheel-note"></p>
+            <p id="st4-verdict" class="verdict"></p>
+            <div class="step-actions"><button id="st4-save" class="btn btn-main btn-big" type="button">Save to the machine</button></div>
+          </div>
+          <div id="st4-done" hidden>
+            <p class="lead">Saved. The machine will remember these settings.</p>
+            <div class="step-actions"><button id="st4-home" class="btn btn-main btn-big" type="button">Back to Home</button></div>
+          </div>
+        </section>
+
+        <section id="st-err" class="step" hidden>
+          <h2 class="step-title" tabindex="-1">Something went wrong</h2>
+          <p id="st-err-msg" class="lead"></p>
+          <p class="muted">Make sure the motor is not running.</p>
+          <div class="step-actions">
+            <button id="st-err-retry" class="btn btn-main btn-big" type="button">Try again</button>
+            <button id="st-err-leave" class="btn btn-big" type="button">Leave</button>
+          </div>
+        </section>
+
+        <section id="st-p" class="step" hidden></section>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="panel-settings" class="panel" role="tabpanel" aria-labelledby="tab-settings" tabindex="0" hidden>
+        <div id="unsaved" class="unsaved" role="status" hidden>
+          <span class="chip">Unsaved changes</span>
+          <span class="unsaved-text">The machine forgets them when it is switched off.</span>
+          <button id="u-save" class="btn btn-main" type="button">Save to the machine</button>
+          <button id="u-undo" class="btn" type="button">Undo all</button>
+        </div>
+        <p class="muted">Changes work at once. Save them so the machine keeps them.</p>
+        <p class="wheel-note" data-nolink="1"></p>
+        <div id="params" class="settings"></div>
+        <div class="row"><button id="factory" class="btn" type="button">Reset to factory settings</button></div>
+      </section>
+
+      <!-- ADVANCED -->
+      <section id="panel-advanced" class="panel" role="tabpanel" aria-labelledby="tab-advanced" tabindex="0" hidden>
+        <p class="alert-plain">For technicians. Some of these controls move the machine.</p>
+
+        <h2 class="sec-title">Move the machine by hand</h2>
+        <p class="muted">Test mode lets this screen move the machine. Nothing else on the machine works meanwhile. Use Stop at the top to halt it.</p>
+        <div class="row">
+          <label class="check"><input id="debug" type="checkbox"> Test mode</label>
+          <button id="relay" class="btn" type="button" disabled>Motor: off</button>
+          <button id="zero" class="btn" type="button">Set length wound to zero</button>
+        </div>
+        <div class="row">
+          <label class="lbl">Run a distance <input id="run-dist" class="field" type="number" min="0" step="any" value="100"></label>
+          <label class="lbl"><span class="sr">Unit</span><select id="run-unit" class="field"><option value="in">inches</option><option value="yd">yards</option></select></label>
+          <button id="run" class="btn btn-main" type="button" disabled>Run</button>
+        </div>
+        <p id="run-note" class="muted"></p>
+        <p class="wheel-note"></p>
+
+        <h2 class="sec-title">Last test winds</h2>
+        <div class="row">
+          <label class="lbl">Wind <input id="cal-count" class="field field-narrow" type="number" min="1" max="20" value="3"> times, each</label>
+          <label class="lbl"><input id="cal-dist" class="field" type="number" min="0" step="any" value="100"></label>
+          <label class="lbl"><span class="sr">Unit</span><select id="cal-unit" class="field"><option value="in">inches</option><option value="yd">yards</option></select></label>
+          <button id="cal-add" class="btn btn-main" type="button" disabled>Start test winds</button>
+          <button id="cal-clear" class="btn" type="button">Clear table</button>
+        </div>
+        <p id="job" class="muted" role="status"></p>
+        <div class="tbl-wrap"><table class="tbl">
+          <caption class="sr">Test winds</caption>
+          <thead><tr><th scope="col">Asked for (pulses)</th><th scope="col">Stopped at (pulses)</th><th scope="col">Settled at (pulses)</th>
+            <th scope="col">Coasted (pulses)</th><th scope="col">Error (pulses)</th><th scope="col">Measured (inches)</th></tr></thead>
+          <tbody id="runs"></tbody>
+        </table></div>
+        <p id="runs-empty" class="muted">No test winds yet.</p>
+        <p class="lead">Suggested: coast <b id="sug-coast">-</b> pulses, wheel size <b id="sug-wheel">-</b> um.
+          <button id="apply" class="btn" type="button" disabled>Apply suggestions</button></p>
+        <div class="graphs">
+          <div class="gwrap"><p class="chart-title">Speed <span id="g-badge" class="badge" role="status">Waiting for data</span></p><div id="g-speed" class="chart-box"></div></div>
+          <div class="gwrap"><p class="chart-title">Length</p><div id="g-pos" class="chart-box"></div></div>
+          <div class="gwrap"><p class="chart-title">Coast of each test wind</p><div id="g-follow" class="chart-box"></div></div>
+          <div class="gwrap"><p class="chart-title">Leftover error</p><div id="g-resid" class="chart-box"></div></div>
+        </div>
+
+        <h2 class="sec-title">Machine state <span id="mstate-src" class="muted"></span></h2>
+        <dl id="mstate" class="kv"></dl>
+
+        <h2 class="sec-title">Connection check</h2>
+        <ul id="checks" class="checks"></ul>
+        <div class="row"><button id="recheck" class="btn" type="button">Check again</button></div>
+
+        <h2 class="sec-title">What happened</h2>
+        <ol id="log" class="log"></ol>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<dialog id="confirm" class="confirm" aria-labelledby="confirm-title">
+  <form method="dialog">
+    <h2 id="confirm-title" class="confirm-title"></h2>
+    <div id="confirm-body" class="confirm-body"></div>
+    <div class="confirm-actions">
+      <button id="confirm-no" class="btn btn-big" type="submit" value="no" autofocus>Cancel</button>
+      <button id="confirm-yes" class="btn btn-stop btn-big" type="submit" value="yes">Yes, change it</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/app.js"></script>
+</body>
+</html>

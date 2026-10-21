@@ -1,0 +1,132 @@
+name: Release winder
+
+# Builds the winder tool for every platform from the newest commit on main
+# whose CI run is green, then refreshes the rolling "winder-latest" release.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+# Read-only by default: the build jobs execute repository code and must not be able to
+# write. Only the publish job (which executes nothing from the checkout) gets write access.
+permissions:
+  contents: read
+
+concurrency:
+  group: release-winder-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # Publish only what the base repository itself pushed to main and CI passed:
+    #   - workflow_run.event == push: never a pull_request run (a fork PR from a branch also
+    #     named main would otherwise match `branches: [main]`)
+    #   - head_repository == this repository: never fork code
+    #   - head_branch == main: the sha below is a main commit
+    # A manual dispatch is honoured only on main itself.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { os: windows-latest, target: x86_64-pc-windows-msvc, name: winder-windows-x86_64.exe, bin: winder.exe }
+          - { os: macos-15-intel, target: x86_64-apple-darwin, name: winder-macos-x86_64.tar.gz, bin: winder }
+          - { os: macos-latest, target: aarch64-apple-darwin, name: winder-macos-aarch64.tar.gz, bin: winder }
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-musl, name: winder-linux-x86_64.tar.gz, bin: winder }
+          - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-musl, name: winder-linux-aarch64.tar.gz, bin: winder }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tools/winder
+          key: ${{ matrix.target }}
+      - name: musl tools
+        if: contains(matrix.target, 'musl')
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - name: test
+        working-directory: tools/winder
+        run: cargo test --locked --target ${{ matrix.target }}
+      - name: build
+        working-directory: tools/winder
+        run: cargo build --locked --release --target ${{ matrix.target }}
+      - name: stage
+        shell: bash
+        run: |
+          bin="tools/winder/target/${{ matrix.target }}/release/${{ matrix.bin }}"
+          case "${{ matrix.name }}" in
+            *.tar.gz)
+              # a tarball keeps the executable bit through a browser download
+              chmod +x "$bin"
+              tar -czf "${{ matrix.name }}" -C "$(dirname "$bin")" "${{ matrix.bin }}"
+              ;;
+            *) cp "$bin" "${{ matrix.name }}" ;;
+          esac
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ matrix.name }}
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    # Never cancelled mid-flight: a cancelled publish could leave the release half-updated.
+    concurrency:
+      group: release-winder-publish
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - name: skip if main has moved on
+        id: fresh
+        run: |
+          # An old CI run that is re-run, or a slow build, must not replace a newer release.
+          tip=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
+          if [ "$tip" = "$SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "main is at $tip, not $SHA: not publishing"
+            echo "current=false" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.fresh.outputs.current == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: checksums
+        if: steps.fresh.outputs.current == 'true'
+        working-directory: dist
+        run: sha256sum * > SHA256SUMS.txt
+      - name: refresh the rolling release
+        if: steps.fresh.outputs.current == 'true'
+        run: |
+          # Update in place (never delete first): the download links stay valid throughout.
+          title="winder (latest green build ${SHA::7})"
+          notes="Built from commit $SHA after CI passed. Windows: download the .exe and double-click it. macOS and Linux: extract the .tar.gz (tar -xzf), then run ./winder; on macOS, if it is blocked as from an unidentified developer, run: xattr -d com.apple.quarantine winder. Follow the page that opens."
+          if gh release view winder-latest --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/winder-latest" \
+              -f sha="$SHA" -F force=true
+            gh release upload winder-latest dist/* --repo "$GITHUB_REPOSITORY" --clobber
+            gh release edit winder-latest --repo "$GITHUB_REPOSITORY" \
+              --title "$title" --notes "$notes" --latest=false
+          else
+            gh release create winder-latest dist/* --repo "$GITHUB_REPOSITORY" \
+              --target "$SHA" --latest=false --title "$title" --notes "$notes"
+          fi

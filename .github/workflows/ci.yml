@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: ["main"]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -63,3 +66,23 @@ jobs:
       # ruff and ty live in the project venv, and frob looks for them on PATH.
       - name: frob check
         run: PATH="$PWD/.venv/bin:$PATH" frob check "$PWD"
+
+  winder:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/winder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tools/winder
+      - name: fmt
+        run: cargo fmt --check
+      - name: clippy
+        run: cargo clippy --locked --all-targets -- -D warnings
+      - name: test
+        run: cargo test --locked

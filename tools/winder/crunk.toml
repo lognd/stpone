@@ -1,0 +1,74 @@
+# Design tokens for the winder web UI (src/web). `crunk tokens` writes
+# src/web/tokens.css; `crunk check` and `crunk tokens --check` are the gate.
+[project]
+css_root = "src/web"
+tokens_file = "tokens.css"
+root_font_size = 16
+
+[org]
+buckets = ["base","components","layout","pages"]
+entry = []
+ignore = []
+component_prefix = false
+
+[palette]
+# Gruvbox light (default). The dark-* entries are the gruvbox dark values that
+# app.css swaps in under prefers-color-scheme: dark.
+paper = "#fbf1c7"
+panel = "#ebdbb2"
+panel2 = "#d5c4a1"
+ink = "#3c3836"
+muted = "#665c54"
+line = "#7c6f64"
+accent = "#076678"
+accent-ink = "#fbf1c7"
+good = "#79740e"
+warn = "#b57614"
+caution = "#af3a03"
+caution-ink = "#fbf1c7"
+bad = "#9d0006"
+bad-ink = "#fbf1c7"
+dark-paper = "#282828"
+dark-panel = "#3c3836"
+dark-panel2 = "#504945"
+dark-ink = "#ebdbb2"
+dark-muted = "#bdae93"
+dark-line = "#a89984"
+dark-accent = "#83a598"
+dark-accent-ink = "#282828"
+dark-good = "#b8bb26"
+dark-warn = "#fabd2f"
+dark-caution = "#fe8019"
+dark-caution-ink = "#282828"
+dark-bad = "#fb4934"
+dark-bad-ink = "#1d2021"
+
+[palette.roles]
+text = ["ink", "paper"]
+panel-text = ["ink", "panel"]
+muted-text = ["muted", "paper"]
+muted-panel-text = ["muted", "panel"]
+action = ["accent-ink", "accent"]
+stop = ["bad-ink", "bad"]
+test-strip = ["caution-ink", "caution"]
+dark-text = ["dark-ink", "dark-paper"]
+dark-panel-text = ["dark-ink", "dark-panel"]
+dark-muted-text = ["dark-muted", "dark-paper"]
+dark-muted-panel-text = ["dark-muted", "dark-panel"]
+dark-action = ["dark-accent-ink", "dark-accent"]
+dark-stop = ["dark-bad-ink", "dark-bad"]
+dark-test-strip = ["dark-caution-ink", "dark-caution"]
+
+[scales]
+spacing = [0, 4, 8, 12, 16, 24, 32, 48]
+font_sizes = [16, 18, 20, 24, 32]
+radii = [0, 4, 8, 12]
+sizes = [0, 1, 2, 3, 4, 8, 12, 16, 24, 32, 44, 56, 64, 96, 128, 160, 240, 360, 640, 960]
+
+[typography]
+families = ["system-ui", "ui-monospace", "sans-serif", "monospace"]
+weights = [400, 600]
+
+[typography.stacks]
+ui = ["system-ui", "sans-serif"]
+code = ["ui-monospace", "monospace"]

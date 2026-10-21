@@ -47,6 +47,7 @@ Start with the specification cascade; everything else hangs off it.
 - [DEC-009 bounded main-loop pass, 32-bit ms tick, prioritised LCD scheduler, encoder proof](decisions/DEC-009-bounded-main-loop-and-encoder-proof.md)
 - [DEC-010 default bump (trim) mode with a minimum-amount guarantee, margin, loud failure](decisions/DEC-010-default-bump-trim-mode-with-minimum-amount-guarantee.md)
 - [DEC-011 latching buttons: every edge is one click, state kept in software](decisions/DEC-011-latching-buttons-every-edge-one-click.md)
+- [DEC-012 2 yd assumed coast, per-wind learned bump sizing, probe and short final steps](decisions/DEC-012-two-yard-coast-and-per-wind-learned-bumps.md)
 
 ## Working in this repository
 

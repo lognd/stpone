@@ -217,7 +217,8 @@ pub const FACTORY: Params = Params {
     cpr: 2400,
     short: 206187,
     long: 618562,
-    coast: 2291,
+    // 72 in (2 yd): the main run stops that far short and the trim bumps the rest (DEC-012).
+    coast: 13746,
     margin: 191,
     bump: 1,
 };

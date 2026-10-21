@@ -206,12 +206,13 @@ fn set_cpr_rederives_lengths_in_next_param() {
         "{p:?}"
     );
     // In-range values are accepted for every parameter.
+    // coast goes first: the factory 72 in coast (DEC-012) exceeds a 5000-pulse short
     for (name, v) in [
+        ("coast", 100),
         ("wheel_um", 100_000),
         ("cpr", 2000),
         ("short", 5000),
         ("long", 9000),
-        ("coast", 100),
     ] {
         assert!(c.set(name, v).is_ok(), "{name}");
     }
@@ -284,7 +285,7 @@ fn debug_one_while_in_debug_silently_drops_the_run_and_relay() {
         "{:?}",
         slow.events
     );
-    slow.run(5000).unwrap(); // a new RUN is accepted again (longer than the factory coast)
+    slow.run(20_000).unwrap(); // a new RUN is accepted again (longer than the factory coast)
 }
 
 #[test]

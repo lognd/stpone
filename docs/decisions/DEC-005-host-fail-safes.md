@@ -3,6 +3,8 @@
 Date: 2026-10-20. Owner: logan. Status: accepted.
 
 > Amended by [DEC-010](DEC-010-default-bump-trim-mode-with-minimum-amount-guarantee.md): the default `coast` is 2291 (not 0), `margin` (default 191) is added to the target and panel winds trim by default; statements below about a zero default coast or a stop exactly at `target - coast` read accordingly.
+>
+> Amended by [DEC-012](DEC-012-two-yard-coast-and-per-wind-learned-bumps.md): the default `coast` is 13746 (72 in), not 2291; the trim sizes its bumps from the follow-through learned in the same wind.
 
 ## Decision
 

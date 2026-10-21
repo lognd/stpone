@@ -25,32 +25,35 @@ namespace stpalpha {
     // and the screen clears itself this long after the wind stopped.
     constexpr uint32_t kResultSettleMs = 500;
     constexpr uint32_t kResultHoldMs = 60000;
-    // Follow-through assumed when nothing is calibrated (DEC-010): the wheel is assumed to stop within
-    // 12 in of paper after the relay drops at full speed. 12 in = 304800 um; one revolution of the
-    // 101638 um wheel is pi * 101638 = 319297.6 um = 2400 counts, so 304800 / 319297.6 * 2400 =
-    // 2291.0 -> 2291 pulses.
-    constexpr uint32_t kDefaultCoastPulses = 2291;
+    // Follow-through assumed when nothing is calibrated (DEC-012, superseding DEC-010's 12 in): the
+    // main run cuts 72 in (2 yd) short of the goal on purpose, so several converging bumps finish
+    // the wind. With the firmware's own integer wheel math (Params::derive_targets, kPiMicro):
+    // 72 in = 1828800 um, circumference 3141593 * 101638 / 1e6 = 319305.2 um per 2400 counts, so
+    // 1828800 * 2400 / 319305.2 = 13745.84 -> 13746 pulses (round half up).
+    constexpr uint32_t kDefaultCoastPulses = 13746;
     // Safety allowance added to the target (goal = target + margin): 1.0 in = 25400 um =
-    // 25400 / 319297.6 * 2400 = 190.9 -> 191 pulses. The encoder measures the wheel, not the paper,
+    // 25400 / 319305.2 * 2400 = 190.9 -> 191 pulses. The encoder measures the wheel, not the paper,
     // so wheel wear or a wrong diameter makes the machine over-count; the margin absorbs that.
     constexpr uint32_t kDefaultMarginPulses = 191;
     // Largest margin a parameter set may carry.
     constexpr uint32_t kMaxMarginPulses = 2000;
     // Trim (bump) mode on by default: 0 restores the legacy single cut with no guarantee.
     constexpr bool kDefaultBump = true;
-    // ---- trim algorithm constants (DEC-010) ----
+    // ---- trim algorithm constants (DEC-010, sizing rule DEC-012) ----
     // Quiet time of |count| before a settled value is trusted (same as the result screen).
     constexpr uint32_t kTrimSettleMs = kResultSettleMs;
-    // Most bumps one wind may use, and how many of the last ones are forced final-pass bumps.
-    constexpr uint8_t kMaxBumps = 16;
-    constexpr uint8_t kFinalReserve = 3;
-    // Smallest conservative bump worth making (pulses); below it the final pass takes over.
-    constexpr uint32_t kMinBump = 8;
-    // Remaining gap (pulses) at or under which the final pass bump (relay on until the goal) is used:
-    // 2.0 in = 2 * 190.9 = 381.8 -> 382 pulses.
-    constexpr uint32_t kFinalWindow = 382;
-    // The whole trim must end within this long (pauses excluded).
-    constexpr uint32_t kTrimMaxMs = 30000;
+    // Most completed bumps one wind may use; a bump interrupted by a pause is not charged.
+    constexpr uint8_t kMaxBumps = 24;
+    // Smallest bump (pulses): the probe that measures the follow-through ratio, and the short final
+    // steps. Every overshoot past the goal is at most the follow-through of one such step.
+    constexpr uint32_t kMinBump = 2;
+    // Safety factor on every learned follow-through (DEC-012): a bump is sized so that twice the
+    // worst follow-through seen this wind still lands at or short of the goal.
+    constexpr uint32_t kCoastSafety = 2;
+    // The whole trim must end within this long (pauses excluded). DEC-012 raised it from 30 s: the
+    // short, safety-sized bumps of a long (up to 8 ft) follow-through take up to about 28 s in the
+    // model, and a slow wind must still PASS; jams and stalls are caught by the stall rule below.
+    constexpr uint32_t kTrimMaxMs = 45000;
     // A bump with the relay on longer than kBumpMaxOnMs and no count change for kBumpStallMs is a stall.
     constexpr uint32_t kBumpMaxOnMs = 1500;
     constexpr uint32_t kBumpStallMs = 300;
@@ -385,6 +388,7 @@ namespace stpalpha {
             outcome_ = Outcome::NONE;
             trim_ = false;
             bumps_ = 0;
+            forget();
             state_ = MachineState::WINDING;
             manual_ = false;
             relay_ = true;
@@ -426,6 +430,9 @@ namespace stpalpha {
             relay_ = false;
             o.relay = false;
             init_trim(in, o);
+            // The ISR cut the relay at exactly eff_target(); the first settled count measures the
+            // full-speed follow-through, unless a pause may have slowed or nudged the main run.
+            learn_main_ = main_clean_;
             return o;
         }
 
@@ -447,9 +454,8 @@ namespace stpalpha {
             trim_start_ = in.now_ms;
             bumps_ = 0;
             stalls_ = 0;
-            over_est_ = 0;
-            learned_ = false;
             learn_ = false;
+            learn_main_ = false;
             o.leds = bargraph(in.count, target_);
             o.changed = true;
         }
@@ -473,6 +479,7 @@ namespace stpalpha {
             if (in.pending & kBtn3) {
                 state_ = (state_ == MachineState::WINDING) ? MachineState::PAUSED
                                                            : MachineState::WINDING;
+                main_clean_ = false; // the main run's follow-through is no longer a clean sample
                 o.changed = true;
             }
             // Manual works only while PAUSED (it nudges the paper); clicks while
@@ -490,19 +497,35 @@ namespace stpalpha {
             return o;
         }
 
-        // Start the next bump from a settled count below the goal: a conservative one that is
-        // expected to land at the goal, or the final pass (relay on until the ISR sees the goal).
-        void start_bump(const Inputs& in, Outputs& o) {
-            const uint32_t rem = goal() - in.count;
-            bool final_pass = rem <= kFinalWindow || bumps_ + kFinalReserve >= kMaxBumps;
+        // Size the next bump from a settled count below the goal (DEC-012). Only follow-through
+        // measured in this wind after a relay cut is used, always with kCoastSafety:
+        //  * the full-speed follow-through F of the main run (no bump coasts further): b = rem - 2F;
+        //  * once a kMinBump probe has been measured, the bound P + r * b (P the probe's
+        //    follow-through, r the per-pulse ratio of the last ratio-sized bump, the probe's own
+        //    ratio before that): b = (rem - 2P) / (1 + 2r).
+        // The larger applies; with neither, or below kMinBump, the bump is a kMinBump step (the
+        // first one is the probe). The stop is never armed past the goal.
+        uint32_t bump_size(uint32_t rem, bool& by_ratio) const {
             uint32_t b = 0;
-            if (!final_pass) {
-                b = learned_ ? (rem > over_est_ ? rem - over_est_ : 0) : rem / 2;
-                final_pass = b < kMinBump;
+            if (full_known_ && rem > kCoastSafety * full_coast_) {
+                b = rem - kCoastSafety * full_coast_;
             }
-            if (final_pass) {
-                b = rem;
+            by_ratio = false;
+            if (probe_known_ && rem > kCoastSafety * probe_over_) {
+                const uint32_t r =
+                    (rem - kCoastSafety * probe_over_) * 16u / (16u + kCoastSafety * ratio16_);
+                if (r >= b && r >= kMinBump) {
+                    b = r;
+                    by_ratio = true;
+                }
             }
+            b = b < kMinBump ? kMinBump : b;
+            return b < rem ? b : rem;
+        }
+
+        // Start the next bump: relay on, the ISR cuts it at bump_stop_ (<= goal).
+        void start_bump(const Inputs& in, Outputs& o) {
+            const uint32_t b = bump_size(goal() - in.count, bump_by_ratio_);
             bump_from_ = in.count;
             bump_cmd_ = b;
             bump_stop_ = in.count + b;
@@ -523,6 +546,49 @@ namespace stpalpha {
             relay_ = false;
         }
 
+        // Per-wind follow-through learning (DEC-012), only from a coast that follows a relay cut.
+        void learn(uint32_t settled) {
+            if (learn_main_) {
+                const uint32_t cut = eff_target();
+                full_coast_ = settled > cut ? settled - cut : 0;
+                full_known_ = true;
+                learn_main_ = false;
+            }
+            if (learn_) {
+                const uint32_t move = settled > bump_from_ ? settled - bump_from_ : 0;
+                const uint32_t over = move > bump_cmd_ ? move - bump_cmd_ : 0;
+                if (bump_cmd_ <= kMinBump) {
+                    // a probe or a short final step: the worst short-bump follow-through so far
+                    if (!probe_known_ || over > probe_over_) {
+                        probe_over_ = over;
+                    }
+                    if (!probe_known_) {
+                        ratio16_ = over * 16u / bump_cmd_;
+                        probe_known_ = true;
+                    }
+                } else if (bump_by_ratio_) {
+                    ratio16_ = over * 16u / bump_cmd_;
+                }
+                if (full_known_ && over > full_coast_) {
+                    full_coast_ = over;
+                }
+                learn_ = false;
+            }
+        }
+
+        // Drop everything learned: called at every wind start, so no wind inherits another's.
+        void forget() {
+            main_clean_ = true;
+            learn_main_ = false;
+            learn_ = false;
+            full_known_ = false;
+            probe_known_ = false;
+            bump_by_ratio_ = false;
+            full_coast_ = 0;
+            probe_over_ = 0;
+            ratio16_ = 0;
+        }
+
         // The trim gives up (limit, stalls, operator): the wind is SHORT or STOPPED, loudly.
         Outputs fail_trim(const Inputs& in, Outputs o, bool operator_stop, bool settled) {
             return operator_stop ? end_wind(in, o, Beep::CANCEL, Outcome::STOPPED, settled)
@@ -531,13 +597,7 @@ namespace stpalpha {
 
         // The relay is off and the count quiet: learn from the last bump, then pass, give up or bump.
         Outputs trim_settled(const Inputs& in, Outputs o) {
-            if (learn_) {
-                const uint32_t move = in.count > bump_from_ ? in.count - bump_from_ : 0;
-                const uint32_t over = move > bump_cmd_ ? move - bump_cmd_ : 0;
-                over_est_ = over > over_est_ ? over : over_est_;
-                learned_ = true;
-                learn_ = false;
-            }
+            learn(in.count);
             if (in.count >= goal()) {
                 return end_wind(in, o, Beep::START, Outcome::PASS, true);
             }
@@ -558,11 +618,17 @@ namespace stpalpha {
                 if (was_running) {
                     state_ = MachineState::PAUSED;
                     paused_at_ = now;
-                    learn_ = false; // an interrupted bump teaches nothing
+                    if (phase_ == TrimPhase::BUMP) {
+                        --bumps_;       // an interrupted bump is not charged to kMaxBumps ...
+                        learn_ = false; // ... and teaches nothing
+                    }
+                    // A coast already under way (relay cut) is still learned after play, unless
+                    // manual moves the paper meanwhile (below).
+                    phase_ = TrimPhase::SETTLE;
                 } else {
                     state_ = MachineState::TRIM;
                     trim_start_ += static_cast<uint32_t>(now - paused_at_); // pauses are free
-                    begin_settle(in, false);
+                    begin_settle(in, learn_);
                 }
                 o.changed = true;
             }
@@ -570,6 +636,8 @@ namespace stpalpha {
                 manual_ = false; // a click in the pass that pauses is ignored
             } else if (in.pending & kBtn4) {
                 manual_ = !manual_;
+                learn_ = false; // a manual nudge spoils the coast being measured
+                learn_main_ = false;
                 o.changed = true;
             }
             o.leds = bargraph(in.count, target_);
@@ -616,14 +684,22 @@ namespace stpalpha {
 
         enum class TrimPhase : uint8_t { SETTLE, BUMP };
         TrimPhase phase_ = TrimPhase::SETTLE;
-        bool trim_ = false;    // the trim phase is active (running or paused)
-        bool hold_ = false;    // a failure result is held until a button press
-        bool learned_ = false; // over_est_ comes from a completed bump
-        bool learn_ = false;   // the next settle follows a completed bump
+        bool trim_ = false; // the trim phase is active (running or paused)
+        bool hold_ = false; // a failure result is held until a button press
+        // Per-wind learned follow-through (DEC-012): RAM only, reset by forget() at every wind
+        // start, never saved, never settable by the host.
+        bool main_clean_ = true;     // no pause during the main run so far
+        bool learn_main_ = false;    // the next settle measures the main run's coast
+        bool learn_ = false;         // the next settle follows a completed (ISR-cut) bump
+        bool full_known_ = false;    // full_coast_ is measured
+        bool probe_known_ = false;   // probe_over_ and ratio16_ are measured
+        bool bump_by_ratio_ = false; // the current bump was sized by the ratio rule
+        uint32_t full_coast_ = 0;    // full-speed follow-through seen this wind (pulses)
+        uint32_t probe_over_ = 0;    // worst follow-through of a kMinBump step (pulses)
+        uint32_t ratio16_ = 0;       // follow-through per bump pulse, x16 (see bump_size)
         Outcome outcome_ = Outcome::NONE;
         uint8_t bumps_ = 0;
         uint8_t stalls_ = 0;
-        uint32_t over_est_ = 0;   // largest overshoot-after-cut seen this wind (pulses)
         uint32_t bump_from_ = 0;  // |count| when the current bump started
         uint32_t bump_cmd_ = 0;   // its commanded length
         uint32_t bump_stop_ = 0;  // |count| at which the ISR cuts it

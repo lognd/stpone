@@ -139,16 +139,19 @@ within a tolerance of each other (for example three in a row within 5 %).
    `SET coast` last, since it is validated against them), then `SAVE`, then `DEBUG 0`.
 
 Units: 1 inch = 25400 um. Defaults: wheel 4.0015 in = 101638 um, cpr 2400,
-short 206187, long 618562, coast 2291 (12 in), margin 191 (1.0 in), bump 1. The test winds of the
+short 206187, long 618562, coast 13746 (72 in, DEC-012), margin 191 (1.0 in), bump 1. The test winds of the
 calibration are debug `RUN`s, so they cut at `length - coast`: use lengths of at least `coast + 2400`
-(the tool does).
+(the tool does); with the factory coast a `RUN` of 13746 pulses or less answers
+`ERR bad_arg`. A board that has `SAVE`d parameters keeps its stored coast after a firmware update:
+`DEFAULTS` then `SAVE` (or `SET coast 13746` then `SAVE`) adopts the new default.
 
-## Trim (bump) mode as seen over the link (`fw=6`, DEC-010)
+## Trim (bump) mode as seen over the link (`fw=6`, DEC-010, DEC-012)
 
 Panel winds with `bump=1` pass through `state=WINDING` (main run, cut at `goal - coast`), `state=TRIM`
 (`trim=1`; relay off while the count settles, on during each bump; `bumps=` counts them) and back to
-`IDLE` with `pass=1` (PASS) or `pass=0` (SHORT: two stalls, 16 bumps or 30 s; STOPPED: the operator
+`IDLE` with `pass=1` (PASS) or `pass=0` (SHORT: two stalls, 24 bumps or 45 s; STOPPED: the operator
 pushed BTN1/BTN2). A `pass=0` wind leaves the held UNDER TARGET screen and the alarm on the machine until a
 button is pressed; the host sees `pass=0` until the next wind starts. The debug `RUN` never trims and never
-changes `pass`. Guarantee (conditional on correct encoder counting and wheel parameters): `pass=1` means
+changes `pass`, and
+nothing the trim learns about the follow-through is visible, settable or kept after the wind. Guarantee (conditional on correct encoder counting and wheel parameters): `pass=1` means
 the settled `abs(count) >= target + margin`.

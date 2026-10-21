@@ -41,16 +41,23 @@ Section~\ref{sec:screen-winding}).
 \index{trim}\index{coast}
 The motor cannot stop the roll instantly. After the relay opens the roll
 keeps turning for a short distance, called the \textbf{coast} (set at the
-factory to 12 inches). So the machine switches the motor off about one coast
-\emph{before} the target, and lets the roll glide up to it.
+factory to 2 yards, more than the roll is expected to glide). So the machine
+switches the motor off about one coast \emph{before} the target, and lets the
+roll glide towards it.
 
 Then it \textbf{trims}:
 \begin{enumerate}
   \item The screen shows \shows{TRIMMING...}. The machine waits half a second
         for the paper to stop.
-  \item If the length is not yet enough, it gives the motor a short bump
-        and waits again. It repeats this until the length is at least the
-        target plus the safety margin (1 inch from the factory).
+  \item If the length is not yet enough, it gives the motor a bump and
+        waits again. It measures how far the roll glided after the motor
+        stopped and sizes each bump so that even twice that glide stays
+        short of the goal, so the bumps get shorter as the gap closes and the
+        last ones are tiny. It repeats this until the length is at least the
+        target plus the safety margin (1 inch from the factory). This can
+        take up to about half a minute. What it measures is used for this
+        roll only; turning the roll by hand while the machine is idle
+        changes nothing.
   \item When the length is enough, it beeps \textbf{three short beeps} and
         shows \shows{DONE}.
 \end{enumerate}
@@ -104,7 +111,7 @@ Push \btn{1} or \btn{2}. The motor stops at once. What you see next:
 \section{When the roll comes up short}\label{sec:under-target}
 \index{under target}\index{short roll}
 If the trim cannot finish (the paper does not move when bumped, too many
-bumps, or the trim takes longer than 30 seconds), the machine gives up and
+bumps, or the trim takes longer than 45 seconds), the machine gives up and
 sounds the \textbf{under-target alarm}: three long beeps, repeated every 6
 seconds for about a minute.
 

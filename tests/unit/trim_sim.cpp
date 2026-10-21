@@ -7,16 +7,22 @@
 //    of R pulses (R 300..1500); after the relay opens the roll decelerates at a constant rate so
 //    that it coasts C pulses from full speed (Coulomb friction): a bump that reached speed v
 //    coasts C * (v / vmax)^2, plus the distance covered during the relay opening lag (5..30 ms);
-//  * C (the TRUE full-speed coast) is drawn in 0..2*2291 pulses -- also beyond the 12 in design
-//    assumption -- and every coast event is jittered by +-J (0..0.3) on the friction;
+//  * C (the TRUE full-speed coast) is drawn in 0..2*kDefaultCoastPulses (0..2*13746 pulses, twice
+//    the 72 in = 2 yd design assumption of DEC-012), or fixed by the optional third argument (e.g.
+//    2291 = 12 in: the assumption far larger than the truth); every coast event is jittered by
+//    +-J (0..0.3) on the friction;
 //  * the motor starts moving a random 20..200 ms after the relay closes (start lag);
 //  * the encoder counts the wheel exactly (the guarantee is conditional on that, DEC-010);
 //  * the main loop passes are 5..60 ms apart (DEC-009: <= ~68 ms).
-// Exit 0 = every invariant held; the last line is a STATS line the pytest wrapper bounds.
+// Usage: trim_sim SEED WINDS [TRUE_COAST_PULSES [TRACE_WIND]]. Exit 0 = every invariant held; the last line is
+// a STATS line the pytest wrapper bounds.
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <algorithm>
+#include <vector>
 
 #include <stpalpha/controller.h>
 
@@ -109,6 +115,19 @@ struct Roll {
     }
 };
 
+// Mean, 99th percentile and maximum of `v` (sorted in place); returns the sample count.
+static size_t summarize(std::vector<double>& v, double& mean, double& p99, double& max) {
+    std::sort(v.begin(), v.end());
+    const size_t n = v.size();
+    mean = 0;
+    for (double x : v) {
+        mean += x / static_cast<double>(n);
+    }
+    p99 = n ? v[(n * 99) / 100 < n ? (n * 99) / 100 : n - 1] : 0;
+    max = n ? v[n - 1] : 0;
+    return n;
+}
+
 struct WindResult {
     Outcome outcome;
     uint32_t final_count;
@@ -124,6 +143,8 @@ struct WindResult {
 int main(int argc, char** argv) {
     uint32_t seed = argc > 1 ? static_cast<uint32_t>(atoi(argv[1])) : 1;
     uint32_t winds = argc > 2 ? static_cast<uint32_t>(atoi(argv[2])) : 40;
+    const double fixed_coast = argc > 3 ? atof(argv[3]) : -1.0; // < 0: drawn per wind
+    const uint32_t trace = argc > 4 ? static_cast<uint32_t>(atoi(argv[4])) : 0xFFFFFFFFu;
     rng_state = seed * 2654435761u + 7;
     uint32_t wind = 0;
     uint32_t n_pass = 0, n_short = 0, n_stopped = 0, n_legacy = 0, n_complete = 0;
@@ -132,10 +153,22 @@ int main(int argc, char** argv) {
     uint32_t n_over = 0, n_over_assumed = 0;
     uint8_t max_bumps = 0;
     double max_trim_s = 0;
+    double sum_bumps = 0, sum_trim_s = 0;
+    uint8_t min_bumps = 255;
+    // Overshoot the trim is responsible for: fault-free PASS winds whose main run stopped short.
+    std::vector<double> trim_overs;
+    // Overshoot of every fault-free PASS wind, trimmed or not (a main run past the goal included).
+    std::vector<double> ff_overs;
+    // Fault-free winds only (no pauses, no faults): trim time and bump count.
+    double ff_max_trim_s = 0, ff_sum_trim_s = 0;
+    uint32_t ff_n = 0;
+    uint8_t ff_max_bumps = 0;
+    uint32_t max_bump_on_ms = 0; // longest relay-on time of one bump (fault-free or not)
 
     for (wind = 0; wind < winds; ++wind) {
         Controller c;
-        c.short_pulses = 8000 + rnd() % 40000;
+        // the main run must stay longer than the assumed coast (Params::valid(): coast < short)
+        c.short_pulses = kDefaultCoastPulses + 8000 + rnd() % 40000;
         c.long_pulses = c.short_pulses * 3;
         c.coast = kDefaultCoastPulses;
         c.margin = rnd() % 4 == 0 ? 0 : (rnd() % 4 == 0 ? kMaxMarginPulses : rnd() % 600);
@@ -143,11 +176,14 @@ int main(int argc, char** argv) {
         Roll r;
         r.ramp = 300 + rnd() % 1200;
         r.coast = rnd() % 8 == 0 ? 0 : urand() * 2.0 * kDefaultCoastPulses;
+        if (fixed_coast >= 0) {
+            r.coast = fixed_coast;
+        }
         r.jitter = urand() * 0.3;
         Fault fault = static_cast<Fault>(rnd() % 8 < 5 ? 0 : 1 + rnd() % 5);
         const bool assumed = r.coast <= kDefaultCoastPulses;
         if (fault == Fault::SLOW) {
-            r.vmax = 30 + rnd() % 200; // a weak motor: the 30 s limit decides
+            r.vmax = 30 + rnd() % 200; // a weak motor: kTrimMaxMs decides
             r.coast = r.coast * r.vmax / 3600.0;
         }
         const double jam_at = urand() * 4.0; // seconds after the trim started (the main run has no stall rule)
@@ -170,6 +206,8 @@ int main(int argc, char** argv) {
         uint32_t trim_start = 0;
         uint32_t passes = 0;
         uint32_t relay_on_since = 0;
+        uint32_t still_since = 0;
+        uint32_t still_count = 0;
         bool relay_was_on = false;
         bool paused_trim = false;
         double trim_t0 = 1e18;
@@ -203,7 +241,14 @@ int main(int argc, char** argv) {
                 in.pending |= (rnd() & 1) ? kBtn1 : kBtn2;
             }
             MachineState before = c.state();
+            const uint32_t stop_before = c.stop_at();
             o = c.step(in);
+            if (wind == trace && (c.stop_at() != stop_before || o.stopped || in.pending)) {
+                printf("TRACE t=%u state=%d count=%u goal=%u stop=%u bumps=%u pend=%u fault=%d "
+                       "C=%.0f R=%.0f\n",
+                       now, static_cast<int>(c.state()), in.count, goal, c.stop_at(), c.bumps(),
+                       in.pending, static_cast<int>(fault), r.coast, r.ramp);
+            }
             if (o.reset_count) {
                 r.zero = r.pos;
                 r.cut = false;
@@ -244,13 +289,27 @@ int main(int argc, char** argv) {
                 trim_start = now;
                 trim_t0 = r.t;
             }
-            // a relay-on bump never lasts longer than the stall rule allows
+            // the stall rule: once a bump has been on kBumpMaxOnMs, the relay never stays on with the
+            // count standing still for longer than kBumpStallMs (plus one pass). A moving bump may
+            // run longer (DEC-012: a first bump of half of 72 in takes about 2 s at full speed);
+            // the ISR cut at bump_stop_ <= goal bounds it.
             if (c.state() == MachineState::TRIM && o.relay) {
                 if (!relay_was_on) {
                     relay_on_since = now;
+                    still_since = now;
+                    still_count = in.count;
                 }
-                CHECK(fault == Fault::SLOW || now - relay_on_since <= kBumpMaxOnMs + kBumpStallMs + 200,
-                      "bump relay on for %u ms", now - relay_on_since);
+                if (in.count != still_count) {
+                    still_count = in.count;
+                    still_since = now;
+                }
+                CHECK(fault == Fault::SLOW || now - relay_on_since <= kBumpMaxOnMs + kBumpStallMs + 200 ||
+                          now - still_since <= kBumpStallMs + 200,
+                      "bump relay on for %u ms, still for %u ms", now - relay_on_since,
+                      now - still_since);
+                if (now - relay_on_since > max_bump_on_ms) {
+                    max_bump_on_ms = now - relay_on_since;
+                }
             }
             relay_was_on = c.state() == MachineState::TRIM && o.relay;
             if (c.state() == MachineState::TRIM || (c.trimming() && !c.relay())) {
@@ -303,6 +362,20 @@ int main(int argc, char** argv) {
             ++n_complete;
             sum_over += over;
             ++n_over;
+            if (res.bumps > 0 && fault == Fault::NONE) {
+                trim_overs.push_back(over);
+                if (getenv("TRIM_WORST") && over > atof(getenv("TRIM_WORST"))) {
+                    printf("WORST wind=%u over=%.0f C=%.0f R=%.0f J=%.2f bumps=%u\n", wind, over,
+                           r.coast, r.ramp, r.jitter, res.bumps);
+                }
+            }
+            if (fault == Fault::NONE) {
+                ff_overs.push_back(over);
+                ff_max_trim_s = res.trim_s > ff_max_trim_s ? res.trim_s : ff_max_trim_s;
+                ff_max_bumps = res.bumps > ff_max_bumps ? res.bumps : ff_max_bumps;
+                ff_sum_trim_s += res.trim_s;
+                ++ff_n;
+            }
             if (over > max_over) {
                 max_over = over;
             }
@@ -319,6 +392,11 @@ int main(int argc, char** argv) {
             if (res.bumps > max_bumps) {
                 max_bumps = res.bumps;
             }
+            if (res.bumps < min_bumps) {
+                min_bumps = res.bumps;
+            }
+            sum_bumps += res.bumps;
+            sum_trim_s += res.trim_s;
         } else if (res.outcome == Outcome::SHORT) {
             CHECK(res.alarm_beep && !res.start_beep, "SHORT must sound the alarm");
             CHECK(fault == Fault::JAM || fault == Fault::CREEP || fault == Fault::SLOW,
@@ -386,7 +464,7 @@ int main(int argc, char** argv) {
         ++n_legacy;
     }
     // Scenario: every bump advances only 20 pulses before the (spurious) cut: the bump budget
-    // runs out after kMaxBumps and the wind ends SHORT with the alarm, the last bumps being final.
+    // runs out after kMaxBumps and the wind ends SHORT with the alarm; no stop is armed past the goal.
     {
         wind = 9999;
         Controller c;
@@ -399,7 +477,7 @@ int main(int argc, char** argv) {
         uint32_t count = c.goal() - c.coast - 1;
         uint32_t now = 1000;
         bool pending_cut = false;
-        uint32_t finals = 0;
+        uint32_t beyond = 0;
         for (int k = 0; k < 200000 && !o.stopped; ++k) {
             now += 10;
             in = Inputs{};
@@ -407,8 +485,8 @@ int main(int argc, char** argv) {
             if (c.state() == MachineState::TRIM && c.relay() && c.stop_at() != Controller::kNoStop) {
                 count += 20;
                 pending_cut = true;
-                if (c.stop_at() == c.goal()) {
-                    ++finals;
+                if (c.stop_at() > c.goal()) {
+                    ++beyond;
                 }
             } else if (c.state() == MachineState::WINDING) {
                 count = c.goal() - c.coast;
@@ -423,7 +501,7 @@ int main(int argc, char** argv) {
         CHECK(o.stopped && c.outcome() == Outcome::SHORT && o.beep == Beep::ALARM &&
                   c.bumps() == kMaxBumps,
               "bump budget: outcome=%d bumps=%u", static_cast<int>(c.outcome()), c.bumps());
-        CHECK(finals >= kFinalReserve * 1u, "the last bumps must be final-pass bumps (%u)", finals);
+        CHECK(beyond == 0, "a bump armed past the goal");
     }
     // Scenario (M1): a manual nudge carries a PAUSED wind across eff_target. The trim must start
     // PAUSED: manual stays capped at the goal, no bump runs on its own, play (BTN3) resumes it.
@@ -475,11 +553,122 @@ int main(int argc, char** argv) {
         }
         CHECK(bumped && c.bumps() >= 1, "m1: the trim bumps after play");
     }
+    // Scenario (DEC-012): everything the trim learns is per wind. A deterministic plant: the main
+    // run coasts `main_over` past its cut, a bump of b pulses coasts `off + b * pct / 100` past its
+    // cut. Wind B on a controller that first wound A (a huge follow-through), saw counts move in
+    // IDLE and ran a debug RUN must arm exactly the stops of wind B on a fresh controller.
+    {
+        wind = 9997;
+        uint32_t now = 1000;
+        auto scripted = [&](Controller& c, uint32_t main_over, uint32_t off, uint32_t pct,
+                            std::vector<uint32_t>& stops) -> uint32_t {
+            Inputs in{};
+            in.pending = kBtn1;
+            in.now_ms = now;
+            Outputs o = c.step(in);
+            CHECK(o.relay && o.reset_count && c.state() == MachineState::WINDING, "scripted start");
+            uint32_t count = 0;
+            for (int k = 0; k < 100000 && !o.stopped; ++k) {
+                now += 10;
+                in = Inputs{};
+                in.now_ms = now;
+                if (c.relay() && c.stop_at() != Controller::kNoStop) {
+                    const uint32_t stop = c.stop_at();
+                    stops.push_back(stop);
+                    count = c.state() == MachineState::WINDING
+                                ? stop + main_over
+                                : stop + off + (stop - count) * pct / 100u;
+                    in.cut = true;
+                }
+                in.count = count;
+                o = c.step(in);
+            }
+            CHECK(o.stopped, "scripted wind did not end");
+            stops.push_back(static_cast<uint32_t>(c.outcome()));
+            stops.push_back(c.bumps());
+            for (int k = 0; k < 100; ++k) { // the result settles; the count holds still
+                now += 10;
+                in = Inputs{};
+                in.now_ms = now;
+                in.count = count;
+                (void)c.step(in);
+            }
+            return count;
+        };
+        auto wind_b = [&](Controller& c) {
+            std::vector<uint32_t> stops;
+            (void)scripted(c, 400, 3, 1, stops);
+            return stops;
+        };
+        Controller fresh;
+        const std::vector<uint32_t> want = wind_b(fresh);
+        CHECK(want.size() > 4 && want[want.size() - 2] == static_cast<uint32_t>(Outcome::PASS),
+              "wind B must trim and PASS");
+        // Counts moving in IDLE before anything was started: no relay, no beep, no stop armed, no
+        // result or alarm, nothing learned.
+        Controller idle;
+        for (uint32_t k = 0; k < 2000; ++k) {
+            now += 10;
+            Inputs in{};
+            in.now_ms = now;
+            in.count = (k * 37u) % 30000u;
+            const Outputs o = idle.step(in);
+            CHECK(!o.relay && !o.stopped && !o.run_stopped && o.beep == Beep::NONE &&
+                      !o.reset_count && idle.stop_at() == Controller::kNoStop,
+                  "idle count movement caused an action (k=%u)", k);
+            CHECK(idle.state() == MachineState::IDLE && idle.result() == Result::NONE &&
+                      idle.outcome() == Outcome::NONE && !idle.alarm() && idle.bumps() == 0,
+                  "idle count movement changed the machine state (k=%u)", k);
+        }
+        CHECK(wind_b(idle) == want, "idle count movement altered the next wind");
+        // A huge follow-through (main run just short of the goal, bumps coasting 3x), then counts
+        // moving in IDLE under the result, then a debug RUN, then wind B.
+        Controller used;
+        std::vector<uint32_t> a;
+        (void)scripted(used, kDefaultCoastPulses - 300, 150, 300, a);
+        std::vector<uint32_t> a2;
+        (void)scripted(used, 2 * kDefaultCoastPulses, 0, 0, a2); // past the goal: no trim at all
+        for (uint32_t k = 0; k < 500; ++k) {
+            now += 10;
+            Inputs in{};
+            in.now_ms = now;
+            in.count = 300000 + k * 50u;
+            const Outputs o = used.step(in);
+            CHECK(!o.relay && !o.stopped && o.beep == Beep::NONE && !used.alarm(),
+                  "idle count movement after a wind caused an action (k=%u)", k);
+        }
+        used.clear_result();
+        CHECK(used.enter_debug(), "debug enter");
+        used.host_activity(now);
+        CHECK(used.start_run(kDefaultCoastPulses + 5000), "debug RUN");
+        Inputs in{};
+        in.now_ms = now + 10;
+        in.count = 5000 + 9000;
+        const Outputs ro = used.step(in);
+        CHECK(ro.run_stopped && !used.running(), "debug RUN stops at its cut");
+        CHECK(used.leave_debug(), "debug leave");
+        in.now_ms = now + 20;
+        in.count = 0;
+        (void)used.step(in);
+        CHECK(wind_b(used) == want, "wind B inherited state from an earlier wind or a debug RUN");
+    }
+    double trim_mean = 0, trim_p99 = 0, trim_max = 0;
+    const size_t nt = summarize(trim_overs, trim_mean, trim_p99, trim_max);
+    double ff_over_mean = 0, ff_over_p99 = 0, ff_over_max = 0;
+    (void)summarize(ff_overs, ff_over_mean, ff_over_p99, ff_over_max);
     printf("STATS winds=%u pass=%u short=%u stopped=%u legacy=%u max_over=%.0f mean_over=%.1f "
-           "max_over_assumed=%.0f mean_over_assumed=%.1f max_bumps=%u max_trim_s=%.1f\n",
+           "max_over_assumed=%.0f mean_over_assumed=%.1f max_bumps=%u max_trim_s=%.1f "
+           "min_bumps=%u mean_bumps=%.2f mean_trim_s=%.2f max_bump_on_ms=%u trim_n=%u "
+           "trim_mean=%.1f trim_p99=%.0f trim_max=%.0f ff_n=%u ff_max_trim_s=%.1f "
+           "ff_mean_trim_s=%.2f ff_max_bumps=%u ff_over_mean=%.1f ff_over_p99=%.0f "
+           "ff_over_max=%.0f\n",
            winds, n_pass, n_short, n_stopped, n_legacy, max_over,
            n_over ? sum_over / n_over : 0.0, max_over_assumed,
-           n_over_assumed ? sum_over_assumed / n_over_assumed : 0.0, max_bumps, max_trim_s);
+           n_over_assumed ? sum_over_assumed / n_over_assumed : 0.0, max_bumps, max_trim_s,
+           n_pass ? min_bumps : 0u, n_pass ? sum_bumps / n_pass : 0.0,
+           n_pass ? sum_trim_s / n_pass : 0.0, max_bump_on_ms, static_cast<unsigned>(nt),
+           trim_mean, trim_p99, trim_max, ff_n, ff_max_trim_s, ff_n ? ff_sum_trim_s / ff_n : 0.0,
+           ff_max_bumps, ff_over_mean, ff_over_p99, ff_over_max);
     (void)n_complete;
     return 0;
 }

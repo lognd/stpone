@@ -81,9 +81,9 @@ Save only stores the numbers you reviewed: if the winder was reset or restarted
 before you pressed Save, nothing is saved and you are asked to run again.
 Discard restores the earlier wheel, short, long and coast exactly as they were. Settings (wheel, cpr,
 short, long, coast) can be edited by hand; "Reset to factory settings" restores
-wheel 101638, cpr 2400, short 206187, long 618562, coast 2291, margin 191, bump 1.
-The factory coast is the 12 inch estimate of the default trim mode (DEC-010), so the first
-test winds are made with `coast = 2291` (the calibration winds are at least coast + 2400
+wheel 101638, cpr 2400, short 206187, long 618562, coast 13746, margin 191, bump 1.
+The factory coast is the 72 inch (2 yd) estimate of the default trim mode (DEC-012), so the first
+test winds are made with `coast = 13746` (the calibration winds are at least coast + 2400
 pulses long, so the roll is up to speed when the relay drops); after calibration the measured
 coast replaces it. The calibration never changes `margin` or `bump`.
 

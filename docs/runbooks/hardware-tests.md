@@ -48,8 +48,8 @@ Wiring reference: `docs/hardware/pinout.md`.
 11. Stop by ISR: with a slow wind near the end, the relay must open at
     the target without waiting for a screen redraw. Confirm by timing
     (scope on the relay pin PB6 against the encoder, or the overshoot in
-    counts: with the factory `coast = 2291` the main run is cut about a
-    foot short of the goal, and `SET bump 0` + `SET coast 0` gives the old
+    counts: with the factory `coast = 13746` the main run is cut about
+    2 yd short of the goal, and `SET bump 0` + `SET coast 0` gives the old
     single cut, whose final count is at most a few counts above 206187 /
     618562 plus the motor's mechanical follow-through; measure that with P7
     `RUN`/`EVT settled`). The default trim is P11.
@@ -312,22 +312,28 @@ Check added by DEC-008 (P1/P9): on every wind screen the `LEN` row shows digits
 (`+3.6 in over`, `-7.2 in short`, `+1.3 yd over`); if either prints empty, the
 firmware is not using `length.h`'s printf-free formatter.
 
-## P11 -- default bump (trim) mode and the minimum-amount guarantee (`firmware`, DEC-010)
+## P11 -- default bump (trim) mode and the minimum-amount guarantee (`firmware`, DEC-010, DEC-012)
 
-Expected values come from the source (defaults wheel 101638 um, cpr 2400, `coast = 2291` = 12 in,
-`margin = 191` = 1.0 in, 30 yd = 206187 pulses so goal = 206378 and the main cut is at 204087), not
-from a bench run: record the actual figures when this is run. Use a paper roll that feeds freely and
+Expected values come from the source (defaults wheel 101638 um, cpr 2400, `coast = 13746` = 72 in,
+`margin = 191` = 1.0 in, 30 yd = 206187 pulses so goal = 206378 and the main cut is at 192632), not
+from a bench run. A board that has `SAVE`d parameters keeps its old coast: check `PARAM` shows
+`coast=13746` first (`DEFAULTS`, `SAVE` if not): record the actual figures when this is run. Use a paper roll that feeds freely and
 `GET`/`DUMP` over the host link to read `state`, `bumps`, `trim` and `pass`.
 
-1. Normal wind: press BTN1 (latch DOWN). The motor runs at full speed and the relay opens about a
-   foot (12 in) before the end (count 204087; `DUMP` `eff_target=204087`). Row 0 changes from
+1. Normal wind: press BTN1 (latch DOWN). The motor runs at full speed and the relay opens about
+   2 yd (72 in) before the end (count 192632; `DUMP` `eff_target=192632`). Row 0 changes from
    `     WINDING...     ` to `     TRIMMING...    ` (state `TRIM`), the percent stays 98-100 and
-   `LEN` keeps updating. Then you see and hear the relay: a pause of about half a second, then a few
-   short bumps (the number is `bumps=`; typically 2 to 4), each followed by half a second of quiet.
+   `LEN` keeps updating. Then you see and hear the relay: a pause of about half a second, then
+   bumps that get shorter as the gap closes, ending in tiny 2-pulse steps (the number is `bumps=`;
+   the model gives about 5 to 15 when the true coast is well under 2 yd, 0 to 3 when it is about
+   2 yd), each followed by half a second of quiet; the trim may take up to about 25 s. Record
+   `bumps=` and the trim time for each wind.
    The bargraph is full. The wind ends with the three-beep finish pattern, row 1 `DONE 30.0/30.0 yd`
-   and row 2 `+1.x in over` (about 1 to 3 inches; the margin alone is 1.0 in), `GET` shows `pass=1`
+   and row 2 `+1.x in over` (the model gives 1 to 4 inches when the true coast is under 2 yd; the
+   margin alone is 1.0 in; a true coast over 2 yd overshoots by the excess in the main run), `GET` shows `pass=1`
    and `state=IDLE`. The final count is at least 206378: write it down for 5 winds each of 30 and
-   90 yd. If it is ever below 206378 with `pass=1`, that is a firmware bug: stop and report it.
+   90 yd, then repeat one 30 yd wind: the second wind must behave like the first (nothing is
+   carried over), also after turning the roll by hand in IDLE. If it is ever below 206378 with `pass=1`, that is a firmware bug: stop and report it.
 2. Pause inside the trim: during the bumps press BTN3. The relay opens at once, `PAUSED` shows,
    `GET` shows `state=PAUSED` and the same `bumps=`; BTN4 clicks nudge the paper by hand and never
    past the goal; BTN3 again resumes (`TRIMMING...`, half a second of quiet, then the next bump).
@@ -341,13 +347,13 @@ from a bench run: record the actual figures when this is run. Use a paper roll t
    ` !! UNDER TARGET !! ` and `SHORT -x.x in` show and `pass=0`. It must END UNDER TARGET and never
    read `DONE`. Release the paper: nothing restarts; press any button to silence and clear.
 5. Empty roll / slip: let the roll run out or slip the paper on the wheel so the count advances
-   slowly; the 30 s trim limit (or 16 bumps) ends it SHORT with the alarm.
+   slowly; the 45 s trim limit (or 24 bumps) ends it SHORT with the alarm.
 6. Start from the trim: while `TRIMMING...` shows, BTN1/BTN2 are STOP, not start; no new wind starts.
 7. Button response: during trimming, with the host sending `DUMP` and `STREAM` lines, BTN1/BTN2/BTN3
    still act within 100 ms (relay edge on a scope against the push, or by eye and ear); `pass_max_ms`
    stays at or below 70 and `isr_lat_max` below 200 (`DUMP` after the wind).
 8. Legacy mode: `DEBUG 1`, `SET bump 0`, `SET coast 0`, `SET margin 0`, `DEBUG 0`: a wind stops once at
-   the target as before (`pass=-` and the old `DONE` wording). `DEFAULTS` restores `coast=2291
+   the target as before (`pass=-` and the old `DONE` wording). `DEFAULTS` restores `coast=13746
    margin=191 bump=1`. `SAVE`, power-cycle, `PARAM` shows the saved values. A board last saved by
    firmware 5 answers `LOAD` with `ERR no_data` and boots with the defaults: `SAVE` once.
 9. `DUMP` after a normal wind shows `margin=191 bump=1 bumps=<n> trim=0 pass=1`; during it `trim=1`.

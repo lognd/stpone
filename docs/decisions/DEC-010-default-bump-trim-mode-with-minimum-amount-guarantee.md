@@ -3,6 +3,11 @@
 Date: 2026-10-20. Owner: logan. Status: accepted (the numbers below are derived from the source and
 from the host model in `tests/unit/trim_sim.cpp`; none comes from a bench run).
 
+> Amended by [DEC-012](DEC-012-two-yard-coast-and-per-wind-learned-bumps.md): the default `coast` is 13746 (72 in); algorithm steps 3 and 4 are replaced
+> by per-wind learned bump sizing with a 2-pulse probe and short final steps (no final window, no
+> final pass to the goal); `kMaxBumps` is 24, `kTrimMaxMs` 45 s, `kMinBump` 2. The circumference
+> below is 319305.2 um (319297.6 was a typo; 2291 and 191 are unchanged by it).
+
 ## Context
 
 The owner's customers must receive AT LEAST the ordered amount of paper. Until now the machine cut

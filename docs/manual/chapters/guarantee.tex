@@ -25,10 +25,16 @@ says. Every wind ends in exactly one of two ways:
 \begin{enumerate}
   \item The \textbf{goal} is the target length plus the margin. For a 30 yard
         roll that is 30 yards and 1 inch.
-  \item The motor runs until the paper is one \emph{coast} (12 inches) short
-        of the goal, then it is switched off and the roll glides on.
+  \item The motor runs until the paper is one \emph{coast} (2 yards from the
+        factory) short of the goal, then it is switched off and the roll glides
+        on. The coast is set generously on purpose: running short is fixed by
+        the trim, but paper that has gone past the goal cannot be taken back.
   \item After the paper has stopped, the machine compares the count with the
-        goal. If it is short, it bumps the motor briefly and checks again.
+        goal. If it is short, it bumps the motor briefly and checks again. It
+        watches how far the roll glides after each stop and sizes the next
+        bump so that even twice that glide stays short of the goal; the last
+        bumps are tiny. What it learns is used for that roll only and
+        forgotten when the next wind starts.
   \item It only says \shows{DONE} when the stopped count is at or past the
         goal. It never guesses: the decision is made on paper that has stopped
         moving.
@@ -46,10 +52,13 @@ The guarantee is only as good as the measurement. It assumes:
 \end{itemize}
 
 \section{How much over?}
-A normal roll is a little longer than the label, usually by a few inches,
-because the roll coasts on after the last bump. The design estimate is about
-1.3 inches over on average and no more than about 14 inches in the worst
-case. These figures are estimates from the design and have not yet been
+A normal roll is a little longer than the label: the 1 inch margin plus the
+glide after the last bump. When the real coast of your machine is under
+about 5 feet the design estimate is well under an inch past the goal on
+average and no more than about 2 inches; a roll that finishes with bumps is
+at most about 3 inches past the goal. If the real coast is longer than the
+2 yard setting, the main run itself goes past the goal by the difference,
+and the trim cannot take that back. These figures are estimates from the design and have not yet been
 measured on the bench (Chapter~\ref{ch:limits}). If your rolls are regularly
 much longer than that, recalibrate the coast (Chapter~\ref{ch:calibration}).
 

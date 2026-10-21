@@ -38,7 +38,7 @@ pub const VERIFY_TOLERANCE_PULSES: i64 = 20;
 
 /// Run-up (pulses, one turn of the encoder) a debug test wind needs beyond the coast: the firmware
 /// cuts a RUN at `length - coast`, so a length barely above the coast would never reach full speed
-/// (the factory coast is 2291 pulses, DEC-010).
+/// (the factory coast is 13746 pulses = 72 in, DEC-012).
 const RUN_UP_PULSES: i64 = 2400;
 
 /// Shortest test wind worth making with this coast.
@@ -839,6 +839,18 @@ fn apply_and_verify(ctx: &Ctx, coast: i64, scale: i64, cap: i64) -> Res<(Params,
     Ok((after, miss))
 }
 
+/// RUN length of the length check: 36 in when that leaves a full-speed run-up past the coast;
+/// otherwise (an uncalibrated 72 in factory coast, DEC-012) the coast plus 36 in, so the relay
+/// still drives 36 in before its cut. The expected length is read from the settled count either way.
+fn length_check_pulses(p: &Params) -> i64 {
+    let check = pulses_for_inches(p, CHECK_INCHES);
+    if check >= min_test_len(p.coast) {
+        check
+    } else {
+        check + p.coast
+    }
+}
+
 fn length_body(ctx: &Ctx) -> Res<AutoResult> {
     ctx.cl().debug(true)?;
     let p = ctx.cl().param()?;
@@ -848,8 +860,9 @@ fn length_body(ctx: &Ctx) -> Res<AutoResult> {
             s.undo = Some(p.clone());
         }
     });
-    let pulses = pulses_for_inches(&p, CHECK_INCHES);
-    if pulses <= p.coast || pulses > RUN_MAX {
+    let pulses = length_check_pulses(&p);
+    log::info!("length check: RUN {pulses} pulses (coast {})", p.coast);
+    if pulses > RUN_MAX {
         return Err(CalError::Refused(
             "A 36 inch test wind does not fit the winder's current settings. Use Reset to factory settings first.".into(),
         ));

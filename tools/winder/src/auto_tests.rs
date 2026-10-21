@@ -108,8 +108,8 @@ fn full_auto_success_then_save() {
         res.residual_pulses.unwrap().abs() <= VERIFY_TOLERANCE_PULSES,
         "{res:?}"
     );
-    // The old coast was the factory 2291, so the test winds overshot by about the true
-    // follow-through minus it.
+    // The old coast was the factory 13746 (72 in), so the test winds missed by about the true
+    // follow-through minus it (far short here).
     assert!(
         (res.residual_before_pulses.unwrap() - (3000 - FACTORY.coast)).abs() <= 300,
         "{res:?}"
@@ -212,6 +212,33 @@ fn keepalive_holds_test_mode_while_waiting_for_a_measurement() {
     std::thread::sleep(Duration::from_millis(1500));
     assert_eq!(r.ctx.auto.view().phase, Phase::NeedMeasure);
     assert!(r.dev.lock().unwrap().in_debug());
+    r.ctx.auto.offer_skip().unwrap();
+    h.join().unwrap();
+    assert_eq!(r.ctx.auto.view().phase, Phase::Done);
+    device_quiet(&r);
+}
+
+#[test]
+fn length_check_fits_the_factory_72_inch_coast() {
+    // DEC-012: the factory coast (13746) is longer than a 36 in wind, so the check drives the
+    // coast plus 36 in; a calibrated short coast keeps the plain 36 in wind.
+    let p36 = pulses_for_inches(&FACTORY, CHECK_INCHES);
+    assert!(p36 < FACTORY.coast);
+    assert_eq!(length_check_pulses(&FACTORY), p36 + FACTORY.coast);
+    let calibrated = Params {
+        coast: 900,
+        ..FACTORY.clone()
+    };
+    assert_eq!(length_check_pulses(&calibrated), p36);
+    let r = rig(fast_dev(3000));
+    assert_eq!(r.ctx.cl().param().unwrap().coast, FACTORY.coast);
+    let (h, expected) = to_need_measure(&r);
+    // the RUN cut at 36 in and the fake coasted its true 3000 pulses past it
+    let want = inches_for_pulses(&FACTORY, p36 + 3000);
+    assert!(
+        (expected - want).abs() < 0.5,
+        "expected {expected} want {want}"
+    );
     r.ctx.auto.offer_skip().unwrap();
     h.join().unwrap();
     assert_eq!(r.ctx.auto.view().phase, Phase::Done);
@@ -334,7 +361,13 @@ fn backwards_counting_encoder_is_refused() {
     d.reversed = true; // A and B swapped: GET count runs negative while winding
     let r = rig(d);
     debug_on(&r);
-    let out = run_once_with(&r.ctx.client, 5000, Duration::from_secs(5), &mut NoObserver);
+    // longer than the factory coast (DEC-012) so only the backwards count refuses it
+    let out = run_once_with(
+        &r.ctx.client,
+        20_000,
+        Duration::from_secs(5),
+        &mut NoObserver,
+    );
     assert!(matches!(out, Err(CalError::Refused(_))), "{out:?}");
 }
 

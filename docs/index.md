@@ -35,6 +35,13 @@ Start with the specification cascade; everything else hangs off it.
 - [DEC-001 avr-libc startup and ISR() replace the hand-written vector table](decisions/DEC-001-avr-libc-startup.md)
 - [DEC-002 M1 landed as a port, later milestones are ticket-first](decisions/DEC-002-m1-port-bootstrap.md)
 - [DEC-003 four-button panel, signed count, 40 kHz encoder poll](decisions/DEC-003-buttons-signed-count-40khz-poll.md)
+- [DEC-004 controller extraction, toggle counters, manual rename, host link](decisions/DEC-004-controller-host-link-manual.md)
+- [DEC-005 fail-safes: debug host timeout, watchdog, ISR cut record, host-link hardening](decisions/DEC-005-host-fail-safes.md)
+- [DEC-006 result screen after a wind, one length formatter, roll speed](decisions/DEC-006-result-screen-and-speed.md)
+- [DEC-007 LCD bus: internal I2C pull-ups, 10 kHz, changed characters only](decisions/DEC-007-lcd-internal-pullups-slow-i2c.md)
+- [DEC-008 winding screen percent bar, result miss in inches](decisions/DEC-008-display-progress-and-inch-miss.md)
+- [DEC-009 bounded main-loop pass, 32-bit ms tick, prioritised LCD scheduler, encoder proof](decisions/DEC-009-bounded-main-loop-and-encoder-proof.md)
+- [DEC-010 default bump (trim) mode with a minimum-amount guarantee, margin, loud failure](decisions/DEC-010-default-bump-trim-mode-with-minimum-amount-guarantee.md)
 
 ## Working in this repository
 

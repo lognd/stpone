@@ -75,9 +75,10 @@ function(add_avr_executable TARGET_NAME SOURCE_FILE)
 endfunction()
 
 set(LCD_SOURCES src/stpalpha/hal/lcd.c)
+set(UART_SOURCES src/stpalpha/hal/uart.c)
 
 # The production image.
-add_avr_executable(firmware src/stpalpha/main.cpp EXTRA_SOURCES ${LCD_SOURCES})
+add_avr_executable(firmware src/stpalpha/main.cpp EXTRA_SOURCES ${LCD_SOURCES} ${UART_SOURCES})
 
 # Build/simulation smoke image: prints on USART1 (tests/system/test_firmware.py).
 add_avr_executable(hello_world tests/avr/hello_world.cpp)
@@ -90,6 +91,9 @@ add_avr_executable(test_encoder tests/avr/test_encoder.cpp EXTRA_SOURCES ${LCD_S
 add_avr_executable(test_lcd tests/avr/test_lcd.cpp EXTRA_SOURCES ${LCD_SOURCES})
 add_avr_executable(test_leds_pins tests/avr/test_leds_pins.cpp EXTRA_SOURCES ${LCD_SOURCES})
 add_avr_executable(test_timer0 tests/avr/test_timer0.cpp EXTRA_SOURCES ${LCD_SOURCES})
+
+# Formatting twin of tests/unit/render_driver.cpp, run in simavr (tests/system/test_render_fmt.py).
+add_avr_executable(test_render_fmt tests/avr/test_render_fmt.cpp)
 
 # Uploading is owned by scripts/flash.py (bootloader attach + avrdude);
 # keep cmake to building images.

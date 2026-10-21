@@ -40,3 +40,8 @@ FROBLEMS.md
 
 # Secrets
 .env
+
+# winder host tool
+tools/winder/target/
+.crunk/
+.serena/

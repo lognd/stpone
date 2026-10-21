@@ -13,12 +13,13 @@ Paired verification: [`L1-customer-tests.md`](L1-customer-tests.md)
 
 | ID | Requirement | Milestone | verified-by |
 |---|---|---|---|
-| REQ-001 | I press BTN1 for 30 yards or BTN2 for 90 yards and the winder runs until exactly that much paper has passed the measuring wheel, then stops by itself. | M1 | CT-001 |
-| REQ-002 | I can stop a wind early with BTN1 or BTN2, pause and resume it with BTN3, and the motor stops immediately; while idle, BTN4 held down jogs the winder. | M1 | CT-002 |
+| REQ-001 | I press BTN1 for 30 yards or BTN2 for 90 yards and the winder runs until at least that much paper (plus the safety margin I configured, 1.0 in by default) has passed the measuring wheel, then stops by itself (DEC-010 supersedes "exactly"). | M1 | CT-001 |
+| REQ-002 | I can stop a wind early with BTN1 or BTN2, pause and resume it with BTN3, and the motor stops immediately; while idle or paused, each BTN4 click toggles manual mode, which runs the motor by hand. | M1 | CT-002 |
 | REQ-003 | The display tells me what the target is when idle, and while winding shows the live count, the percent done, and yards so far against the target. | M1 | CT-003 |
 | REQ-004 | When a wind finishes or is stopped the machine beeps three times so I hear it from across the shop; starting the next wind silences it. | M1 | CT-004 |
 | REQ-005 | The four LEDs show progress in quarters while winding and a distinct resting pattern when idle. | M1 | CT-005 |
 | REQ-006 | The wheel may turn either way: the length is the distance travelled whichever direction, no count is ever missed, and a reset happens only when I start a wind. (DEC-003 supersedes the negative clamp.) | M1 | CT-006 |
+| REQ-007 | My customers must receive at least the ordered amount: a wind the machine reports as finished (PASS) has passed at least the target plus the margin on the measuring wheel, provided the encoder counts correctly; a wind that cannot get there (jam, empty roll, stopped early) is reported loudly as UNDER TARGET and never looks like a success (DEC-010). | M1 | CT-007 |
 
 ## B. The machine as wired
 

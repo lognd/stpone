@@ -51,20 +51,30 @@
 
 /* ---- Shared state (declared in setup.h) ---- */
 
-volatile uint8_t timer0_ticks;
+volatile uint32_t timer0_ticks;
 volatile uint8_t btn_state;
-volatile uint8_t btn_events;
+volatile uint8_t btn_toggles[4];
 volatile int32_t enc_count;
 volatile uint16_t enc_errors;
+// |count| at which the encoder ISR drops the relay (0xFFFFFFFF = never).
+// frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P1"
+// frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0103
+volatile uint32_t enc_stop_at = 0xFFFFFFFFu;
+/* |count| at which the ISR last dropped a live relay; valid until relay_on(). */
+static volatile uint32_t g_cut_count;
+static volatile bool g_cut_valid;
 volatile uint8_t enc_isr_count;
+/* Largest TCNT1 seen at Timer1 ISR entry: cycles from the compare match to the first ISR
+ * instructions, i.e. the worst entry latency; 400 or more would mean a whole poll period was lost. */
+static volatile uint16_t g_isr_lat_max;
 volatile uint16_t buzz_ticks;
 
 /* Shift-register debounce buffers (16 samples per button, 1 ms each). The
  * panel buttons are latching with long, slow travel, so the contact needs a
  * wide window to settle. */
 static uint16_t g_btn_sr[4];
-/* Previous debounced snapshot used to detect edges for btn_events. */
-static uint8_t g_btn_prev_state;
+/* Main-loop side of btn_toggles: how many toggles btn_consume() has taken. */
+static uint8_t g_btn_seen[4];
 /* Previous encoder sample (bit0 = A, bit1 = B). */
 static uint8_t g_enc_prev;
 /* Last valid direction (+1 / -1), used to resolve a two-bit jump. */
@@ -96,6 +106,12 @@ ISR(BADISR_vect) {
 // frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P2"
 // frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0103
 ISR(TIMER1_COMPA_vect) {
+    /* Entry latency evidence (DEC-009): TCNT1 counts cycles since the compare match (CTC).
+     * Read first so the figure includes the compiler prologue (about 39 cycles: response, vector jump, 15 pushes). */
+    uint16_t lat = TCNT1;
+    if (lat > g_isr_lat_max) {
+        g_isr_lat_max = lat;
+    }
     enc_isr_count++;
 
     uint8_t cur = 0;
@@ -121,20 +137,38 @@ ISR(TIMER1_COMPA_vect) {
         g_enc_dir = step;
     }
     enc_count += step;
+    /* Cut the relay here at 40 kHz so a slow LCD redraw cannot delay the stop. */
+    int32_t c = enc_count;
+    uint32_t mag =
+        c < 0 ? (uint32_t)0 - (uint32_t)c : (uint32_t)c; /* |c| without signed overflow */
+    if (mag >= enc_stop_at && (PORTB & (1 << RELAY_BIT))) {
+        g_cut_count = mag; /* the exact count at which the relay dropped */
+        g_cut_valid = true;
+        PORTB &= (uint8_t) ~(1 << RELAY_BIT);
+    }
 }
 
 /* One button's 16-sample shift register: 16 ms of 1s sets the debounced bit,
  * 16 ms of 0s clears it, anything else leaves it alone. */
+// frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P6"
+// frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0102
 static inline void debounce_one(uint8_t idx, uint8_t pressed) {
     uint16_t sr = (uint16_t)(g_btn_sr[idx] << 1);
     if (pressed) {
         sr |= 1;
     }
     g_btn_sr[idx] = sr;
+    uint8_t was = (uint8_t)(btn_state & (1 << idx));
     if (sr == 0x0000) {
         btn_state &= (uint8_t) ~(1 << idx);
     } else if (sr == 0xFFFF) {
         btn_state |= (uint8_t)(1 << idx);
+    }
+    /* Every debounced change (either edge) is one physical push of a latching
+     * button. Counting them, instead of OR-ing a flag, keeps two pushes that
+     * land inside one slow main-loop pass distinct. */
+    if ((uint8_t)(btn_state & (1 << idx)) != was) {
+        btn_toggles[idx]++;
     }
 }
 
@@ -143,7 +177,6 @@ static inline void debounce_one(uint8_t idx, uint8_t pressed) {
  * nothing here may delay an encoder sample. Timer0 cannot re-enter itself
  * (its body is far shorter than 1 ms). */
 // frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P6"
-// frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0102
 ISR(TIMER0_COMPA_vect, ISR_NOBLOCK) {
     timer0_ticks++;
 
@@ -151,12 +184,6 @@ ISR(TIMER0_COMPA_vect, ISR_NOBLOCK) {
     debounce_one(1, PINB & (1 << BTN_BIT_2));
     debounce_one(2, PINE & (1 << BTN_BIT_3));
     debounce_one(3, PIND & (1 << BTN_BIT_4));
-
-    /* Latch every changed bit (either edge) until btn_consume() clears it,
-     * so a press is never lost even if the main loop is slower than 1 kHz. */
-    uint8_t state = btn_state;
-    btn_events |= (uint8_t)(g_btn_prev_state ^ state);
-    g_btn_prev_state = state;
 
     if (buzz_ticks != 0) {
         buzz_ticks--;
@@ -178,7 +205,63 @@ void set_leds(uint8_t nibble) {
 // frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P1"
 // frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0105
 void relay_on(void) {
+    g_cut_valid = false; /* a new drive period: forget the previous cut */
     PORTB |= (1 << RELAY_BIT);
+}
+
+// frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P8"
+// frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0102
+uint32_t millis(void) {
+    uint8_t sreg = SREG;
+    cli(); /* the 32-bit read must not be torn by the 1 kHz increment (about 12 cycles) */
+    uint32_t t = timer0_ticks;
+    SREG = sreg;
+    return t;
+}
+
+// frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P1"
+// frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0105
+bool enc_take_cut(uint32_t* count) {
+    uint8_t sreg = SREG;
+    cli();
+    bool valid = g_cut_valid;
+    if (valid) {
+        *count = g_cut_count;
+        g_cut_valid = false;
+    }
+    SREG = sreg;
+    return valid;
+}
+
+// frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P2"
+// frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0103
+uint16_t enc_isr_lat_max(void) {
+    uint8_t sreg = SREG;
+    cli(); /* 16-bit read must not be torn by the ISR (about 6 cycles) */
+    uint16_t v = g_isr_lat_max;
+    SREG = sreg;
+    return v;
+}
+
+// frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P2"
+// frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0103
+void enc_isr_lat_clear(void) {
+    uint8_t sreg = SREG;
+    cli();
+    g_isr_lat_max = 0;
+    SREG = sreg;
+}
+
+// frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P1"
+// frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0105
+bool enc_cut_pending(void) {
+    return g_cut_valid; /* single byte: the read is atomic */
+}
+
+// frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P1"
+// frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0105
+void enc_clear_cut(void) {
+    g_cut_valid = false;
 }
 
 // frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P1"
@@ -207,11 +290,25 @@ void buzz(uint16_t ms) {
 // frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P6"
 // frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0105
 bool btn_consume(uint8_t bit) {
-    cli();
-    uint8_t hit = (uint8_t)(btn_events & bit);
-    btn_events &= (uint8_t)~bit;
-    sei();
-    return hit != 0;
+    /* btn_toggles[i] has one writer (Timer0) and g_btn_seen[i] one (main); both
+     * are single bytes, so no interrupt masking is needed and the encoder ISR
+     * is never delayed. A button's pending count is the wrapping difference. */
+    bool hit = false;
+    for (uint8_t i = 0; i < 4; ++i) {
+        if ((bit & (1 << i)) && btn_toggles[i] != g_btn_seen[i]) {
+            g_btn_seen[i]++;
+            hit = true;
+        }
+    }
+    return hit;
+}
+
+// frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P6"
+// frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0105
+void btn_flush(void) {
+    for (uint8_t i = 0; i < 4; ++i) {
+        g_btn_seen[i] = btn_toggles[i];
+    }
 }
 
 // frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P6"
@@ -225,6 +322,18 @@ void panic(void) {
 }
 
 /* ---- Boot ---- */
+
+// frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P6"
+// frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0108
+uint8_t btn_pending(uint8_t idx) {
+    return (uint8_t)(btn_toggles[idx] - g_btn_seen[idx]);
+}
+
+// frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P6"
+// frob:doc docs/spec/L5-component-design/SUB-01-firmware-hal.md#comp-0107
+int8_t enc_direction(void) {
+    return g_enc_dir;
+}
 
 // docs/runbooks/hardware-tests.md P6, simulator evidence tests/system/test_firmware.py"
 // frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P6"
@@ -241,9 +350,10 @@ void hal_init(void) {
      * so often they starve Timer0. */
     USBCON = 0;
 
-    /* I2C pins: inputs, pull-ups off (TWI peripheral takes over). */
+    /* I2C pins: inputs with the internal pull-ups ON -- the board has no external SDA/SCL
+     * pull-ups. The pull-up stays active while the TWI peripheral drives the pins. */
     DDRD &= (uint8_t) ~((1 << I2C_SDA_BIT) | (1 << I2C_SCL_BIT));
-    PORTD &= (uint8_t) ~((1 << I2C_SDA_BIT) | (1 << I2C_SCL_BIT));
+    PORTD |= (1 << I2C_SDA_BIT) | (1 << I2C_SCL_BIT);
 
     /* Encoder inputs with pull-ups so the lines are stable when unplugged. */
     DDRD &= (uint8_t) ~(1 << ENC_BIT_A);

@@ -34,6 +34,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+/* Sentinel below any reachable count (INT32_MIN is not visible to host clang-tidy). */
+static const int32_t kNoCount = -2147483647L - 1;
+
 static constexpr float kCountsPerRev = 2400.0f;
 
 static int32_t read_enc_atomic(void) {
@@ -49,7 +52,7 @@ int main(void) {
     lcd_clear();
 
     uint8_t last_isr = 0;
-    int32_t last_count = INT32_MIN;
+    int32_t last_count = kNoCount;
 
     for (;;) {
         char buf[21];
@@ -101,7 +104,7 @@ int main(void) {
             enc_count = 0;
             enc_errors = 0;
             sei();
-            last_count = INT32_MIN;
+            last_count = kNoCount;
         }
     }
 }

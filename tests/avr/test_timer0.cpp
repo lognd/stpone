@@ -62,7 +62,7 @@ int main(void) {
         lcd_write_str(buf);
 
         // Row 2: ISR execution counter (changes at ~1 kHz if ISR runs)
-        uint8_t ticks = timer0_ticks;
+        uint8_t ticks = static_cast<uint8_t>(millis());
         snprintf(buf, sizeof(buf), "ISR_TICKS=%3u %s     ", ticks,
                  (ticks != last_ticks) ? "RUN" : "---");
         buf[20] = '\0';

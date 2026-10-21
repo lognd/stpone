@@ -10,9 +10,9 @@ Component design (L5) exists per subsystem under `L5-component-design/`.
 
 | ID | Subsystem | Owned code | Responsibility and interfaces | satisfies | verified-by | Milestone |
 |---|---|---|---|---|---|---|
-| SUB-01 | firmware-hal | src/stpalpha/hal/setup.c, include/stpalpha/hal/setup.h | Boot (`hal_init` from `.init8`), the two timer ISRs, the bad-interrupt handler, `panic`, the actuator API, and the shared ISR/main state. Out: the C-linkage header. | SYS-002, SYS-003, SYS-004, SYS-006 | SUBT-01 | M1 |
+| SUB-01 | firmware-hal | src/stpalpha/hal/setup.c, include/stpalpha/hal/setup.h, src/stpalpha/hal/uart.c, include/stpalpha/hal/uart.h | Boot (`hal_init` from `.init8`), the two timer ISRs, the USART1 host-link driver, the bad-interrupt handler, `panic`, the actuator API, and the shared ISR/main state. Out: the C-linkage header. | SYS-002, SYS-003, SYS-004, SYS-006 | SUBT-01 | M1 |
 | SUB-02 | firmware-lcd | src/stpalpha/hal/lcd.c, include/stpalpha/hal/lcd.h | Blocking TWI + HD44780 4-bit driver behind a PCF8574. Out: `lcd_*` API. | SYS-005 | SUBT-02 | M1 |
-| SUB-03 | firmware-app | src/stpalpha/main.cpp, include/stpalpha/machine.h | The winder state machine, length model constants, screen renderers, the non-blocking beep sequencer, LED bargraph. In: SUB-01, SUB-02. | SPEC-001, SPEC-002, SPEC-003, SPEC-004, SPEC-005, SYS-004 | SUBT-03 | M1 |
+| SUB-03 | firmware-app | src/stpalpha/main.cpp, include/stpalpha/machine.h, include/stpalpha/controller.h, include/stpalpha/hostlink.h | The winder state machine (pure `Controller`), the host-link command interpreter (`HostLink`, `Params`), EEPROM persistence, length model constants, screen renderers, the non-blocking beep sequencer, LED bargraph. In: SUB-01, SUB-02. | SPEC-001, SPEC-002, SPEC-003, SPEC-004, SPEC-005, SYS-004 | SUBT-03 | M1 |
 | SUB-04 | hardware-harnesses | tests/avr/*.cpp | One image per panel element plus `hello_world` (USART1 smoke used by the simulator tests). In: SUB-01, SUB-02. | SYS-010, SPEC-016 | SUBT-04 | M1 |
 
 ## Host tooling subsystems

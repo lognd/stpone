@@ -1,0 +1,90 @@
+% Chapter 9: settings.
+\chapter{Settings}\label{ch:settings}
+\index{settings}
+
+The machine keeps seven numbers in its own memory. They survive power-off.
+You change them only from a PC with the \textbf{winder} program
+(Chapter~\ref{ch:pc}); there is no settings menu on the panel. Most owners
+never need to touch them: calibration (Chapter~\ref{ch:calibration}) sets the
+important ones for you.
+
+The machine counts length in \emph{encoder counts}. From the factory, one
+inch of paper is about 191 counts, and one count is about 0.005 inch. The
+program converts to inches and yards for you.
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Setting (name in the program / short name)} & \textbf{Factory value} & \textbf{What it does, allowed range} \\
+\midrule
+\ui{Measuring wheel size}\par \setting{wheel\_um} &
+  4.0015 in across\par (101638 micrometres) &
+  Wheel diameter. Turns counts into inches. Range 50000 to 300000 micrometres
+  (about 2 to 11.8 in). \\
+\ui{Encoder counts per wheel turn}\par \setting{cpr} &
+  2400 &
+  Counts per full turn of the wheel. Must match the encoder (600 lines x 4).
+  Range 100 to 100000. \\
+\ui{Short wind (30 yd button)}\par \setting{short} &
+  30.0 yd\par (206187 counts) &
+  Target length for \btn{1}. Range 1000 to 4000000 counts. \\
+\ui{Long wind (90 yd button)}\par \setting{long} &
+  90.0 yd\par (618562 counts) &
+  Target length for \btn{2}. Same range. \\
+\ui{Coast after the motor stops}\par \setting{coast} &
+  12 in\par (2291 counts) &
+  How far the roll glides after the motor is switched off. The motor is cut
+  this far before the goal. Must be smaller than both targets. Set by
+  calibration. \\
+\emph{(not in the program)}\par \setting{margin} &
+  1.0 in\par (191 counts) &
+  Extra length added to every roll for the guarantee. Range 0 to 2000 counts
+  (about 0 to 10.5 in). \\
+\emph{(not in the program)}\par \setting{bump} &
+  1 (on) &
+  1 = trim mode with the minimum-amount guarantee. 0 = legacy mode (no trim,
+  no guarantee). \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+One more rule: the longer target plus the margin may not exceed 4000000
+counts (about 580 yards). The machine refuses settings that break any rule.
+
+\section{Changing a setting}
+\begin{enumerate}
+  \item Start the \textbf{winder} program and open the \ui{Settings} tab.
+  \item Type the new value. A banner \ui{Unsaved changes} appears.
+  \item Click \ui{Save to the machine}. Nothing changes on the machine until
+        you do. \ui{Undo all} throws your edits away.
+\end{enumerate}
+\ui{Reset to factory settings} puts every value back to the table above.
+Check the screen afterwards: if the \ui{Unsaved changes} banner shows, click
+\ui{Save to the machine} to store them.
+
+\begin{warning}[Change the wheel and counts only with care]
+A wrong \ui{Measuring wheel size} or \ui{Encoder counts per wheel turn}
+makes every roll the wrong length. After changing either, run a calibration
+with the length check (Chapter~\ref{ch:calibration}).
+\end{warning}
+
+\section{Margin and legacy mode}\label{sec:set-bump}
+\index{legacy mode}
+The \setting{margin} and \setting{bump} settings are not shown in the program
+and calibration never changes them. They can only be changed through the
+serial command line by a technician
+(see \path{docs/hardware/serial-protocol.md} in the source repository).
+Leave \setting{bump} at 1. With \setting{bump} at 0 the machine behaves like
+the older firmware: it cuts the motor once and accepts wherever the roll
+stops, with no trim, no \shows{UNDER TARGET} check and no guarantee.
+
+\section{When settings are lost}\label{sec:settings-lost}
+\index{settings!lost}
+The settings are stored with a check code. If the stored settings are
+damaged, or were saved by firmware older than fw=6, the machine ignores them
+and uses the factory values. After updating to fw=\fwver{} from an older
+version you must calibrate (or re-enter your numbers) and save once. The
+program's \ui{Connection check} reports this as \ui{Saved settings are valid}
+failing.

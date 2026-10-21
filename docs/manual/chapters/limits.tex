@@ -1,0 +1,35 @@
+% Chapter 15: known limits.
+\chapter{Known limits}\label{ch:limits}
+\index{limits}
+
+This machine is honest about what it cannot do. Please read these points.
+
+\begin{enumerate}[itemsep=0.6em]
+  \item \textbf{No jam detection during the main run.} The machine only
+        notices that the paper has stopped during the trim at the end. A jam,
+        tear or empty supply in the middle of a wind is not detected; the
+        motor keeps running. Stay with the machine while it winds.
+  \item \textbf{The guarantee trusts the measuring wheel.} If the wheel slips,
+        is dirty, worn or lifted, the count is wrong and \shows{DONE} can be
+        wrong too. Keep the wheel clean and calibrated.
+  \item \textbf{Overrun figures are design estimates.} The expected overrun of
+        about 1.3 inches on average (worst about 14 inches) comes from the
+        design calculations and has not yet been confirmed on the bench. If the
+        coast turns out to be twice what was assumed, the estimates become about
+        3.6 inches average and 26.5 inches worst case.
+  \item \textbf{On/off motor only.} There is no speed control, so the motor
+        always winds at full speed and coasts at the end.
+  \item \textbf{Screen glitches.} Relay noise can garble the screen briefly. It
+        repairs itself within about 2 seconds; the wind is not affected.
+  \item \textbf{A reset loses the result.} After a power cut or watchdog reset
+        the machine forgets the wind in progress and its result.
+  \item \textbf{Two lengths on the panel.} Only the short (30 yd) and long
+        (90 yd) targets are on buttons. Other lengths need the settings changed
+        from the PC, or a manual run.
+  \item \textbf{Margin and legacy mode are not in the PC program.} They can only
+        be changed by a technician over the serial command line.
+  \item \textbf{Chromebook use is untested.}
+  \item \textbf{Bench tests not yet signed off.} The expected values in the bench
+        self-test (Appendix~\ref{app:bench}) come from the design and source
+        code, not yet from a measured machine.
+\end{enumerate}

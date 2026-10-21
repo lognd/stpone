@@ -1,0 +1,140 @@
+% Chapter 14: troubleshooting.
+\chapter{Troubleshooting}\label{ch:trouble}
+\index{troubleshooting}
+
+Find the symptom in the left column. Try the actions in order. Switch the
+power off before touching the paper path. If nothing helps, write down what
+the screen shows and call [SUPPORT CONTACT].
+
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.4}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}>{\raggedright\arraybackslash}p{0.38\textwidth}@{}}
+\toprule
+\textbf{Symptom} & \textbf{Likely cause} & \textbf{Action} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Symptom} & \textbf{Likely cause} & \textbf{Action} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\emph{continued on next page}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+%
+\multicolumn{3}{@{}l}{\textbf{Buttons and starting}} \\
+A push did nothing &
+  The machine was not at the idle screen; it was just switched on; the push
+  came too soon after another; or Test mode is on. &
+  Check that the screen shows the idle screen (\shows{[1] 30yd [2] 90yd}).
+  Wait one second after power-up. Leave a short moment between pushes.
+  If it shows \shows{DEBUG: HOST CONTROL}, see below. If a push still does
+  nothing, note which button and which screen, and report it. \\
+A wind started by itself at power-up &
+  Should not happen: a button already pushed in at power-up is ignored. &
+  Switch off. Report it to [SUPPORT CONTACT]. \\
+A button stays pushed in after a wind &
+  Normal: the buttons are latching switches. &
+  Nothing to do. The next push works whichever way it rests. \\
+\btn{3} does nothing at idle &
+  Normal: \btn{3} only pauses a running wind. &
+  -- \\
+\btn{4} does nothing during a wind &
+  Normal: \btn{4} only works at idle or while paused. &
+  Push \btn{3} to pause first. \\
+Screen shows \shows{DEBUG: HOST CONTROL}, panel will not start &
+  A PC has the machine in Test mode. &
+  Finish or close the program on the PC, or push \btn{1} or \btn{2} to end
+  Test mode. It also ends by itself 5 seconds after the PC stops talking. \\
+%
+\midrule
+\multicolumn{3}{@{}l}{\textbf{During a wind}} \\
+Paper jams, tears or bunches &
+  Paper path problem. The machine does \emph{not} detect this during the main
+  run. &
+  Push \btn{1} or \btn{2} at once, or switch off. Clear the jam with the power
+  off. Treat the roll as short. \\
+Motor does not stop when \btn{1}/\btn{2} pushed &
+  Controller or relay fault. &
+  \textbf{Switch the power off.} Do not use the machine; call
+  [SUPPORT CONTACT]. \\
+Motor runs but the length stays at 0.0 &
+  Wheel not on the paper, wheel slipping, or encoder cable loose. &
+  Stop. Check the wheel and the encoder cable and connector. \\
+\shows{ERR:n} on the top row, or \shows{!! ENC MISS:n !} &
+  Encoder signals the controller could not read: loose connector, damaged
+  cable, electrical noise. &
+  Check the encoder cable and its connector. Keep it away from motor wires.
+  Measure the next roll by hand. If the number keeps rising, call
+  [SUPPORT CONTACT]. \\
+Trim takes a long time with many bumps &
+  Coast setting too large, or the roll is heavy and slow. &
+  Recalibrate (Chapter~\ref{ch:calibration}). \\
+%
+\midrule
+\multicolumn{3}{@{}l}{\textbf{Results}} \\
+\shows{!! UNDER TARGET !!} with \shows{SHORT} &
+  Paper stopped moving during the trim (ran out, jam, wheel lifted), more than
+  16 bumps were needed, or the trim took over 30 seconds. &
+  Push a button to silence. Check paper, jam, wheel. Do not sell the roll as
+  full length (Section~\ref{sec:under-target}). If it happens on good paper,
+  recalibrate. \\
+\shows{!! UNDER TARGET !!} with \shows{STOPPED} &
+  You (or someone) pushed \btn{1} or \btn{2} before the end. &
+  Normal. The roll is short by the amount shown. \\
+Rolls are much longer than the label (many inches) &
+  Coast setting too small, or wheel size wrong. &
+  Recalibrate with the length check. \\
+Rolls measure short by hand, but screen said \shows{DONE} &
+  Wheel slipping, dirty or worn; wheel size wrong. &
+  Clean the wheel, check it presses on the paper, recalibrate with the length
+  check. Replace a worn wheel. \\
+Result vanished from the screen &
+  It clears itself 60 seconds after a good wind. A power cut or reset also
+  clears it. &
+  Normal for \shows{DONE}. After a power cut, measure the roll by hand. \\
+%
+\midrule
+\multicolumn{3}{@{}l}{\textbf{Screen, LEDs and sound}} \\
+Screen garbled or blank for a moment &
+  Electrical noise from the relay. &
+  Wait 2 seconds; it redraws itself. \\
+Screen stays blank or garbled &
+  Screen cable loose, or screen fault. &
+  Switch off and on. Check the four-wire screen cable. \\
+Screen blank and machine restarted by itself &
+  The controller reset itself (watchdog) after a fault. The motor is stopped
+  and the result is lost. &
+  Measure the roll by hand. If it repeats, call [SUPPORT CONTACT]. \\
+Fault LED lit (where fitted) &
+  Internal controller fault. &
+  Switch off and on. If it comes back, call [SUPPORT CONTACT]. \\
+No beep at the end &
+  You stopped the wind yourself (stops are silent), or buzzer fault. &
+  Check the screen. If a full wind finished with \shows{DONE} and no beep,
+  report the buzzer. \\
+%
+\midrule
+\multicolumn{3}{@{}l}{\textbf{PC program}} \\
+Program says no adapter, or cannot connect &
+  Adapter not plugged in, missing driver, wrong wiring, no permission. &
+  Run the \ui{Connection check} (Section~\ref{sec:doctor}) and follow its
+  advice. Check TX to D0, RX to D1, GND to GND. \\
+\ui{Firmware is compatible} fails &
+  The firmware is too old or too new for this program. &
+  Update the firmware (Chapter~\ref{ch:flashing}) or download the latest
+  program. \\
+\ui{Saved settings are valid} fails &
+  Settings damaged, or firmware recently updated from before fw=6. &
+  Calibrate and save once (Section~\ref{sec:settings-lost}). \\
+Browser does not open &
+  No default browser, or a locked-down computer. &
+  Open \texttt{http://127.0.0.1:8765} yourself, or read
+  \texttt{winder-open-me.txt}. \\
+\ui{Stop motor} does not stop a wind &
+  The wind was started from the panel. &
+  Push \btn{1} or \btn{2} on the panel. \\
+\end{longtable}
+\endgroup

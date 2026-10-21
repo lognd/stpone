@@ -1,0 +1,75 @@
+% Chapter 11: calibration.
+\chapter{Calibration}\label{ch:calibration}
+\index{calibration}
+
+Calibration teaches the machine two things: how far the roll \emph{coasts}
+after the motor stops, and (optionally) how long an inch really is on your
+measuring wheel. It takes about 10 to 15 minutes.
+
+\textbf{Calibrate when:} the machine is new; you have updated the firmware
+from a version older than fw=6; the wheel has been replaced, cleaned of
+build-up, or re-mounted; the motor, belt or roll core has changed; or rolls
+are often much longer than the label.
+
+\section{Before you start}
+\begin{itemize}
+  \item Connect the PC and start \textbf{winder} (Chapter~\ref{ch:pc}). The
+        \ui{Home} tab should show the machine.
+  \item Load paper exactly as for a real wind. The machine will run several
+        short test winds and use some paper.
+  \item Have a tape measure or ruler and a pencil ready for the length check.
+  \item Want to see the steps first? Click \ui{Practice (nothing moves)}.
+\end{itemize}
+
+\section{The four steps}
+On \ui{Home} click \ui{Calibrate the machine}, or open the \ui{Calibrate} tab.
+
+\begin{enumerate}[label=\textbf{Step \arabic*},leftmargin=4.5em,itemsep=0.7em]
+  \item \textbf{Get ready.} Read the checklist on screen and confirm.
+  \item \textbf{Test winds.} Click \ui{Start automatic test}. The machine
+        runs at least four short test winds, measures how far each one
+        coasts and works out the average. It then runs a check wind; the
+        check passes if it stops within 20 counts (about 0.1 inch) of where
+        it was told to. Stay clear of the machine; it starts and stops by
+        itself. Click \ui{Stop motor} at the top of the page if anything goes
+        wrong.
+  \item \textbf{Check the length (optional, recommended).} This corrects the
+        wheel size.
+        \begin{enumerate}[label=\alph*.]
+          \item Draw a pencil line across the paper at the edge of the table.
+          \item Click \ui{Run}. The machine winds about 36 inches.
+          \item Measure from the table edge to the pencil line with a ruler, or count
+                sheets laid along it (US letter is 11 inches long, A4 is
+                11.69 inches).
+          \item Type in what you measured.
+        \end{enumerate}
+        Very small differences (under 0.2\%) are ignored. A difference over
+        10\% is refused as a measuring mistake; measure again. If the wheel
+        size changes, the program runs the automatic test again with the new
+        size.
+  \item \textbf{Save.} Look over the new numbers and click
+        \ui{Save to the machine}. Only the numbers you reviewed are stored.
+        Then click \ui{Back to Home}.
+\end{enumerate}
+
+If the program shows \ui{Something went wrong}, read the message, then click
+\ui{Try again} or \ui{Leave}. Nothing is saved until Step 4.
+
+\section{What calibration changes}
+\begin{itemize}
+  \item \ui{Coast after the motor stops} (\setting{coast}), from the test winds.
+  \item \ui{Measuring wheel size} (\setting{wheel\_um}), from the length check
+        if you did it.
+  \item It never changes \setting{margin} or \setting{bump}, or the
+        target lengths.
+\end{itemize}
+
+\section{After calibrating}
+Wind one 30 yard roll and look at the \shows{DONE} screen. A few inches over
+is normal. As an extra check, measure a roll by hand now and then and keep a
+note in the maintenance log (Chapter~\ref{ch:maintenance}).
+
+\section{From the command line}
+A technician can also run \texttt{winder calibrate} in a terminal, with
+\texttt{--lengths}, \texttt{--measured} and \texttt{--save} (see
+\texttt{winder --help}).

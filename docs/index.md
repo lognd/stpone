@@ -30,6 +30,10 @@ Start with the specification cascade; everything else hangs off it.
 - [Flashing the Pro Micro](runbooks/flash.md) -- `scripts/flash.py` on WSL and on plain Linux
 - [Bench hardware tests](runbooks/hardware-tests.md) -- the `test_*` images and what each screen means
 
+## Owner documentation
+
+- [Owner's manual (PDF)](manual/manual.pdf) -- printable user manual for owners and shop staff; sources in `manual/`, build with `latexmk` there
+
 ## Decisions
 
 - [DEC-001 avr-libc startup and ISR() replace the hand-written vector table](decisions/DEC-001-avr-libc-startup.md)
@@ -42,6 +46,7 @@ Start with the specification cascade; everything else hangs off it.
 - [DEC-008 winding screen percent bar, result miss in inches](decisions/DEC-008-display-progress-and-inch-miss.md)
 - [DEC-009 bounded main-loop pass, 32-bit ms tick, prioritised LCD scheduler, encoder proof](decisions/DEC-009-bounded-main-loop-and-encoder-proof.md)
 - [DEC-010 default bump (trim) mode with a minimum-amount guarantee, margin, loud failure](decisions/DEC-010-default-bump-trim-mode-with-minimum-amount-guarantee.md)
+- [DEC-011 latching buttons: every edge is one click, state kept in software](decisions/DEC-011-latching-buttons-every-edge-one-click.md)
 
 ## Working in this repository
 

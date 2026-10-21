@@ -32,10 +32,11 @@ static constexpr uint16_t kShortTenthsYd = 300;                // 30.0 yd
 static constexpr uint16_t kLongTenthsYd = 900;                 // 90.0 yd
 
 // ---- Buttons ----
-// The panel buttons are MOMENTARY; the latching is done here in software (DEC-011). The HAL
-// counts every debounced edge (btn_toggles) and btn_consume() hands them out one per loop
-// pass, so fast double pushes are neither merged nor dropped. Only PRESS edges become events
-// (take_pending); a release is consumed and ignored. The rules live in stpalpha::Controller
+// The panel buttons are LATCHING switches; a push flips the contact and it stays flipped. A
+// push is therefore one debounced edge in either direction, and every edge is one click
+// (DEC-011): the machine state lives in software, never in the switch level. The HAL counts
+// every debounced edge (btn_toggles) and btn_consume() hands them out one per loop pass, so
+// fast double pushes are neither merged nor dropped. The rules live in stpalpha::Controller
 // (include/stpalpha/controller.h).
 
 using stpalpha::Beep;
@@ -201,24 +202,15 @@ static uint16_t g_last_errors = 0;
 static uint8_t g_last_manual = 0;
 static bool g_redraw = true;
 
-// Take at most one pending toggle per button: the controller's per-pass input.
+// Take at most one pending toggle per button: the controller's per-pass input. The panel
+// buttons latch, so every debounced edge (down or up) is one click (DEC-011); there is no
+// level filter. btn_consume() is lock-free (single-byte counters), so no masking is needed.
 static void take_pending(Inputs& in) {
     in.pending = 0;
-    in.down_after = 0;
     for (uint8_t idx = 0; idx < 4; idx++) {
         uint8_t b = static_cast<uint8_t>(1 << idx);
-        cli();
-        bool hit = btn_consume(b);
-        // Level this toggle left the button at: current level, flipped once per later pending toggle.
-        bool level = (btn_state & b) != 0;
-        if (btn_pending(idx) & 1) {
-            level = !level;
-        }
-        sei();
-        if (hit &&
-            level) { // press edge = one click; the release edge of a momentary button is dropped
+        if (btn_consume(b)) {
             in.pending |= b;
-            in.down_after |= b;
         }
     }
 }

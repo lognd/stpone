@@ -1,0 +1,116 @@
+% Owner's manual for the Sandkey Services paper winder (M1, firmware fw=6).
+% Build: latexmk -pdf -interaction=nonstopmode -halt-on-error manual.tex
+% ASCII only. Chapters live in chapters/*.tex; shared macros are below.
+\documentclass[12pt,letterpaper,oneside]{book}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[letterpaper,margin=0.9in,headheight=15pt,includehead,includefoot]{geometry}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{needspace}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,decorations.pathmorphing}
+\usepackage[most]{tcolorbox}
+\usepackage{imakeidx}
+\makeindex[title={Index of settings and topics},columns=2,intoc]
+\usepackage[hidelinks,bookmarksnumbered,pdfusetitle]{hyperref}
+
+% ---------------------------------------------------------------- document facts
+\newcommand{\revdate}{2026-10-20}
+\newcommand{\fwver}{6}
+\newcommand{\machine}{Sandkey Services paper winder}
+
+\hypersetup{pdftitle={Paper Winder Owner's Manual},pdfauthor={stpone},
+  pdfsubject={Owner's manual, firmware fw=6, revision 2026-10-20}}
+
+% ---------------------------------------------------------------- page style
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Paper Winder -- Owner's Manual}
+\fancyhead[R]{\small\nouppercase{\leftmark}}
+\fancyfoot[L]{\small Rev.\ \revdate{}, firmware fw=\fwver}
+\fancyfoot[R]{\small Page \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancypagestyle{plain}{\fancyhf{}%
+  \fancyfoot[L]{\small Rev.\ \revdate{}, firmware fw=\fwver}%
+  \fancyfoot[R]{\small Page \thepage}%
+  \renewcommand{\headrulewidth}{0pt}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\setlist{itemsep=0.25em,topsep=0.3em}
+\renewcommand{\arraystretch}{1.25}
+\setcounter{tocdepth}{0}
+% One-page table of contents: tighten the gap between chapter entries.
+\usepackage[titles]{tocloft}
+\setlength{\cftbeforechapskip}{0.3em}
+
+% ---------------------------------------------------------------- macros
+% A panel button, by its number.
+\newcommand{\btn}[1]{\textbf{Button~#1}}
+% A LED, by its number.
+\newcommand{\led}[1]{\textbf{LED~#1}}
+% Literal text the machine or the program shows.
+\newcommand{\shows}[1]{\texttt{#1}}
+% A label in the PC program (button, tab, field).
+\newcommand{\ui}[1]{\textbf{#1}}
+% A setting name, indexed.
+\newcommand{\setting}[1]{\texttt{#1}\index{settings!#1@\texttt{#1}}}
+
+% Boxes for warnings, notes and tips (black and white friendly).
+\newtcolorbox{warning}[1][WARNING]{enhanced,breakable,colback=white,colframe=black,
+  boxrule=1.6pt,arc=0pt,fonttitle=\bfseries\large,coltitle=white,colbacktitle=black,
+  title={#1},before skip=0.8em,after skip=0.8em}
+\newtcolorbox{note}[1][NOTE]{enhanced,breakable,colback=black!5,colframe=black!60,
+  boxrule=0.8pt,arc=0pt,fonttitle=\bfseries,coltitle=black,colbacktitle=black!15,
+  title={#1},before skip=0.8em,after skip=0.8em}
+
+% A 20 x 4 LCD screen: type the four rows literally, one per line.
+\newlength{\lcdwidth}
+\AtBeginDocument{\settowidth{\lcdwidth}{\ttfamily\large MMMMMMMMMMMMMMMMMMMM}}
+\newtcblisting{lcd}[1][]{listing only,enhanced,colback=white,colframe=black,
+  boxrule=1.4pt,arc=2pt,left=6pt,right=6pt,top=2pt,bottom=2pt,
+  width=\lcdwidth+12pt+2.8pt+8pt,before skip=0.5em,after skip=0.5em,
+  listing options={basicstyle=\ttfamily\large,columns=fullflexible,
+    showlines=true,showstringspaces=false,keepspaces=true},
+  #1}
+
+\begin{document}
+\frontmatter
+\input{chapters/titlepage}
+\tableofcontents
+\mainmatter
+\input{chapters/quickstart}
+\input{chapters/safety}
+\input{chapters/overview}
+\input{chapters/panel}
+\input{chapters/winding}
+\input{chapters/guarantee}
+\input{chapters/screens}
+\input{chapters/beeps}
+\input{chapters/settings}
+\input{chapters/pcsoftware}
+\input{chapters/calibration}
+\input{chapters/flashing}
+\input{chapters/maintenance}
+\input{chapters/troubleshooting}
+\input{chapters/limits}
+\input{chapters/specs}
+\input{chapters/glossary}
+\appendix
+\input{chapters/quickref}
+\input{chapters/benchtests}
+\input{chapters/history}
+\backmatter
+\printindex
+\end{document}

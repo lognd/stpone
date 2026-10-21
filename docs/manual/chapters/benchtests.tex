@@ -1,0 +1,47 @@
+% Appendix B: bench self-test summary (P1-P11).
+\chapter{Bench self-test summary}\label{app:bench}
+\index{bench tests}
+
+\textit{For technicians.} The full procedures are in
+\texttt{docs/runbooks/hardware-tests.md} in the source repository. Each test
+loads one test image with \texttt{scripts/flash.py --target <name>} and checks
+the panel. Record pass/fail and notes for each. The expected values were
+worked out from the design and source code and have not yet all been
+confirmed on a real machine.
+
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.35}
+\begin{longtable}{@{}l>{\raggedright\arraybackslash}p{0.26\textwidth}>{\raggedright\arraybackslash}p{0.48\textwidth}l@{}}
+\toprule
+\textbf{Test} & \textbf{What} & \textbf{Looks for} & \textbf{Pass?} \\
+\midrule
+\endhead
+P1 & Firmware acceptance & The normal firmware: idle screen, 30/90 yd winds,
+  pause, manual, result screens. & \underline{\hspace{2.5em}} \\
+P2 & Encoder & One wheel turn changes the count by exactly 2400, both
+  directions; no missed counts at full speed. & \underline{\hspace{2.5em}} \\
+P3 & Buzzer & Beeps of 200, 500 and 1000 ms on \btn{1}, \btn{2}, \btn{3}. &
+  \underline{\hspace{2.5em}} \\
+P4 & Screen & Row order, all characters, corners, backlight. &
+  \underline{\hspace{2.5em}} \\
+P5 & LEDs and raw pins & LED chase, button pin levels. & \underline{\hspace{2.5em}} \\
+P6 & Timer and buttons & Each button lights its LED; presses under 16 ms
+  ignored; contact bounce of each latching button measured. &
+  \underline{\hspace{2.5em}} \\
+P7 & PC serial link & The machine answers the PC program's commands. &
+  \underline{\hspace{2.5em}} \\
+P8 & Watchdog and stuck screen bus & Controller recovers safely, relay open. &
+  \underline{\hspace{2.5em}} \\
+P9 & Result screen and roll speed & \shows{settling...} then \shows{DONE};
+  roll speed figure recorded. & \underline{\hspace{2.5em}} \\
+P10 & Panel survives the relay & Screen repairs itself after relay noise;
+  buttons keep working. & \underline{\hspace{2.5em}} \\
+P11 & Trim mode and guarantee & \shows{TRIMMING...}, bumps, \shows{DONE} at
+  or past the goal; \shows{UNDER TARGET} and alarm when the paper is held. &
+  \underline{\hspace{2.5em}} \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+Tested by: \underline{\hspace{6cm}}\quad Date: \underline{\hspace{3cm}}

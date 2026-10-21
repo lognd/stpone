@@ -74,11 +74,11 @@ namespace stpalpha {
     // frob:doc docs/spec/L5-component-design/SUB-03-firmware-app.md#comp-0303
     // One loop pass of sampled inputs.
     struct Inputs {
-        uint8_t pending;    // buttons that have ONE unconsumed toggle this pass
-        uint8_t down_after; // for each pending button: 1 if that toggle left it latched down
-        uint32_t count;     // |encoder count|
-        uint32_t now_ms;    // uptime: debug host-silence timeout and the trim timers
-        bool cut;           // the ISR cut the relay in the current drive period (enc_cut_pending)
+        uint8_t
+            pending;    // buttons clicked this pass: one debounced edge, either direction (DEC-011)
+        uint32_t count; // |encoder count|
+        uint32_t now_ms; // uptime: debug host-silence timeout and the trim timers
+        bool cut;        // the ISR cut the relay in the current drive period (enc_cut_pending)
     };
 
     // frob:doc docs/spec/L5-component-design/SUB-03-firmware-app.md#comp-0303
@@ -356,9 +356,9 @@ namespace stpalpha {
                 clear_result(); // a failure stays on the display until a button is pressed
             }
             track_result(in, o);
-            // A latching start button starts a wind only when pushed DOWN; popping
-            // it back up (e.g. to reset the panel after a wind) does nothing.
-            uint8_t start = in.pending & in.down_after;
+            // Every click starts a wind, whichever way it left the latching button (DEC-011,
+            // superseding DEC-003's down-only rule): one push, one wind.
+            uint8_t start = in.pending;
             if (start & kBtn1) {
                 return begin(short_pulses, o);
             }
@@ -425,6 +425,22 @@ namespace stpalpha {
             manual_ = false;
             relay_ = false;
             o.relay = false;
+            init_trim(in, o);
+            return o;
+        }
+
+        // A manual nudge carried a PAUSED wind across eff_target: become a PAUSED trim, so the
+        // bumps wait for play (BTN3) and manual stays capped at the goal by stop_at(). This
+        // pass's clicks are then handled by step_trim, so none is lost.
+        Outputs enter_paused_trim(const Inputs& in, Outputs o) {
+            trim_ = true;
+            paused_at_ = in.now_ms;
+            init_trim(in, o);
+            return step_trim(in, o);
+        }
+
+        // Shared trim bookkeeping for enter_trim and enter_paused_trim.
+        void init_trim(const Inputs& in, Outputs& o) {
             phase_ = TrimPhase::SETTLE;
             settle_count_ = in.count;
             settle_since_ = in.now_ms;
@@ -436,7 +452,6 @@ namespace stpalpha {
             learn_ = false;
             o.leds = bargraph(in.count, target_);
             o.changed = true;
-            return o;
         }
 
         Outputs step_wind(const Inputs& in, Outputs o) {
@@ -448,8 +463,11 @@ namespace stpalpha {
                             : end_wind(in, o, Beep::START, Outcome::NONE, false);
             }
             if (in.count >= eff_target()) {
-                return bump ? enter_trim(in, o)
-                            : end_wind(in, o, Beep::START, Outcome::NONE, false);
+                if (!bump) {
+                    return end_wind(in, o, Beep::START, Outcome::NONE, false);
+                }
+                return state_ == MachineState::PAUSED ? enter_paused_trim(in, o)
+                                                      : enter_trim(in, o);
             }
             bool was_winding = (state_ == MachineState::WINDING);
             if (in.pending & kBtn3) {

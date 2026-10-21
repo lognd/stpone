@@ -1,0 +1,73 @@
+% Chapter 4: panel buttons and LEDs.
+\chapter{Panel buttons and LEDs}\label{ch:panel}
+\index{buttons}\index{LEDs}
+
+\section{How the buttons work}\label{sec:latching}
+\index{buttons!latching}
+The four panel buttons are \textbf{latching} switches. Push one and it stays
+pushed in; push it again and it pops back out. The machine does not care
+which way a button is resting. \textbf{Every push, in or out, counts as one
+click}, and one click does one thing.
+
+\begin{itemize}
+  \item After a wind a button may still be sitting pushed in. That is normal.
+        You do not need to pop it out before the next wind.
+  \item A button that is already pushed in when you switch the power on does
+        nothing. The machine ignores button positions at power-up. Wait about
+        one second after power-up before you push a button.
+  \item Very fast double pushes may count as one: the machine ignores
+        contact chatter shorter than about 1/60 of a second.
+  \item While the PC program has the machine in Test mode, the panel cannot
+        start anything (Section~\ref{sec:testmode}).
+\end{itemize}
+
+\section{Button map}\label{sec:buttonmap}
+\index{button map}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Button} & \textbf{At the idle screen} & \textbf{During a wind} \\
+\midrule
+\btn{1} & Start a \textbf{30 yard} wind. & \textbf{Stop} the wind. \\
+\btn{2} & Start a \textbf{90 yard} wind. & \textbf{Stop} the wind. \\
+\btn{3} & Nothing. & \textbf{Pause}; push again to \textbf{resume}. \\
+\btn{4} & \textbf{Manual}: motor on; push again for motor off. &
+  While \emph{paused}: motor on/off to nudge the paper by hand
+  (stops by itself at the target length). While winding: nothing. \\
+\midrule
+Any button & Clears an \shows{UNDER TARGET} alarm \emph{and} does its normal job. & \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{note}[Tip]
+To stop quickly, push \emph{either} \btn{1} or \btn{2}; it does not matter
+which one started the wind.
+\end{note}
+
+\section{LEDs}\label{sec:leds}
+The four LEDs above the buttons tell you the state at a glance.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{LEDs lit} & \textbf{Meaning} \\
+\midrule
+\led{1} and \led{3} & Idle, ready to wind. \\
+\led{4} only & Manual mode: the motor is on. \\
+None, then 1, 1--2, 1--3, all four & Winding: a bar graph that fills in quarters
+  as the wind goes on. \\
+1--3, then all four & Trimming: all four light once the length has passed the target. \\
+\led{2} and \led{4} & Test mode (PC program has control). \\
+Fault LED (where fitted) & The controller found an internal fault. Switch off,
+  then on; if it comes back, call [SUPPORT CONTACT]. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Buzzer}
+The buzzer beeps when a wind finishes, and sounds an alarm when a roll comes
+up short. See Chapter~\ref{ch:beeps} for every pattern.

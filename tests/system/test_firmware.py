@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -17,28 +16,6 @@ _TOOLS = ("avr-gcc", "avr-objdump", "cmake", "simavr")
 _missing = [t for t in _TOOLS if shutil.which(t) is None]
 
 pytestmark = pytest.mark.skipif(bool(_missing), reason=f"missing tools: {_missing}")
-
-
-@pytest.fixture(scope="module")
-def build_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    root = Path(__file__).resolve().parents[2]
-    out = tmp_path_factory.mktemp("avr-build")
-    proc = subprocess.run(
-        [
-            sys.executable,
-            str(root / "scripts" / "flash.py"),
-            "--build-only",
-            "--target",
-            "all",
-            "--build-dir",
-            str(out),
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert proc.returncode == 0, proc.stdout + proc.stderr
-    return out
 
 
 def test_every_image_builds(build_dir: Path) -> None:

@@ -46,12 +46,15 @@ service the host link, redraw.
 All panel rules live here so the host fuzz test
 (`tests/unit/test_controller.py`) runs the code the AVR runs.
 
-- IDLE: a start toggle counts only if `down_after` says the push left
-  the latch down; BTN1 starts the short length, BTN2 the long one. BTN4
+- IDLE: every BTN1/BTN2 click starts a wind, whichever way the latching
+  switch moved (DEC-011: one debounced edge = one click); BTN1 starts the
+  short length, BTN2 the long one. BTN4
   toggles the software manual flag (off at power-up regardless of switch position); the relay follows the flag.
 - WINDING/PAUSED: a BTN1/BTN2 toggle or `count >= eff_target()` ends the
   wind (legacy `bump = 0`: relay off, manual cleared, beep; the count is KEPT, DEC-006; with `bump = 1` a BTN1/BTN2
-  toggle ends it STOPPED and `count >= eff_target()` starts the TRIM phase, below); BTN3 toggles pause
+  toggle ends it STOPPED and `count >= eff_target()` starts the TRIM phase, below; if a manual
+  nudge carries a PAUSED wind across `eff_target()` the trim starts PAUSED, so no bump runs before
+  BTN3 and manual stays capped at `goal()`); BTN3 toggles pause
   (resuming clears manual); BTN4 clicks toggle manual while PAUSED
   only (ignored while WINDING and in the pass that pauses), which runs
   the motor. `manual()` exposes the flag. `eff_target() = goal() - coast` for a panel wind (`target - coast` for a debug RUN), `goal() = target + margin`.

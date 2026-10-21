@@ -1,0 +1,4 @@
+# latexmk settings for the owner's manual: pdflatex, stop on the first error.
+$pdf_mode = 1;
+$pdflatex = 'pdflatex -interaction=nonstopmode -halt-on-error -file-line-error %O %S';
+@default_files = ('manual.tex');

@@ -34,7 +34,6 @@ int main(int argc, char** argv) {
     uint32_t taken[4] = {0, 0, 0, 0};
     uint32_t pushed[4] = {0, 0, 0, 0};
     bool manual = false; // model of the software manual latch
-    bool level[4] = {false, false, false, false}; // latched level after all pushes
     uint32_t count = 0;
     uint32_t pass = 0;
 
@@ -43,12 +42,11 @@ int main(int argc, char** argv) {
             if (rnd() % 8 == 0) {
                 ++queued[b];
                 ++pushed[b];
-                level[b] = !level[b];
             }
         }
         if (rnd() % 400 == 0) {
             queued[2] += 2; // fast double toggle inside one slow pass
-            pushed[2] += 2; // two flips: the level is unchanged
+            pushed[2] += 2; // two edges, two clicks: neither merged nor dropped
         }
         Inputs in{};
         for (int b = 0; b < 4; ++b) {
@@ -56,9 +54,6 @@ int main(int argc, char** argv) {
                 in.pending |= static_cast<uint8_t>(1 << b);
                 --queued[b];
                 ++taken[b];
-                if (level[b] != ((queued[b] & 1) != 0)) {
-                    in.down_after |= static_cast<uint8_t>(1 << b);
-                }
             }
         }
         count += rnd() % 700;
@@ -82,11 +77,11 @@ int main(int argc, char** argv) {
         }
         if (before == MachineState::IDLE && c.state() != MachineState::IDLE) {
             manual = false;
-            CHECK(in.pending & in.down_after & (kBtn1 | kBtn2), "wind started without a BTN1/BTN2 push down");
+            CHECK(in.pending & (kBtn1 | kBtn2), "wind started without a BTN1/BTN2 click");
             CHECK(o.reset_count && o.relay, "start must reset the count and run the relay");
         }
         if (before == MachineState::IDLE && c.state() == MachineState::IDLE && !c.debug()) {
-            CHECK(!(in.pending & in.down_after & (kBtn1 | kBtn2)), "down toggle must start a wind");
+            CHECK(!(in.pending & (kBtn1 | kBtn2)), "click must start a wind");
             if (b4) {
                 manual = !manual;
             }
@@ -121,15 +116,14 @@ int main(int argc, char** argv) {
         }
     }
 
-    // Scenario: wind stops on target with the start button still down; popping
-    // it back up must not start another wind.
+    // Scenario: wind stops on target with the latching start button still down; popping it
+    // back up is a click and starts the next wind (DEC-011: one push, one wind).
     Controller w;
     w.bump = false;
     w.margin = 0;
     w.coast = 0;
     Inputs wi{};
     wi.pending = kBtn1;
-    wi.down_after = kBtn1;
     CHECK(w.step(wi).relay && w.state() == MachineState::WINDING, "scenario: start");
     wi = Inputs{};
     wi.count = w.eff_target();
@@ -137,10 +131,10 @@ int main(int argc, char** argv) {
     wi = Inputs{};
     wi.pending = kBtn1; // button popped up
     Outputs wo = w.step(wi);
-    CHECK(w.state() == MachineState::IDLE && !wo.relay && !wo.reset_count,
-          "scenario: release must not restart");
-    CHECK(w.result() == Result::SETTLING, "scenario: release keeps the result");
-    CHECK(w.stop_at() == Controller::kNoStop, "idle has no hardware stop");
+    CHECK(w.state() == MachineState::WINDING && wo.relay && wo.reset_count,
+          "scenario: release click must start the next wind");
+    CHECK(w.result() == Result::NONE, "scenario: a new wind clears the result");
+    CHECK(w.stop_at() == w.eff_target(), "a wind stops at eff_target");
 
     // Scenario: two clicks inside one pass interval are two toggles (net off);
     // BTN4 physically down at power-up is just a click away from manual.

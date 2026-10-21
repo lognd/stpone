@@ -103,6 +103,20 @@ OCIE0A on, IVSEL cleared), row 1 shows TCNT0 cycling and TIFR0 mostly
 00, row 2 says `RUN`. `test_buttons_leds` lights LEDn while BTNn is held
 and nothing else; a press shorter than 16 ms must not register.
 
+One push, one action (`firmware`, DEC-011; the simavr evidence is
+`tests/system/test_buttons_sim.py`). The buttons latch, so each push is one
+edge and must act once whichever way it moves the latch:
+
+1. Power up with BTN1 latched DOWN: the panel stays IDLE, relay off.
+2. Push BTN1 (it pops UP): a 30 yd wind starts. Push it again (DOWN): the
+   wind stops. Repeat with the start in the DOWN direction.
+3. Same for BTN2 (90 yd). BTN3 during a wind: each push alternates
+   pause/play. BTN4 in IDLE: each push toggles manual.
+4. Let a short wind finish on target with BTN1 latched down, then push BTN1
+   once (it pops up): the next wind starts at count 0 -- no second push.
+5. Pause a wind near its end, turn manual on and nudge past the stop: the
+   relay drops, the panel stays paused and no bump runs until BTN3 (play).
+
 Contact bounce (open item, bench measurement): with a scope or the `test_buttons_leds`
 image, press each latching button slowly and at normal speed, and record
 the longest interval during which the contact reads the wrong level

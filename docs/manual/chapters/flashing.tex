@@ -1,0 +1,58 @@
+% Chapter 12: loading new firmware.
+\chapter{Loading new firmware (flashing)}\label{ch:flashing}
+\index{firmware!updating}\index{flashing}
+
+The program inside the controller is called the \emph{firmware}. This manual
+is for version fw=\fwver. You only need to update it if your supplier sends a
+new version. Updating is a technician job; it needs a computer with the source
+repository and its tools set up (see \texttt{docs/runbooks/flash.md} in the
+repository).
+
+\begin{warning}
+Switch the motor power off, or at least make sure nobody is near the roll,
+while you flash. The relay is opened while the controller restarts.
+\end{warning}
+
+\section{Steps}
+\begin{enumerate}
+  \item Connect the computer to the controller's \textbf{own USB port} (not the
+        serial adapter).
+  \item In the repository folder run:\par
+        \texttt{uv run python scripts/flash.py}
+  \item The script builds the firmware, then prints\par
+        \shows{Double-tap RST on the Pro Micro now.}\par
+        Quickly press the controller board's reset button twice. The board
+        then waits about 8 seconds for the new firmware.
+  \item The script finds the board and loads the firmware. When it reports
+        success the controller restarts and shows the idle screen.
+\end{enumerate}
+
+On Windows with WSL, a one-time setup is needed first:
+\texttt{uv run python scripts/flash.py --setup} (installs \texttt{usbipd} and
+asks for administrator permission once).
+
+\section{If flashing fails}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Message} & \textbf{What to do} \\
+\midrule
+\texttt{AttachTimeout} & The board was not handed to WSL in time. Double-tap
+  reset again sooner after the prompt; check the USB cable. \\
+\texttt{PortTimeout} & The board's port did not appear. Double-tap again; try
+  another USB cable or port (some cables carry power only). \\
+\texttt{AvrdudeFailed} & Loading failed part way. Run the script again. The
+  board can always be re-flashed with a double-tap. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{After flashing}
+\begin{itemize}
+  \item If you came from a version older than fw=6, the machine starts on
+        factory settings. Calibrate and save once (Chapter~\ref{ch:calibration}).
+  \item Run the connection check (Section~\ref{sec:doctor}); it confirms the
+        firmware is compatible.
+  \item Wind one roll and check the result.
+\end{itemize}

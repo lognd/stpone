@@ -1,0 +1,157 @@
+% Chapter 7: catalogue of every LCD screen.
+\chapter{Screen catalogue}\label{ch:screens}
+\index{screens}
+
+The screen has four rows of 20 characters. This chapter shows every screen
+the machine can display, with what it means and what you can do. Numbers on
+the screens below are examples.
+
+\begin{note}[If the screen goes blank or shows garbage]
+Electrical noise from the motor relay can upset the screen. The machine
+redraws it after every motor start and stop and every 2 seconds anyway, so a
+garbled screen should fix itself within about 2 seconds. If it does not, see
+Chapter~\ref{ch:trouble}.
+\end{note}
+
+\section{Idle}\label{sec:screen-idle}
+\index{screens!idle}
+\begin{lcd}
+ -= PAPER WINDER =-
+
+[1] 30yd    [2] 90yd
+[4] click = manual
+\end{lcd}
+Ready. \btn{1} starts 30 yards, \btn{2} starts 90 yards, \btn{4} turns the
+motor on by hand. \led{1} and \led{3} are lit.
+
+\section{Manual mode}
+\index{screens!manual}
+\begin{lcd}
+ -= PAPER WINDER =-
+MANUAL: motor ON
+[1] 30yd    [2] 90yd
+[4] click = auto
+\end{lcd}
+The motor is running because \btn{4} was pushed. Push \btn{4} again to stop
+it (the bottom row reminds you that this returns to automatic). Only \led{4}
+is lit. \btn{1} and \btn{2} still start a wind from here.
+
+\section{Encoder miss warning}\label{sec:encmiss}
+\index{screens!encoder miss}\index{encoder!miss}
+\begin{lcd}
+ -= PAPER WINDER =-
+!! ENC MISS:3      !
+[1] 30yd    [2] 90yd
+[4] click = manual
+\end{lcd}
+The controller saw signals from the measuring-wheel encoder that it could not
+make sense of (the number is how many). The length count may be slightly
+wrong. Check the encoder cable and connector, then see
+Chapter~\ref{ch:trouble}. The same line can appear on the bottom row of a
+result screen.
+
+\section{Winding}\label{sec:screen-winding}
+\index{screens!winding}
+\begin{lcd}
+     WINDING...
+ 45% [#####--------]
+LEN   12.3/  30.0 yd
+[1/2]STOP   [3]PAUSE
+\end{lcd}
+Row 2: percent done and a bar. Row 3: length so far and the target, in yards.
+\btn{1} or \btn{2} stops, \btn{3} pauses.
+
+If the machine has counted encoder errors during the wind, the top row
+shows them:
+\begin{lcd}
+WINDING    ERR:2
+ 45% [#####--------]
+LEN   12.3/  30.0 yd
+[1/2]STOP   [3]PAUSE
+\end{lcd}
+
+\section{Paused}
+\index{screens!paused}
+\begin{lcd}
+      PAUSED
+ 45% [#####--------]
+LEN   12.3/  30.0 yd
+[1/2]STOP   [3]PLAY
+\end{lcd}
+The motor is stopped. \btn{3} resumes, \btn{4} runs the motor by hand,
+\btn{1} or \btn{2} ends the wind.
+
+\begin{lcd}
+PAUSED - MANUAL RUN
+ 52% [######-------]
+LEN   15.6/  30.0 yd
+[1/2]STOP   [3]PLAY
+\end{lcd}
+Paused, with the motor running by hand (\btn{4}). Push \btn{4} to stop the
+motor, or \btn{3} to resume the automatic wind.
+
+\section{Trimming}
+\index{screens!trimming}
+\begin{lcd}
+     TRIMMING...
+ 99% [############-]
+LEN   29.9/  30.0 yd
+[1/2]STOP   [3]PAUSE
+\end{lcd}
+The main run is over. The motor is bumped briefly until the length is
+reached. This normally takes a few seconds.
+
+\section{Result: settling and done}
+\index{screens!result}
+\begin{lcd}
+ -= PAPER WINDER =-
+NOW  30.0/30.0 yd
+settling...
+[1] 30yd    [2] 90yd
+\end{lcd}
+Shown for a moment while the roll comes to rest.
+
+\begin{lcd}
+ -= PAPER WINDER =-
+DONE 30.1/30.0 yd
++4.3 in over
+[1] 30yd    [2] 90yd
+\end{lcd}
+The roll is complete. Row 3 can read \shows{+4.3 in over},
+\shows{on target}, or, for a large overrun, \shows{+1.3 yd over}. After a
+legacy-mode wind (Section~\ref{sec:set-bump}) it can also read a
+negative figure such as \shows{-1.3 in short}. The screen returns to idle by
+itself after 60 seconds. You can start the next wind at once.
+
+\section{Under target}\label{sec:screen-under}
+\index{screens!under target}
+\begin{lcd}
+ !! UNDER TARGET !!
+SHORT -8.2 in
+LEN 29.8/30.0 yd
+[1] 30yd    [2] 90yd
+\end{lcd}
+The trim could not reach the goal (target plus margin). Row 2 shows how much
+is missing, measured against the goal. The alarm sounds. The screen stays
+until you push any button; that push also does its normal job.
+
+\begin{lcd}
+ !! UNDER TARGET !!
+STOPPED -22.6 in
+LEN 29.4/30.0 yd
+[1] 30yd    [2] 90yd
+\end{lcd}
+You stopped the wind with \btn{1} or \btn{2} before it reached the goal. No
+alarm sounds. The roll is short by the amount shown.
+
+\section{Test mode (PC in control)}\label{sec:screen-test}
+\index{screens!test mode}
+\begin{lcd}
+ -= PAPER WINDER =-
+DEBUG: HOST CONTROL
+panel buttons locked
+[1/2] = STOP motor
+\end{lcd}
+A PC running the \textbf{winder} program has put the machine in Test mode
+(Section~\ref{sec:testmode}). The panel will not start a wind. \btn{1} or
+\btn{2} stops the motor and ends Test mode. \led{2} and \led{4} are lit.

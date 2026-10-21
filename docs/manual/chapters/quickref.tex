@@ -1,0 +1,57 @@
+% Appendix A: tear-out quick-reference card.
+\chapter{Quick-reference card}\label{app:quickref}
+\index{quick-reference card}
+
+\textit{The card is on the next page, alone, so you can cut it out without
+losing any other page. Cut along the dashed line and post it beside the
+panel.
+Print this page single-sided.}
+
+\clearpage
+
+\begin{tcolorbox}[enhanced,colback=white,colframe=black,boxrule=0pt,arc=0pt,
+  borderline={1pt}{0pt}{black,dashed},left=8pt,right=8pt,top=4pt,bottom=4pt]
+{\Large\bfseries PAPER WINDER -- QUICK REFERENCE\hfill\normalsize fw=\fwver\par}
+\vspace{0.3em}
+\textbf{One push = one action.} Buttons latch in and out; every push counts.
+Rest position does not matter. Wait 1 s after power-up.
+
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+\toprule
+& \textbf{Idle screen} & \textbf{During a wind} \\
+\midrule
+\btn{1} & Start \textbf{30 yd} & \textbf{STOP} \\
+\btn{2} & Start \textbf{90 yd} & \textbf{STOP} \\
+\btn{3} & -- & \textbf{Pause / resume} \\
+\btn{4} & Manual motor on / off & When paused: nudge on / off \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.4em}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.34\linewidth}>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{You see / hear} & \textbf{Meaning} \\
+\midrule
+\led{1} + \led{3} & Idle, ready \\
+LEDs fill 1 to 4 & Winding (quarters) \\
+\led{4} only & Manual: motor ON \\
+\led{2} + \led{4}, \shows{DEBUG: HOST CONTROL} & PC Test mode; \btn{1}/\btn{2} stops \\
+\shows{TRIMMING...} & Final bumps, normal \\
+3 short beeps, \shows{DONE} & \textbf{Good roll} (full length + 1 in) \\
+3 long beeps, repeating,\par \shows{!! UNDER TARGET !!} \shows{SHORT} &
+  \textbf{Roll is SHORT.} Push any button to silence. Check paper, jam, wheel. \\
+No beep, \shows{STOPPED} & You stopped it early; roll is short \\
+\shows{ENC MISS} / \shows{ERR} & Check encoder cable; measure next roll \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.5em}
+\fbox{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{\bfseries
+EMERGENCY: switch the machine's POWER OFF. Power off before touching the
+paper path. The machine does not detect jams during the main run -- stay
+with it.}}
+
+\vspace{0.3em}
+{\small Support: [SUPPORT CONTACT]\hfill Rev.\ \revdate}
+\end{tcolorbox}

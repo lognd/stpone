@@ -1,0 +1,95 @@
+% Chapter 3: machine overview.
+\chapter{Machine overview}\label{ch:overview}
+\index{machine overview}
+
+The paper winder pulls paper off a supply, past a rubber measuring wheel,
+and onto a roll. A small controller board counts how far the measuring wheel
+turns, switches the motor on and off through a relay, and shows what it is
+doing on a four-line screen. You start and stop winds with four buttons on
+the panel.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[font=\small,>=Stealth,
+  lab/.style={draw,fill=white,rounded corners=1pt,inner sep=3pt,align=center}]
+  % paper supply
+  \draw[line width=1pt] (0,0) circle (1.0);
+  \draw (0,0) circle (0.25);
+  \node[lab] (sup) at (0,-1.8) {Paper supply};
+  % paper path
+  \draw[line width=1.5pt] (0,1.0) -- (4.2,1.0);
+  \draw[line width=1.5pt] (4.2,1.0) -- (8.0,1.0);
+  % measuring wheel above the paper
+  \draw[line width=1pt] (4.2,1.55) circle (0.55);
+  \fill (4.2,1.55) circle (0.05);
+  \draw[->] (4.2,1.55) ++(30:0.75) arc (30:150:0.75);
+  \node[lab] (whl) at (4.2,3.2) {Measuring wheel\\with encoder\\(about 4 in across)};
+  \draw (whl.south) -- (4.2,2.1);
+  % take-up roll
+  \draw[line width=1pt] (9.0,0.0) circle (1.0);
+  \draw (9.0,0.0) circle (0.25);
+  \draw[line width=1.5pt] (8.0,1.0) -- (9.0,1.0);
+  \node[lab] (roll) at (9.0,-1.8) {Take-up roll};
+  % motor
+  \draw[line width=1pt] (10.6,-0.5) rectangle (11.8,0.5);
+  \node at (11.2,0) {M};
+  \draw[line width=1pt] (9.25,0) -- (10.6,0);
+  \node[lab] (mot) at (11.2,1.6) {Motor};
+  \draw (mot.south) -- (11.2,0.5);
+  % control box
+  \draw[line width=1.2pt] (3.0,-4.6) rectangle (8.6,-2.6);
+  \node[anchor=north west,font=\small\bfseries] at (3.05,-2.65) {Control box};
+  \draw (3.4,-3.2) rectangle (6.0,-4.2);
+  \node[font=\scriptsize\ttfamily,align=left] at (4.7,-3.7) {LCD 20 x 4};
+  \foreach \i/\x in {1/6.4,2/6.9,3/7.4,4/7.9} {
+    \draw (\x,-4.0) circle (0.18);
+    \node[font=\scriptsize] at (\x,-4.0) {\i};
+    \fill (\x,-3.35) circle (0.07);
+  }
+  \node[font=\scriptsize] at (7.15,-3.05) {LEDs 1-4};
+  \node[font=\scriptsize] at (7.15,-4.4) {Buttons 1-4};
+  % relay box
+  \draw[line width=1pt] (9.6,-3.9) rectangle (11.4,-3.0);
+  \node[align=center,font=\small] at (10.5,-3.45) {Relay};
+  \draw[->,dashed] (8.6,-3.45) -- (9.6,-3.45);
+  \draw[->,dashed] (10.5,-3.0) -- (11.2,-0.5);
+  \draw[->,dashed] (4.2,0.95) .. controls (3.0,-1.0) .. (3.6,-2.6);
+  \node[font=\scriptsize,align=center] at (2.2,-1.3) {encoder\\signal};
+  % serial
+  \draw[dashed] (3.0,-4.3) -- (1.2,-4.3);
+  \node[lab,font=\scriptsize] at (0.6,-4.3) {USB serial\\adapter\\to PC};
+  \node[font=\footnotesize\itshape] at (5.8,-5.1) {Schematic, not to scale.};
+\end{tikzpicture}
+\caption{The main parts of the paper winder.}
+\label{fig:overview}
+\end{figure}
+
+\section*{The main parts}
+\begin{description}[style=nextline,leftmargin=1.5em]
+  \item[Measuring wheel and encoder]\index{measuring wheel}\index{encoder}
+    A rubber-faced wheel about 4 inches across rides on the paper. A
+    rotation sensor (the encoder) on its shaft gives 2400 counts for every
+    turn of the wheel, which is about 191 counts per inch of paper. This is
+    the only thing the machine uses to measure length, so the wheel must be
+    clean and must turn freely with the paper without slipping.
+  \item[Motor and relay]\index{relay}\index{motor}
+    The controller switches the motor on and off through a relay. It is
+    simply on or off; there is no speed control. When the relay opens, the
+    roll keeps turning for a short distance (the \emph{coast}).
+  \item[Control box]
+    Holds the controller board, the 20-character by 4-line screen, the four
+    LEDs, the four buttons and a buzzer.
+  \item[Serial connection]\index{serial adapter}
+    Three wires (TX, RX, GND) from a USB serial adapter let a PC run the
+    \textbf{winder} program for calibration and settings. The PC is not needed
+    to wind paper.
+  \item[USB port on the controller]
+    Used only to load new firmware (Chapter~\ref{ch:flashing}). It does not
+    talk to the winder program.
+\end{description}
+
+\begin{note}
+Your machine's exact layout (which side the supply is on, where the power
+switch is) may differ from the drawing. The power switch location is:
+[POWER SWITCH LOCATION].
+\end{note}

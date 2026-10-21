@@ -1,0 +1,60 @@
+% Chapter 6: the minimum-amount guarantee.
+\chapter{The minimum-amount guarantee}\label{ch:guarantee}
+\index{guarantee}\index{margin}
+
+The machine is built so that a customer never gets less paper than the label
+says. Every wind ends in exactly one of two ways:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Result} & \textbf{What it promises} \\
+\midrule
+\shows{DONE}, three short beeps &
+  At least the full length \textbf{plus the margin} (1 inch from the factory)
+  went past the measuring wheel. The roll is good. \\
+\shows{!! UNDER TARGET !!} &
+  The machine could \textbf{not} confirm the full length. Treat the roll as
+  short. Alarm beeps unless you stopped the wind yourself. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{How it works}
+\begin{enumerate}
+  \item The \textbf{goal} is the target length plus the margin. For a 30 yard
+        roll that is 30 yards and 1 inch.
+  \item The motor runs until the paper is one \emph{coast} (12 inches) short
+        of the goal, then it is switched off and the roll glides on.
+  \item After the paper has stopped, the machine compares the count with the
+        goal. If it is short, it bumps the motor briefly and checks again.
+  \item It only says \shows{DONE} when the stopped count is at or past the
+        goal. It never guesses: the decision is made on paper that has stopped
+        moving.
+\end{enumerate}
+
+\section{What the guarantee depends on}
+The guarantee is only as good as the measurement. It assumes:
+\begin{itemize}
+  \item The measuring wheel is \textbf{calibrated} (Chapter~\ref{ch:calibration})
+        and its rubber is clean and not worn.
+  \item The wheel turns with the paper \textbf{without slipping} and is not
+        lifted off the paper.
+  \item The paper goes onto the roll; a tear or a jam upstream of the wheel
+        will not be noticed while the motor is running (only during the trim).
+\end{itemize}
+
+\section{How much over?}
+A normal roll is a little longer than the label, usually by a few inches,
+because the roll coasts on after the last bump. The design estimate is about
+1.3 inches over on average and no more than about 14 inches in the worst
+case. These figures are estimates from the design and have not yet been
+measured on the bench (Chapter~\ref{ch:limits}). If your rolls are regularly
+much longer than that, recalibrate the coast (Chapter~\ref{ch:calibration}).
+
+\begin{note}[Tip]
+The \shows{DONE} screen tells you the exact overrun of every roll, for
+example \shows{+4.3 in over}. Glance at it each time: a sudden change is the
+first sign of a dirty or slipping wheel.
+\end{note}

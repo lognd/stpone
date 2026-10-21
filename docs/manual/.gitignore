@@ -1,0 +1,12 @@
+# LaTeX build by-products; manual.pdf itself is tracked.
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.out
+*.toc
+*.idx
+*.ilg
+*.ind
+*.lof
+*.lot

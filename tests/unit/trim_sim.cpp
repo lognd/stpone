@@ -159,7 +159,6 @@ int main(int argc, char** argv) {
 
         Inputs in{};
         in.pending = long_wind ? kBtn2 : kBtn1;
-        in.down_after = in.pending;
         in.now_ms = now;
         Outputs o = c.step(in);
         CHECK(o.relay && o.reset_count && c.state() == MachineState::WINDING, "start");
@@ -374,7 +373,6 @@ int main(int argc, char** argv) {
         c.bump = false;
         Inputs in{};
         in.pending = kBtn1;
-        in.down_after = kBtn1;
         Outputs o = c.step(in);
         CHECK(o.relay && c.stop_at() == 20000 + c.margin - c.coast, "legacy stop_at");
         in = Inputs{};
@@ -396,7 +394,6 @@ int main(int argc, char** argv) {
         c.margin = 191;
         Inputs in{};
         in.pending = kBtn1;
-        in.down_after = kBtn1;
         in.now_ms = 1000;
         Outputs o = c.step(in);
         uint32_t count = c.goal() - c.coast - 1;
@@ -427,6 +424,56 @@ int main(int argc, char** argv) {
                   c.bumps() == kMaxBumps,
               "bump budget: outcome=%d bumps=%u", static_cast<int>(c.outcome()), c.bumps());
         CHECK(finals >= kFinalReserve * 1u, "the last bumps must be final-pass bumps (%u)", finals);
+    }
+    // Scenario (M1): a manual nudge carries a PAUSED wind across eff_target. The trim must start
+    // PAUSED: manual stays capped at the goal, no bump runs on its own, play (BTN3) resumes it.
+    {
+        wind = 9998;
+        Controller c;
+        c.short_pulses = 20000;
+        c.margin = 0;
+        c.coast = 300;
+        Inputs in{};
+        in.pending = kBtn1;
+        in.now_ms = 1000;
+        CHECK(c.step(in).relay && c.state() == MachineState::WINDING, "m1: start");
+        in = Inputs{};
+        in.count = 10000;
+        in.now_ms = 1010;
+        in.pending = kBtn3;
+        CHECK(!c.step(in).relay && c.state() == MachineState::PAUSED, "m1: pause");
+        in.pending = kBtn4;
+        in.now_ms = 1020;
+        CHECK(c.step(in).relay && c.manual(), "m1: manual on while paused");
+        in.pending = 0;
+        in.count = c.eff_target() + 5; // the nudge crosses the stop point
+        in.now_ms = 1030;
+        Outputs o = c.step(in);
+        CHECK(!o.stopped && c.state() == MachineState::PAUSED && c.trimming(),
+              "m1: crossing eff_target while paused must give a PAUSED trim (state=%d)",
+              static_cast<int>(c.state()));
+        CHECK(o.relay == c.manual() && c.stop_at() == c.goal(), "m1: paused manual capped at goal");
+        in.pending = kBtn4;
+        in.now_ms = 1040;
+        CHECK(!c.step(in).relay && !c.manual(), "m1: manual off");
+        in.pending = 0;
+        for (uint32_t t = 1050; t < 4000; t += 10) {
+            in.now_ms = t;
+            o = c.step(in);
+            CHECK(!o.relay && c.state() == MachineState::PAUSED && c.bumps() == 0,
+                  "m1: no bump without play (t=%u)", t);
+        }
+        in.pending = kBtn3;
+        in.now_ms = 4000;
+        (void)c.step(in);
+        CHECK(c.state() == MachineState::TRIM, "m1: play resumes the trim");
+        in.pending = 0;
+        bool bumped = false;
+        for (uint32_t t = 4010; t < 5000 && !bumped; t += 10) {
+            in.now_ms = t;
+            bumped = c.step(in).relay;
+        }
+        CHECK(bumped && c.bumps() >= 1, "m1: the trim bumps after play");
     }
     printf("STATS winds=%u pass=%u short=%u stopped=%u legacy=%u max_over=%.0f mean_over=%.1f "
            "max_over_assumed=%.0f mean_over_assumed=%.1f max_bumps=%u max_trim_s=%.1f\n",

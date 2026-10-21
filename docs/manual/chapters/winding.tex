@@ -1,0 +1,144 @@
+% Chapter 5: winding step by step.
+\chapter{Winding paper step by step}\label{ch:winding}
+\index{winding}
+
+\section{Before you start}
+\begin{itemize}
+  \item Power off. Load the paper supply and thread the paper under the
+        measuring wheel and onto the take-up core, as you were shown at
+        installation ([THREADING DIAGRAM -- SEE INSTALLER NOTES]).
+  \item Check that the measuring wheel sits on the paper and turns freely.
+  \item Power on. Wait about one second. The idle screen appears and
+        \led{1} and \led{3} light.
+\end{itemize}
+
+\begin{lcd}
+ -= PAPER WINDER =-
+
+[1] 30yd    [2] 90yd
+[4] click = manual
+\end{lcd}
+
+\section{Start a wind}
+Push \btn{1} for a \textbf{30 yard} roll or \btn{2} for a \textbf{90 yard}
+roll. One push is enough. Starting a wind also silences any buzzer that was
+still sounding.
+
+The relay closes, the motor runs and the screen shows the progress:
+
+\begin{lcd}
+     WINDING...
+ 45% [#####--------]
+LEN   12.3/  30.0 yd
+[1/2]STOP   [3]PAUSE
+\end{lcd}
+
+The LEDs fill up in quarters as the wind goes on. If the machine has seen
+encoder errors, the top row shows \shows{WINDING    ERR:n} instead (see
+Section~\ref{sec:screen-winding}).
+
+\section{The end of a wind: coast and trim}\label{sec:trim}
+\index{trim}\index{coast}
+The motor cannot stop the roll instantly. After the relay opens the roll
+keeps turning for a short distance, called the \textbf{coast} (set at the
+factory to 12 inches). So the machine switches the motor off about one coast
+\emph{before} the target, and lets the roll glide up to it.
+
+Then it \textbf{trims}:
+\begin{enumerate}
+  \item The screen shows \shows{TRIMMING...}. The machine waits half a second
+        for the paper to stop.
+  \item If the length is not yet enough, it gives the motor a short bump
+        and waits again. It repeats this until the length is at least the
+        target plus the safety margin (1 inch from the factory).
+  \item When the length is enough, it beeps \textbf{three short beeps} and
+        shows \shows{DONE}.
+\end{enumerate}
+
+\begin{lcd}
+     TRIMMING...
+ 99% [############-]
+LEN   29.9/  30.0 yd
+[1/2]STOP   [3]PAUSE
+\end{lcd}
+
+\section{Finished}
+\begin{lcd}
+ -= PAPER WINDER =-
+DONE 30.1/30.0 yd
++4.3 in over
+[1] 30yd    [2] 90yd
+\end{lcd}
+
+The second row shows the measured length and the target. The third row says
+how far over (or short) the roll is compared with the target, in inches (or in
+yards when it is a yard or more). Just after the motor stops the screen shows
+\shows{NOW} and \shows{settling...} for a moment while the roll comes to rest;
+then \shows{DONE} and the final figure. Cut the paper and remove the roll. The result stays on the screen
+for 60 seconds, then the normal idle screen returns. You can start the next
+wind straight away; a button still sitting pushed in is fine.
+
+\section{Pause, nudge and resume}\label{sec:pause}
+\index{pause}\index{nudge}
+\begin{itemize}
+  \item Push \btn{3} to \textbf{pause}. The motor stops and the screen shows
+        \shows{PAUSED}. The bottom row changes to \shows{[3]PLAY}.
+  \item While paused, push \btn{4} to run the motor by hand (the screen shows
+        \shows{PAUSED - MANUAL RUN}); push \btn{4} again to stop. The motor
+        also stops by itself if the length reaches the target.
+  \item Push \btn{3} again to \textbf{resume}. The wind carries on from where
+        it was; the hand-run length counts towards the roll.
+\end{itemize}
+
+\section{Stop a wind early}\label{sec:stop}
+\index{stop}
+Push \btn{1} or \btn{2}. The motor stops at once. What you see next:
+\begin{itemize}
+  \item If the roll had already reached the full length plus margin, it is
+        reported as \shows{DONE} as usual.
+  \item Otherwise the screen shows \shows{!! UNDER TARGET !!} with
+        \shows{STOPPED} and how much is missing. There is no alarm sound for a
+        stop you made yourself. The screen stays until you push a button.
+\end{itemize}
+
+\section{When the roll comes up short}\label{sec:under-target}
+\index{under target}\index{short roll}
+If the trim cannot finish (the paper does not move when bumped, too many
+bumps, or the trim takes longer than 30 seconds), the machine gives up and
+sounds the \textbf{under-target alarm}: three long beeps, repeated every 6
+seconds for about a minute.
+
+\begin{lcd}
+ !! UNDER TARGET !!
+SHORT -8.2 in
+LEN 29.8/30.0 yd
+[1] 30yd    [2] 90yd
+\end{lcd}
+
+What to do:
+\begin{enumerate}
+  \item Push any button to silence the alarm. (That push also does its
+        normal job, so \btn{1} would start a new 30 yard wind. Push \btn{3}
+        if you only want to clear the screen.)
+  \item Switch the power off and look for the cause: paper run out, a jam,
+        the wheel lifted off the paper, a torn web.
+  \item Do \textbf{not} sell the short roll as full length. Either rewind it
+        or add the missing length by hand.
+  \item See Chapter~\ref{ch:trouble} if it keeps happening.
+\end{enumerate}
+
+\section{Manual mode}\label{sec:manual}
+\index{manual mode}
+From the idle screen, push \btn{4}: the motor runs continuously and the
+screen shows \shows{MANUAL: motor ON}; only \led{4} is lit. Push \btn{4}
+again to stop. Use this for threading and for winding odd lengths by eye. The
+machine does not count or stop a manual run for you.
+\begin{warning}
+Never leave the machine in manual mode unattended.
+\end{warning}
+
+\section{After a power cut or reset}
+If the power fails, or the controller resets itself (watchdog), the relay
+opens, the motor stops, and the machine starts up at the idle screen. Any
+wind in progress and its result are lost. Measure the roll by hand or rewind
+it.

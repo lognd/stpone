@@ -1,0 +1,161 @@
+% Chapter 10: the PC program "winder".
+\chapter{The PC program (winder)}\label{ch:pc}
+\index{winder program}\index{PC program}
+
+\textbf{winder} is a small program for a Windows, Mac, Linux or Chromebook
+computer. It shows the machine's state, calibrates it and edits the
+settings. It runs a page in your web browser; nothing is sent over the
+internet. You do \emph{not} need it to wind paper.
+
+\section{What you need}\label{sec:adapter}
+\index{serial adapter}\index{USB serial adapter}
+\begin{itemize}
+  \item A computer.
+  \item A \textbf{USB serial adapter} with 5 volt logic (common chips: CH340,
+        CP210x, FTDI). Most computers have the driver built in.
+  \item Three wires from the adapter to the controller board:
+\end{itemize}
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Adapter pin} & \textbf{Controller pin} & \\
+\midrule
+TX  & D0 (RX) & \\
+RX  & D1 (TX) & \\
+GND & GND & \\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{warning}
+Do not connect the adapter's 5 V or 3.3 V power pin. The machine has its own
+power. The controller's own USB port is \emph{not} used by the winder program
+(it is only for loading firmware, Chapter~\ref{ch:flashing}).
+\end{warning}
+
+\section{Download}
+Get the program from the release page
+\url{https://github.com/lognd/stpone/releases/tag/winder-latest}. Pick the file
+for your computer:
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.30\textwidth}>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Computer} & \textbf{File} \\
+\midrule
+Windows & \texttt{winder-windows-x86\_64.exe} \\
+Mac with Intel chip & \texttt{winder-macos-x86\_64.tar.gz} \\
+Mac with Apple chip (M1 and later) & \texttt{winder-macos-aarch64.tar.gz} \\
+Linux PC & \texttt{winder-linux-x86\_64.tar.gz} \\
+Linux on ARM, Raspberry Pi & \texttt{winder-linux-aarch64.tar.gz} \\
+Chromebook & see Section~\ref{sec:chromebook} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+The release is rebuilt automatically whenever the software passes all its
+tests, so ``latest'' is always the current version.
+
+\section{Start the program}
+\begin{description}[style=nextline,leftmargin=1.5em]
+  \item[Windows] Double-click \texttt{winder-windows-x86\_64.exe}. If Windows
+    warns about an unknown publisher, choose to run it anyway.
+  \item[Mac and Linux] Open a terminal in the download folder and type (for
+    example)\par
+    \texttt{tar -xzf winder-linux-x86\_64.tar.gz}\par
+    \texttt{./winder}
+\end{description}
+The program opens your web browser at \texttt{http://127.0.0.1:8765}. If that
+port is busy it picks another and prints the address. If it cannot open a
+browser it writes the address into a file \texttt{winder-open-me.txt}; open
+that address yourself. To quit, close the program's window (or press
+Ctrl+C in the terminal).
+
+\section{Chromebook}\label{sec:chromebook}
+\index{Chromebook}
+\begin{enumerate}
+  \item Open \ui{Settings > Advanced > Developers}, find \ui{Linux development
+        environment} and click \ui{Turn on}.
+  \item In the same place, open \ui{Manage USB devices} and switch the serial
+        adapter on for Linux.
+  \item In the Linux terminal, type \texttt{uname -m}. If it says
+        \texttt{x86\_64} use the Linux x86\_64 file, if it says
+        \texttt{aarch64} use the aarch64 file.
+  \item Unpack and start it as for Linux above. You may need to add your user
+        to the \texttt{dialout} group: \texttt{sudo usermod -aG dialout \$USER},
+        then restart Linux.
+  \item Open \texttt{localhost:8765} in the Chrome browser.
+\end{enumerate}
+\begin{note}
+The Chromebook steps have not yet been tested on a real Chromebook.
+\end{note}
+
+\section{Connection check (doctor)}\label{sec:doctor}
+\index{connection check}\index{doctor}
+If anything does not work, open the \ui{Advanced} tab and look at
+\ui{Connection check}, or run \texttt{./winder doctor} in a terminal. It tests,
+in order:
+\begin{enumerate}
+  \item \ui{USB serial adapter found}
+  \item \ui{Allowed to use the adapter}
+  \item \ui{Winder answers}
+  \item \ui{Firmware is compatible}
+  \item \ui{Saved settings are valid}
+  \item \ui{A web browser can be opened}
+\end{enumerate}
+Each failed line says what to do. Some have a \ui{Fix it} button. Click
+\ui{Check again} after fixing something.
+
+\section{The screens of the program}
+\index{winder program!tabs}
+A \ui{Stop motor} button is always at the top of the page. It stops anything
+the program started (calibration, Test mode runs). It cannot stop a wind
+started from the panel; use \btn{1} or \btn{2} for that.
+
+\begin{description}[style=nextline,leftmargin=1.5em]
+  \item[\ui{Home}] Machine status, whether the motor is on, the length wound,
+    and the \ui{Calibrate the machine} button.
+  \item[\ui{Calibrate}] The step-by-step calibration (Chapter~\ref{ch:calibration}).
+  \item[\ui{Settings}] The five editable settings (Chapter~\ref{ch:settings}),
+    with \ui{Save to the machine}, \ui{Undo all} and
+    \ui{Reset to factory settings}.
+  \item[\ui{Advanced}] For technicians: the \ui{Test mode} switch,
+    \ui{Move the machine by hand} (\ui{Motor on/off}, \ui{Set length wound to
+    zero}, \ui{Run} a set length), \ui{Last test winds} (\ui{Start test winds},
+    \ui{Clear table}, \ui{Apply suggestions}), \ui{Machine state},
+    \ui{Connection check} and \ui{What happened} (a log of recent events).
+\end{description}
+
+\section{Test mode}\label{sec:testmode}
+\index{test mode}
+Calibration and the \ui{Advanced} controls put the machine in \textbf{Test
+mode}. The screen shows \shows{DEBUG: HOST CONTROL} and \shows{panel buttons
+locked}; \led{2} and \led{4} light. In Test mode:
+\begin{itemize}
+  \item The panel cannot start a wind.
+  \item \btn{1} or \btn{2} on the panel stops the motor and ends Test mode.
+  \item If the PC stops talking to the machine for 5 seconds (cable pulled,
+        program crashed), the machine stops the motor and leaves Test mode by
+        itself.
+  \item If you close the browser page, the program stops the motor and ends
+        Test mode after about 12 seconds.
+\end{itemize}
+
+\section{Command line options}
+For technicians. Type \texttt{winder --help} for the full list.
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily}l>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textrm{\textbf{Option}} & \textbf{Meaning} \\
+\midrule
+--port & Use this serial port instead of searching. \\
+--baud & Serial speed (the machine uses 115200). \\
+--http-port & Web page port (default 8765). \\
+--no-browser & Do not open a browser. \\
+--list-ports & List serial ports and exit. \\
+--fake & Pretend machine, for practice without hardware. \\
+--true-coast & With --fake: the coast, in counts, the pretend machine has. \\
+doctor & Run the connection check in the terminal. \\
+calibrate & Calibrate from the terminal (\texttt{--lengths}, \texttt{--measured}, \texttt{--save}). \\
+\bottomrule
+\end{tabularx}
+\end{center}

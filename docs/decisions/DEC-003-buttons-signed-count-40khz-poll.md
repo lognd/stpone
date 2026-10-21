@@ -1,7 +1,8 @@
 # DEC-003 -- Four-button panel, signed count, 40 kHz encoder poll
 
 Date: 2026-10-20. Owner: logan. Status: accepted.
-Amended by DEC-011: buttons are momentary, press edge only.
+Amended by DEC-011: the buttons latch and every debounced edge (down or up)
+is one click; "start only when pushed down" no longer holds.
 
 ## Decision
 

@@ -1,0 +1,51 @@
+% Chapter 16: specifications.
+\chapter{Specifications}\label{ch:specs}
+\index{specifications}
+
+\begingroup
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.36\textwidth}>{\raggedright\arraybackslash}p{0.58\textwidth}@{}}
+\toprule
+\textbf{Item} & \textbf{Value} \\
+\midrule
+\endhead
+\multicolumn{2}{@{}l}{\textbf{Winding}} \\
+Preset lengths & 30 yd (\btn{1}), 90 yd (\btn{2}); changeable from the PC \\
+Safety margin & 1.0 in added to every roll (factory) \\
+Coast allowance & 12 in (factory; set by calibration) \\
+Length resolution & about 0.005 in (191 counts per inch) \\
+Trim & bumps until the length is reached; gives up after 2 stalls,
+  16 bumps or 30 s \\
+Result screen & clears after 60 s (good result); held until a push (short result) \\
+\midrule
+\multicolumn{2}{@{}l}{\textbf{Measuring}} \\
+Measuring wheel & 4.0015 in diameter, about 12.57 in per turn \\
+Encoder & 600 lines per turn, read 4 times each = 2400 counts per turn;
+  either direction of rotation works \\
+\midrule
+\multicolumn{2}{@{}l}{\textbf{Controller}} \\
+Board & Pro Micro (ATmega32U4), firmware fw=\fwver \\
+Screen & 20 characters x 4 lines \\
+Panel & 4 latching push buttons, 4 LEDs, buzzer \\
+Button debounce & about 16 ms \\
+Motor switching & relay, on/off \\
+Watchdog & resets the controller after 0.5 s without response; relay opens \\
+Settings memory & kept without power, with a check code (format WIN6) \\
+\midrule
+\multicolumn{2}{@{}l}{\textbf{PC connection}} \\
+Serial link & 115200 baud, 8 data bits, no parity, 1 stop bit; 5 V logic;
+  wires TX, RX, GND to D0/D1 \\
+PC program & winder for Windows, macOS (Intel and Apple), Linux (x86\_64 and
+  ARM64); Chromebook via Linux (untested) \\
+Web page & http://127.0.0.1:8765 on the PC itself \\
+Test mode safety & motor stops if the PC is silent for 5 s \\
+\midrule
+\multicolumn{2}{@{}l}{\textbf{Electrical and physical}} \\
+Supply voltage and current & [POWER RATING -- SEE MACHINE LABEL] \\
+Motor & [MOTOR RATING] \\
+Size and weight & [DIMENSIONS] / [WEIGHT] \\
+Maximum roll diameter & [MAXIMUM ROLL DIAMETER] \\
+Paper width & [PAPER WIDTH RANGE] \\
+\bottomrule
+\end{longtable}
+\endgroup

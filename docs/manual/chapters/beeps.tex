@@ -1,0 +1,47 @@
+% Chapter 8: beeps and alarms.
+\chapter{Beeps and alarms}\label{ch:beeps}
+\index{beeps}\index{alarm}
+
+The machine has one buzzer and only a few sounds. Learn them; they tell you
+the result of a wind without looking.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.30\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Sound} & \textbf{When} & \textbf{What to do} \\
+\midrule
+\textbf{Three short beeps}\par
+  {\small (beep 0.3 s, gap 0.15 s, three times)} &
+  Wind finished, \shows{DONE}. &
+  The roll is at least full length plus margin. Cut and remove it. \\
+\textbf{Three long beeps, repeated}\par
+  {\small (beep 0.7 s, gap 0.25 s, three times; repeats every 6 s, up to 10
+  times, about one minute)} &
+  \shows{!! UNDER TARGET !!} with \shows{SHORT}. &
+  The roll is short. Push any button to silence. Find the cause
+  (Section~\ref{sec:under-target}). \\
+\textbf{Silence} &
+  You stopped a wind with \btn{1} or \btn{2}. &
+  Read the screen: \shows{DONE} or \shows{STOPPED}. \\
+\textbf{Buzzer stops suddenly} &
+  A new wind was started. &
+  Normal: starting a wind always silences the buzzer. \\
+\midrule
+\textbf{Three short beeps} on finish \emph{and} on stop &
+  Only in legacy mode (bump setting 0, Section~\ref{sec:set-bump}). &
+  No guarantee in this mode; check every roll. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section*{Notes}
+\begin{itemize}
+  \item There is no beep at power-up and no beep when you push a button.
+  \item The alarm stops by itself after about one minute, but the
+        \shows{UNDER TARGET} screen stays until someone pushes a button. If
+        you come back to a silent machine showing \shows{UNDER TARGET}, the
+        last roll is short.
+  \item A power cut or a controller reset silences everything and loses the
+        result.
+\end{itemize}

@@ -34,7 +34,6 @@ int main() {
         if (!strcmp(line, "@wind")) { // test hook: start a panel wind
             Inputs in{};
             in.pending = kBtn1;
-            in.down_after = kBtn1;
             c.step(in);
             puts("@ok");
             continue;
@@ -116,7 +115,6 @@ int main() {
             in.now_ms = static_cast<uint32_t>(now);
             in.count = static_cast<uint32_t>(count);
             in.pending = static_cast<uint8_t>(pend);
-            in.down_after = static_cast<uint8_t>(pend);
             in.cut = cut != 0;
             Outputs o = c.step(in);
             printf("@debug=%d relay=%d run=%d run_stopped=%d at_stop=%lu exit=%d reset=%d leds=%u "

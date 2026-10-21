@@ -1,0 +1,41 @@
+% Chapter 17: glossary.
+\chapter{Glossary}\label{ch:glossary}
+\index{glossary}
+
+\begin{description}[style=nextline,leftmargin=1.5em,itemsep=0.4em]
+  \item[Bump] A short burst of the motor during the trim, to add the last few
+    inches.
+  \item[Calibration] Teaching the machine its coast and wheel size with a few
+    test winds (Chapter~\ref{ch:calibration}).
+  \item[Coast] How far the roll keeps turning after the motor is switched off.
+  \item[Count (encoder count)] The machine's unit of length: one small step of
+    the measuring wheel, about 0.005 inch.
+  \item[DONE] The result screen for a complete roll (full length plus margin).
+  \item[Encoder] The rotation sensor on the measuring wheel.
+  \item[ENC MISS / ERR] Encoder signals the controller could not read.
+  \item[Firmware] The program inside the controller board. This manual covers
+    fw=\fwver.
+  \item[Flashing] Loading new firmware into the controller.
+  \item[Goal] Target length plus margin. A roll must reach the goal to be
+    \shows{DONE}.
+  \item[Idle] Ready and waiting; the screen shows \shows{[1] 30yd [2] 90yd}.
+  \item[Latching button] A push button that stays in after one push and pops
+    out after the next. On this machine every push counts as one click.
+  \item[Legacy mode] Setting \setting{bump} at 0: no trim and no guarantee.
+  \item[Manual mode] Motor on by hand with \btn{4}, without counting.
+  \item[Margin] The extra length (factory 1 inch) added to every roll.
+  \item[Measuring wheel] The rubber wheel riding on the paper that measures
+    length.
+  \item[Relay] The electrical switch the controller uses to turn the motor on
+    and off.
+  \item[Serial adapter] A USB gadget that lets a PC talk to the controller over
+    three wires.
+  \item[Settling] The moment after the motor stops while the roll comes to rest.
+  \item[Target] The length on the label: 30 yd or 90 yd.
+  \item[Test mode] The PC program has control of the motor; the panel cannot
+    start a wind (shows \shows{DEBUG: HOST CONTROL}).
+  \item[Trim] The end of a wind: wait, check the length, bump if needed.
+  \item[UNDER TARGET] The result screen for a roll that may be short.
+  \item[Watchdog] A safety timer that restarts the controller if it freezes.
+  \item[winder] The PC program for calibration and settings.
+\end{description}

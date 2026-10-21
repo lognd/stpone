@@ -10,10 +10,10 @@ copy (SPEC-010).
 | D3 | PD0 | I2C SCL | input, internal pull-up on | PCF8574 backpack at 0x27, about 10 kHz (slow, because only the weak internal pull-ups are fitted) |
 | D4 | PD4 | ENC_A | input, pull-up on | LN11-ERGA 600 P/R, sampled at 40 kHz |
 | D5 | PC6 | ENC_B | input, pull-up on | no external-interrupt capability on either pin |
-| D6 | PD7 | BTN4 | input, external pull-down | momentary, active-high, 16 ms debounce; each press toggles manual mode (software latch, DEC-011) |
-| D7 | PE6 | BTN3 | input, external pull-down | momentary; pause / play |
-| D8 | PB4 | BTN2 | input, external pull-down | momentary; wind 90 yd / stop |
-| D9 | PB5 | BTN1 | input, external pull-down | momentary; wind 30 yd / stop |
+| D6 | PD7 | BTN4 | input, external pull-down | latching, active-high, 16 ms debounce; every push (an edge either way) is one click (DEC-011); a click toggles manual mode |
+| D7 | PE6 | BTN3 | input, external pull-down | latching, one click per push; pause / play |
+| D8 | PB4 | BTN2 | input, external pull-down | latching, one click per push; wind 90 yd / stop |
+| D9 | PB5 | BTN1 | input, external pull-down | latching, one click per push; wind 30 yd / stop |
 | D10 | PB6 | RELAY | output | active-high, motor contactor coil |
 | D14 | PB3 | BUZZER | output | CMI-1295-0585T active buzzer |
 | D15 | PB1 | FAULT LED | output | set by `BADISR_vect` and `panic()` |

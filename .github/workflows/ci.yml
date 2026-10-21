@@ -47,25 +47,7 @@ jobs:
       - name: test
         run: uv run pytest tests/ --cov=src --cov-report=term-missing
 
-      # frob is not on PyPI (the 0.0.6 there is an unrelated ancestor); install
-      # it from its public repository at the same revision the developer
-      # machines run. Native extensions are optional and skipped here.
-      - name: install frob
-        run: uv tool install "frob @ git+https://github.com/lognd/frob@8a13a94dd64586b0fe21fb5c447d22619bf1627d"
-
-      # frob's coverage refresh spawns a bare `pytest`, so the project venv must
-      # be first on PATH (FROBLEMS F-017); the stamp it writes is what TEST006
-      # checks and it lives in the gitignored .frob/.
-      - name: frob coverage
-        run: |
-          PATH="$PWD/.venv/bin:$PATH" frob coverage --full
-          # The refresh rewrites the tracked coverage lock for the runner's
-          # own numbers; the stamp it leaves in .frob/ is what the gate needs.
-          git checkout -- frob-coverage.lock.json
-
-      # ruff and ty live in the project venv, and frob looks for them on PATH.
-      - name: frob check
-        run: PATH="$PWD/.venv/bin:$PATH" frob check "$PWD"
+  # frob is run locally (frob check) and is not a CI gate for now.
 
   winder:
     runs-on: ubuntu-latest

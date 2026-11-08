@@ -23,7 +23,7 @@
 // live wheel diameter and counts/rev are g_link.params (SET wheel_um / cpr, EEPROM); the
 // defaults in Params reproduce these numbers.
 
-static constexpr float kWheelDiamIn = 4.0462f; // bench-corrected (DEC-014)
+static constexpr float kWheelDiamIn = 4.0462f;                 // bench-corrected (DEC-014)
 static constexpr float kCircumIn = 3.14159265f * kWheelDiamIn; // ~12.571 in
 static constexpr float kCountsPerRev = 2400.0f;                // 600 PPR * 4x
 static constexpr float kShortLengthIn = 360.0f;                // BTN1: 30 ft

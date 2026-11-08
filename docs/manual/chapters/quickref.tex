@@ -21,8 +21,8 @@ Rest position does not matter. Wait 1 s after power-up.
 \toprule
 & \textbf{Idle screen} & \textbf{During a wind} \\
 \midrule
-\btn{1} & Start \textbf{30 yd} & \textbf{STOP} \\
-\btn{2} & Start \textbf{90 yd} & \textbf{STOP} \\
+\btn{1} & Start \textbf{30 ft} & \textbf{STOP} \\
+\btn{2} & Start \textbf{90 ft} & \textbf{STOP} \\
 \btn{3} & -- & \textbf{Pause / resume} \\
 \btn{4} & Manual motor on / off & When paused: nudge on / off \\
 \bottomrule
@@ -38,7 +38,8 @@ LEDs fill 1 to 4 & Winding (quarters) \\
 \led{4} only & Manual: motor ON \\
 \led{2} + \led{4}, \shows{DEBUG: HOST CONTROL} & PC Test mode; \btn{1}/\btn{2} stops \\
 \shows{TRIMMING...} & Final bumps, normal \\
-3 short beeps, \shows{DONE} & \textbf{Good roll} (full length + 1 in) \\
+2 long beeps, \shows{** PULL SLACK **} & \textbf{Good roll, about 2 in short on purpose.} Pull the slack out by hand (screen says how much), then cut. \\
+3 short beeps, \shows{DONE} & \textbf{Good roll} (full length reached) \\
 3 long beeps, repeating,\par \shows{!! UNDER TARGET !!} \shows{SHORT} &
   \textbf{Roll is SHORT.} Push any button to silence. Check paper, jam, wheel. \\
 No beep, \shows{STOPPED} & You stopped it early; roll is short \\

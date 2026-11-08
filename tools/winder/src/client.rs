@@ -341,7 +341,7 @@ mod tests {
             // GET answers late (held); PARAM answers at once.
             on_write: VecDeque::from([
                 Some("OK state=IDLE count=0 errors=0 relay=0 btn=0000"),
-                Some("OK wheel_um=101638 cpr=2400 short=206187 long=618562 coast=0"),
+                Some("OK wheel_um=102773 cpr=2400 short=67970 long=203911 coast=0"),
             ]),
         };
         let mut c = Client::new(Box::new(t));
@@ -349,6 +349,6 @@ mod tests {
         assert_eq!(c.get().map(|_| ()), Err(CalError::Timeout));
         *hold.lock().unwrap() = false; // the late GET reply is now on the wire
         let p = c.param().expect("PARAM must get its own reply");
-        assert_eq!(p.wheel_um, 101_638);
+        assert_eq!(p.wheel_um, 102_773);
     }
 }

@@ -43,8 +43,8 @@ impl ParamSet {
         let circ = PI_MICRO * self.wheel_um as u64; // circumference in um * 1e6
         let pulses =
             |len_um: u64| ((len_um * self.cpr as u64 * 1_000_000 + circ / 2) / circ) as i64;
-        self.short = pulses(1080 * 25_400);
-        self.long = pulses(3240 * 25_400);
+        self.short = pulses(360 * 25_400);
+        self.long = pulses(1080 * 25_400);
     }
 
     /// The firmware's `Params::valid` (hostlink.h), range for range.

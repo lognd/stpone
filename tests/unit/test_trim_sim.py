@@ -11,8 +11,8 @@ import pytest
 
 _ROOT = Path(__file__).resolve().parents[2]
 
-# DEC-012: the assumed full-speed coast is 72 in (kDefaultCoastPulses); 191 pulses ~= 1 in.
-_ASSUMED_COAST = 13746
+# DEC-012: the assumed full-speed coast is 96 in (kDefaultCoastPulses, DEC-014); 191 pulses ~= 1 in.
+_ASSUMED_COAST = 18125
 _INCH = 191
 # The model jitters every true coast by up to +30 %.
 _JITTER = 1.3
@@ -20,9 +20,10 @@ _JITTER = 1.3
 # goal is bounded by one jittered coast, whatever the bump sizes.
 _MAX_COAST = 2 * _ASSUMED_COAST
 _COAST_BOUND = int(_MAX_COAST * _JITTER) + 400
-# DEC-012 trim target: a fault-free wind that needed bumps lands within ~3 in; 800 pulses (~4.2 in)
-# is the gate, the 20-seed model maximum is 574.
-_TRIM_OVER_MAX = 800
+# DEC-015: the first bump aims at the goal (safety 1 on the measured full-speed coast F), so the
+# model's +30 % coast jitter can carry it past the goal by up to 0.3 F; 6000 pulses (~31 in, only
+# reached at the 2x-assumed true coast) is the gate, the 20-seed model maximum is 5850.
+_TRIM_OVER_MAX = 6000
 # controller.h kMaxBumps and kTrimMaxMs (DEC-012).
 _MAX_BUMPS = 24
 _TRIM_LIMIT_S = 45.1

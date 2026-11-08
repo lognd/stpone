@@ -18,15 +18,15 @@ namespace stpalpha {
     constexpr uint16_t kProtoVersion = 1;
     constexpr uint16_t kFwVersion = 6;
 
-    // Nominal paper lengths in micrometres (1080 in = 30 yd, 3240 in = 90 yd): integer
+    // Nominal paper lengths in micrometres (360 in = 30 ft, 1080 in = 90 ft): integer
     // inputs for Params::derive_targets (no float on the AVR; pi is kPiMicro in length.h).
-    constexpr uint64_t kShortLengthUm = 1080ull * 25400ull;
-    constexpr uint64_t kLongLengthUm = 3240ull * 25400ull;
+    constexpr uint64_t kShortLengthUm = 360ull * 25400ull;
+    constexpr uint64_t kLongLengthUm = 1080ull * 25400ull;
 
     // frob:doc docs/spec/L5-component-design/SUB-03-firmware-app.md#comp-0304
     // Persisted parameters (the SET/SAVE/LOAD names of the protocol).
     struct Params {
-        uint32_t wheel_um = 101638; // 4.0015 in
+        uint32_t wheel_um = 102773; // 4.0462 in
         uint32_t cpr = 2400;
         uint32_t short_pulses = kDefaultShortPulses;
         uint32_t long_pulses = kDefaultLongPulses;
@@ -34,7 +34,7 @@ namespace stpalpha {
         uint32_t margin = kDefaultMarginPulses; // goal = target + margin
         uint32_t bump = kDefaultBump ? 1 : 0;   // 1 = trim mode with the guarantee, 0 = legacy cut
 
-        // Recompute the 30/90 yd targets from the wheel diameter and counts per
+        // Recompute the 30/90 ft targets from the wheel diameter and counts per
         // revolution (called when either is SET; a later SET short/long overrides).
         // Callers must have checked wheel_um > 0 and cpr > 0 (valid() does).
         void derive_targets() {

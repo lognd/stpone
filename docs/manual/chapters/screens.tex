@@ -18,10 +18,10 @@ Chapter~\ref{ch:trouble}.
 \begin{lcd}
  -= PAPER WINDER =-
 
-[1] 30yd    [2] 90yd
+[1] 30ft    [2] 90ft
 [4] click = manual
 \end{lcd}
-Ready. \btn{1} starts 30 yards, \btn{2} starts 90 yards, \btn{4} turns the
+Ready. \btn{1} starts 30 feet, \btn{2} starts 90 feet, \btn{4} turns the
 motor on by hand. \led{1} and \led{3} are lit.
 
 \section{Manual mode}
@@ -29,7 +29,7 @@ motor on by hand. \led{1} and \led{3} are lit.
 \begin{lcd}
  -= PAPER WINDER =-
 MANUAL: motor ON
-[1] 30yd    [2] 90yd
+[1] 30ft    [2] 90ft
 [4] click = auto
 \end{lcd}
 The motor is running because \btn{4} was pushed. Push \btn{4} again to stop
@@ -41,7 +41,7 @@ is lit. \btn{1} and \btn{2} still start a wind from here.
 \begin{lcd}
  -= PAPER WINDER =-
 !! ENC MISS:3      !
-[1] 30yd    [2] 90yd
+[1] 30ft    [2] 90ft
 [4] click = manual
 \end{lcd}
 The controller saw signals from the measuring-wheel encoder that it could not
@@ -55,10 +55,10 @@ result screen.
 \begin{lcd}
      WINDING...
  45% [#####--------]
-LEN   12.3/  30.0 yd
+LEN   12.3/  30.0 ft
 [1/2]STOP   [3]PAUSE
 \end{lcd}
-Row 2: percent done and a bar. Row 3: length so far and the target, in yards.
+Row 2: percent done and a bar. Row 3: length so far and the target, in feet (and tenths of a foot).
 \btn{1} or \btn{2} stops, \btn{3} pauses.
 
 If the machine has counted encoder errors during the wind, the top row
@@ -66,7 +66,7 @@ shows them:
 \begin{lcd}
 WINDING    ERR:2
  45% [#####--------]
-LEN   12.3/  30.0 yd
+LEN   12.3/  30.0 ft
 [1/2]STOP   [3]PAUSE
 \end{lcd}
 
@@ -75,7 +75,7 @@ LEN   12.3/  30.0 yd
 \begin{lcd}
       PAUSED
  45% [#####--------]
-LEN   12.3/  30.0 yd
+LEN   12.3/  30.0 ft
 [1/2]STOP   [3]PLAY
 \end{lcd}
 The motor is stopped. \btn{3} resumes, \btn{4} runs the motor by hand,
@@ -84,7 +84,7 @@ The motor is stopped. \btn{3} resumes, \btn{4} runs the motor by hand,
 \begin{lcd}
 PAUSED - MANUAL RUN
  52% [######-------]
-LEN   15.6/  30.0 yd
+LEN   15.6/  30.0 ft
 [1/2]STOP   [3]PLAY
 \end{lcd}
 Paused, with the motor running by hand (\btn{4}). Push \btn{4} to stop the
@@ -95,7 +95,7 @@ motor, or \btn{3} to resume the automatic wind.
 \begin{lcd}
      TRIMMING...
  99% [############-]
-LEN   29.9/  30.0 yd
+LEN   29.9/  30.0 ft
 [1/2]STOP   [3]PAUSE
 \end{lcd}
 The main run is over. The motor is bumped briefly until the length is
@@ -105,41 +105,59 @@ reached. This normally takes a few seconds.
 \index{screens!result}
 \begin{lcd}
  -= PAPER WINDER =-
-NOW  30.0/30.0 yd
+NOW  30.0/30.0 ft
 settling...
-[1] 30yd    [2] 90yd
+[1] 30ft    [2] 90ft
 \end{lcd}
 Shown for a moment while the roll comes to rest.
 
 \begin{lcd}
  -= PAPER WINDER =-
-DONE 30.1/30.0 yd
+DONE 30.1/30.0 ft
 +4.3 in over
-[1] 30yd    [2] 90yd
+[1] 30ft    [2] 90ft
 \end{lcd}
 The roll is complete. Row 3 can read \shows{+4.3 in over},
-\shows{on target}, or, for a large overrun, \shows{+1.3 yd over}. After a
+\shows{on target}, or, for a large overrun, \shows{+1.3 ft over}. A miss under one foot is
+shown in inches, from one foot up in feet. After a
 legacy-mode wind (Section~\ref{sec:set-bump}) it can also read a
 negative figure such as \shows{-1.3 in short}. The screen returns to idle by
 itself after 60 seconds. You can start the next wind at once.
+
+\section{Pull the slack}\label{sec:screen-slack}
+\index{screens!pull slack}\index{slack}
+\begin{lcd}
+  ** PULL SLACK **
+PULL 2.0 in BY HAND
+LEN 29.9/30.0 ft
+[1] 30ft    [2] 90ft
+\end{lcd}
+The wind is complete, but the machine stopped a little short of the label on
+purpose (factory: about 2 inches). Two long beeps sound once. Row 2 says how
+much paper to pull by hand; row 3 shows the length counted and the target.
+\textbf{Pull that much paper out by hand} to take up the slack, then cut and
+remove the roll. This is a good result, not a fault. Push any button to
+silence the beeps; the screen returns to idle by itself after 60 seconds.
+If the roll stopped on or past the label length you see the plain
+\shows{DONE} screen instead.
 
 \section{Under target}\label{sec:screen-under}
 \index{screens!under target}
 \begin{lcd}
  !! UNDER TARGET !!
 SHORT -8.2 in
-LEN 29.8/30.0 yd
-[1] 30yd    [2] 90yd
+LEN 29.8/30.0 ft
+[1] 30ft    [2] 90ft
 \end{lcd}
-The trim could not reach the goal (target plus margin). Row 2 shows how much
+The trim could not reach the goal (target plus margin, less the 2 inch slack). Row 2 shows how much
 is missing, measured against the goal. The alarm sounds. The screen stays
 until you push any button; that push also does its normal job.
 
 \begin{lcd}
  !! UNDER TARGET !!
 STOPPED -22.6 in
-LEN 29.4/30.0 yd
-[1] 30yd    [2] 90yd
+LEN 29.4/30.0 ft
+[1] 30ft    [2] 90ft
 \end{lcd}
 You stopped the wind with \btn{1} or \btn{2} before it reached the goal. No
 alarm sounds. The roll is short by the amount shown.

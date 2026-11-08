@@ -81,11 +81,15 @@ Save only stores the numbers you reviewed: if the winder was reset or restarted
 before you pressed Save, nothing is saved and you are asked to run again.
 Discard restores the earlier wheel, short, long and coast exactly as they were. Settings (wheel, cpr,
 short, long, coast) can be edited by hand; "Reset to factory settings" restores
-wheel 101638, cpr 2400, short 206187, long 618562, coast 13746, margin 191, bump 1.
-The factory coast is the 72 inch (2 yd) estimate of the default trim mode (DEC-012), so the first
-test winds are made with `coast = 13746` (the calibration winds are at least coast + 2400
+wheel 102773, cpr 2400, short 67970 (30 ft), long 203911 (90 ft), coast 18125, margin 0, bump 1 (DEC-013).
+A board with saved settings keeps its old values (30 yd / 90 yd, margin 191): send DEFAULTS then SAVE
+(or Reset to factory settings, then Save) to adopt the 30 ft / 90 ft buttons.
+The factory coast is the 96 in estimate of the default trim mode (DEC-012), so the first
+test winds are made with `coast = 18125` (the calibration winds are at least coast + 2400
 pulses long, so the roll is up to speed when the relay drops); after calibration the measured
 coast replaces it. The calibration never changes `margin` or `bump`.
+The wind stops 378 pulses (2.0 in) short of target + margin on purpose (DEC-013); a normal PASS then
+beeps twice and shows `** PULL SLACK **`, which is not a calibration error. Pull the slack by hand.
 
 ## Chromebook (Linux / Crostini) -- UNVERIFIED on real hardware
 

@@ -812,7 +812,7 @@ function summaryLines(res, p) {
 const AUTO_BUSY = /^(preparing|running|settling|need_measure|computing|verifying)$/i;
 const autoBusy = (s) => !!(s.auto && AUTO_BUSY.test(String(s.auto.phase || "")));
 
-const FACTORY_FALLBACK = { wheel_um: 101638, cpr: 2400, short: 206187, long: 618562, coast: 0 };
+const FACTORY_FALLBACK = { wheel_um: 102773, cpr: 2400, short: 67970, long: 203911, coast: 0 };
 const CAL_KEY = "winder.calibrated";
 let memCal = "";
 let settingsDirty = false;
@@ -991,7 +991,7 @@ const SETTINGS = [
 
 const nf = (v) => Number(v).toLocaleString("en-US");
 
-/** "4.0015 in" style text for a raw setting value. */
+/** "4.0462 in" style text for a raw setting value. */
 function niceValue(def, v, p) {
   const f = def.fromRaw(v, p);
   return fmt(f, def.dec) + (def.short ? " " + def.short : "");
@@ -1574,7 +1574,7 @@ function startPractice() {
       $("st2-bar").hidden = true;
       $("st2-good").hidden = true;
       $("st2-results").hidden = false;
-      runRows(fake.map((r) => Object.assign({}, r)), params || { cpr: 2400, wheel_um: 101638 });
+      runRows(fake.map((r) => Object.assign({}, r)), params || { cpr: 2400, wheel_um: 102773 });
       const note = h("tr");
       note.append(h("td", "muted", "Example rows"), h("td"), h("td"), h("td"));
       $("st2-rows").append(note);

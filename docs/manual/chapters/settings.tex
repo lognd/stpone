@@ -10,7 +10,7 @@ important ones for you.
 
 The machine counts length in \emph{encoder counts}. From the factory, one
 inch of paper is about 191 counts, and one count is about 0.005 inch. The
-program converts to inches and yards for you.
+program converts to inches and feet for you.
 
 \begin{center}
 \small
@@ -20,28 +20,30 @@ program converts to inches and yards for you.
 \textbf{Setting (name in the program / short name)} & \textbf{Factory value} & \textbf{What it does, allowed range} \\
 \midrule
 \ui{Measuring wheel size}\par \setting{wheel\_um} &
-  4.0015 in across\par (101638 micrometres) &
+  4.0462 in across\par (102773 micrometres) &
   Wheel diameter. Turns counts into inches. Range 50000 to 300000 micrometres
   (about 2 to 11.8 in). \\
 \ui{Encoder counts per wheel turn}\par \setting{cpr} &
   2400 &
   Counts per full turn of the wheel. Must match the encoder (600 lines x 4).
   Range 100 to 100000. \\
-\ui{Short wind (30 yd button)}\par \setting{short} &
-  30.0 yd\par (206187 counts) &
+\ui{Short wind (30 ft button)}\par \setting{short} &
+  30.0 ft\par (67970 counts) &
   Target length for \btn{1}. Range 1000 to 4000000 counts. \\
-\ui{Long wind (90 yd button)}\par \setting{long} &
-  90.0 yd\par (618562 counts) &
+\ui{Long wind (90 ft button)}\par \setting{long} &
+  90.0 ft\par (203911 counts) &
   Target length for \btn{2}. Same range. \\
 \ui{Coast after the motor stops}\par \setting{coast} &
-  72 in (2 yd)\par (13746 counts) &
+  96 in\par (18125 counts) &
   How far the roll glides after the motor is switched off. The motor is cut
   this far before the goal. Must be smaller than both targets. Set by
   calibration. Saved settings keep their coast after a firmware update:
-  use \ui{Reset to factory settings} and Save to get the 2 yd default. \\
+  use \ui{Reset to factory settings} and Save to get the 8 ft default. \\
 \emph{(not in the program)}\par \setting{margin} &
-  1.0 in\par (191 counts) &
-  Extra length added to every roll for the guarantee. Range 0 to 2000 counts
+  0\par (0 counts) &
+  Extra length added to every roll for the guarantee. The wind aims
+  378 counts (2.0 in) short of target plus margin, so a margin of 378 or more
+  cancels the slack. Range 0 to 2000 counts
   (about 0 to 10.5 in). \\
 \emph{(not in the program)}\par \setting{bump} &
   1 (on) &
@@ -52,7 +54,7 @@ program converts to inches and yards for you.
 \end{center}
 
 One more rule: the longer target plus the margin may not exceed 4000000
-counts (about 580 yards). The machine refuses settings that break any rule.
+counts (about 1700 feet). The machine refuses settings that break any rule.
 
 \section{Changing a setting}
 \begin{enumerate}
@@ -70,6 +72,13 @@ A wrong \ui{Measuring wheel size} or \ui{Encoder counts per wheel turn}
 makes every roll the wrong length. After changing either, run a calibration
 with the length check (Chapter~\ref{ch:calibration}).
 \end{warning}
+
+\begin{note}[Saved settings from older firmware]
+A machine that already has saved settings keeps its old 30 yd and 90 yd
+lengths, its old coast and margin after the firmware is updated. To get the
+30 ft and 90 ft buttons and margin 0, connect the PC program, click
+\ui{Reset to factory settings} and then \ui{Save to the machine}.
+\end{note}
 
 \section{Margin and legacy mode}\label{sec:set-bump}
 \index{legacy mode}

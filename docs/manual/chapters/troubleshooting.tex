@@ -28,7 +28,7 @@ the screen shows and call [SUPPORT CONTACT].
 A push did nothing &
   The machine was not at the idle screen; it was just switched on; the push
   came too soon after another; or Test mode is on. &
-  Check that the screen shows the idle screen (\shows{[1] 30yd [2] 90yd}).
+  Check that the screen shows the idle screen (\shows{[1] 30ft [2] 90ft}).
   Wait one second after power-up. Leave a short moment between pushes.
   If it shows \shows{DEBUG: HOST CONTROL}, see below. If a push still does
   nothing, note which button and which screen, and report it. \\
@@ -70,12 +70,20 @@ Motor runs but the length stays at 0.0 &
   Measure the next roll by hand. If the number keeps rising, call
   [SUPPORT CONTACT]. \\
 Trim takes a long time with many bumps &
-  Normal with the factory 2 yd coast when the real coast is much shorter (up
+  Normal with the factory 6 ft coast when the real coast is much shorter (up
   to about 25 s); or the roll is heavy and slow. &
   Recalibrate (Chapter~\ref{ch:calibration}) to shorten the trim. \\
 %
 \midrule
 \multicolumn{3}{@{}l}{\textbf{Results}} \\
+\shows{** PULL SLACK **} and two long beeps &
+  Normal: the wind stops about 2 inches short on purpose. &
+  Pull the amount shown out by hand, then cut and remove the roll. It is not
+  a fault and needs no reset. \\
+Buttons start 30 yd / 90 yd, or no \shows{PULL SLACK}, after an update &
+  The machine still has settings saved by older firmware. &
+  With the PC program click \ui{Reset to factory settings}, then
+  \ui{Save to the machine} (Section~\ref{sec:settings-lost}). \\
 \shows{!! UNDER TARGET !!} with \shows{SHORT} &
   Paper stopped moving during the trim (ran out, jam, wheel lifted), more than
   24 bumps were needed, or the trim took over 45 seconds. &
@@ -85,7 +93,7 @@ Trim takes a long time with many bumps &
 \shows{!! UNDER TARGET !!} with \shows{STOPPED} &
   You (or someone) pushed \btn{1} or \btn{2} before the end. &
   Normal. The roll is short by the amount shown. \\
-Rolls are much longer than the label (many inches) &
+Rolls are much longer than the label (many inches; a few inches over or about 2 inches short is normal) &
   Coast setting too small, or wheel size wrong. &
   Recalibrate with the length check. \\
 Rolls measure short by hand, but screen said \shows{DONE} &
@@ -93,7 +101,7 @@ Rolls measure short by hand, but screen said \shows{DONE} &
   Clean the wheel, check it presses on the paper, recalibrate with the length
   check. Replace a worn wheel. \\
 Result vanished from the screen &
-  It clears itself 60 seconds after a good wind. A power cut or reset also
+  It clears itself 60 seconds after a good wind (\shows{DONE} or \shows{PULL SLACK}). A power cut or reset also
   clears it. &
   Normal for \shows{DONE}. After a power cut, measure the roll by hand. \\
 %
@@ -114,7 +122,7 @@ Fault LED lit (where fitted) &
   Switch off and on. If it comes back, call [SUPPORT CONTACT]. \\
 No beep at the end &
   You stopped the wind yourself (stops are silent), or buzzer fault. &
-  Check the screen. If a full wind finished with \shows{DONE} and no beep,
+  Check the screen. If a full wind finished with \shows{DONE} or \shows{PULL SLACK} and no beep,
   report the buzzer. \\
 %
 \midrule

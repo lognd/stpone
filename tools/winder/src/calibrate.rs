@@ -681,10 +681,10 @@ mod tests {
 
     #[test]
     fn wheel_follows_the_doc_formula() {
-        // One revolution of the default wheel is cpr counts and pi*4.0015 in of paper.
-        let one_rev = std::f64::consts::PI * 4.0015;
+        // One revolution of the default wheel is cpr counts and pi*4.0462 in of paper.
+        let one_rev = std::f64::consts::PI * 4.0462;
         let w = suggest_wheel_um(one_rev, 2400, 2400).unwrap();
-        assert!((w - 101_638).abs() <= 1, "{w}");
+        assert!((w - 102_773).abs() <= 1, "{w}");
         assert!(suggest_wheel_um(0.0, 10, 2400).is_err());
         assert!(suggest_wheel_um(5.0, 0, 2400).is_err());
         assert_eq!(suggest_wheel_from_records(&[], 2400), Err(CalError::NoData));
@@ -702,13 +702,13 @@ mod tests {
     #[test]
     fn guided_run_converges_and_leaves_debug() {
         let c = shared(900);
-        let rev = std::f64::consts::PI * 4.0015 / 2400.0; // inches per count
+        let rev = std::f64::consts::PI * 4.0462 / 2400.0; // inches per count
         let measure = move |r: &RunRecord| Some(r.final_count as f64 * rev);
         let rep = guided_run(&c, &[50_000, 100_000], &measure, true).unwrap();
         assert_eq!(rep.coast, 900);
         assert_eq!(rep.before.len(), 3);
         assert_eq!(rep.residuals, vec![0, 0]);
-        assert!((rep.wheel_um.unwrap() - 101_638).abs() <= 1);
+        assert!((rep.wheel_um.unwrap() - 102_773).abs() <= 1);
         let mut g = c.lock().unwrap();
         assert_eq!(g.get().unwrap().state, crate::protocol::DevState::Idle);
         assert_eq!(g.param().unwrap().coast, 900);

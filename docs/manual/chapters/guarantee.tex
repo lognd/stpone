@@ -3,7 +3,7 @@
 \index{guarantee}\index{margin}
 
 The machine is built so that a customer never gets less paper than the label
-says. Every wind ends in exactly one of two ways:
+says. Every wind ends in one of three ways:
 
 \begin{center}
 \renewcommand{\arraystretch}{1.5}
@@ -11,9 +11,13 @@ says. Every wind ends in exactly one of two ways:
 \toprule
 \textbf{Result} & \textbf{What it promises} \\
 \midrule
+\shows{** PULL SLACK **}, two long beeps &
+  The roll is within the slack (2 inches) of the full length \textbf{plus the
+  margin} (margin 0 from the factory). It is short only by the amount shown;
+  pull that much paper out by hand and the roll is full length. \\
 \shows{DONE}, three short beeps &
-  At least the full length \textbf{plus the margin} (1 inch from the factory)
-  went past the measuring wheel. The roll is good. \\
+  At least the full length plus the margin went past the measuring wheel.
+  The roll is good. \\
 \shows{!! UNDER TARGET !!} &
   The machine could \textbf{not} confirm the full length. Treat the roll as
   short. Alarm beeps unless you stopped the wind yourself. \\
@@ -23,20 +27,23 @@ says. Every wind ends in exactly one of two ways:
 
 \section{How it works}
 \begin{enumerate}
-  \item The \textbf{goal} is the target length plus the margin. For a 30 yard
-        roll that is 30 yards and 1 inch.
-  \item The motor runs until the paper is one \emph{coast} (2 yards from the
+  \item The \textbf{goal} is the target length plus the margin, less the
+        \textbf{slack} of 2 inches. With the factory margin of 0, a 30 foot
+        roll has a goal of 30 feet less 2 inches.
+  \item The motor runs until the paper is one \emph{coast} (8 feet from the
         factory) short of the goal, then it is switched off and the roll glides
         on. The coast is set generously on purpose: running short is fixed by
         the trim, but paper that has gone past the goal cannot be taken back.
   \item After the paper has stopped, the machine compares the count with the
         goal. If it is short, it bumps the motor briefly and checks again. It
         watches how far the roll glides after each stop and sizes the next
-        bump so that even twice that glide stays short of the goal; the last
+        bump so that the glide it expects lands at the goal; the last
         bumps are tiny. What it learns is used for that roll only and
         forgotten when the next wind starts.
-  \item It only says \shows{DONE} when the stopped count is at or past the
-        goal. It never guesses: the decision is made on paper that has stopped
+  \item It only reports a good roll when the stopped count is at or past the
+        goal: \shows{** PULL SLACK **} if that is still short of the label
+        length (pull the slack out by hand), \shows{DONE} if the label length
+        was reached. It never guesses: the decision is made on paper that has stopped
         moving.
 \end{enumerate}
 
@@ -52,18 +59,19 @@ The guarantee is only as good as the measurement. It assumes:
 \end{itemize}
 
 \section{How much over?}
-A normal roll is a little longer than the label: the 1 inch margin plus the
-glide after the last bump. When the real coast of your machine is under
+A normal roll is within about 2 inches of the label, usually a little short
+(the slack you pull out by hand) or a little over from the glide after the
+last bump. When the real coast of your machine is under
 about 5 feet the design estimate is well under an inch past the goal on
-average and no more than about 2 inches; a roll that finishes with bumps is
+average and no more than about 2 inches past the goal; a roll that finishes with bumps is
 at most about 3 inches past the goal. If the real coast is longer than the
-2 yard setting, the main run itself goes past the goal by the difference,
+6 foot setting, the main run itself goes past the goal by the difference,
 and the trim cannot take that back. These figures are estimates from the design and have not yet been
 measured on the bench (Chapter~\ref{ch:limits}). If your rolls are regularly
 much longer than that, recalibrate the coast (Chapter~\ref{ch:calibration}).
 
 \begin{note}[Tip]
 The \shows{DONE} screen tells you the exact overrun of every roll, for
-example \shows{+4.3 in over}. Glance at it each time: a sudden change is the
+example \shows{+4.3 in over}, and \shows{PULL SLACK} the exact shortfall. Glance at it each time: a sudden change is the
 first sign of a dirty or slipping wheel.
 \end{note}

@@ -17,9 +17,9 @@ namespace render_cases {
     // emit(line) gets one NUL-terminated line per case, without a newline.
     template <class Emit>
     void run(Emit emit) {
-        constexpr uint32_t kWheel = 101638;
+        constexpr uint32_t kWheel = 102773;
         constexpr uint32_t kCpr = 2400;
-        constexpr uint32_t kShort = 206187;
+        constexpr uint32_t kShort = 203911;
         constexpr uint32_t kLong = 618562;
         static const uint16_t kErrors[] = {0, 3, 65535};
         static const uint32_t kWindCounts[] = {0u, 1u, 51547u, 206186u, kShort, 400000u, 40000000u};

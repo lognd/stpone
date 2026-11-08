@@ -229,7 +229,7 @@ fn out_of_range_sets_are_rejected_like_the_firmware() {
         ("cpr", 100_001),
         ("short", 999),
         ("long", 4_000_001),
-        ("coast", 206_187), // not below the short length
+        ("coast", 67_970), // not below the short length
         ("margin", 2001),
         ("bump", 2),
     ] {
@@ -240,7 +240,7 @@ fn out_of_range_sets_are_rejected_like_the_firmware() {
     c.set("short", 210_000).unwrap();
     c.set("wheel_um", 101_638).unwrap();
     let p = c.param().unwrap();
-    assert_eq!((p.short, p.long), (206_188, 618_563), "{p:?}");
+    assert_eq!((p.short, p.long), (68_729, 206_188), "{p:?}");
 }
 
 #[test]

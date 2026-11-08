@@ -213,13 +213,13 @@ pub struct Params {
 
 /// Factory settings the firmware loads on DEFAULTS (shown by the UI next to the live values).
 pub const FACTORY: Params = Params {
-    wheel_um: 101638,
+    wheel_um: 102773,
     cpr: 2400,
-    short: 206187,
-    long: 618562,
+    short: 67970,
+    long: 203911,
     // 72 in (2 yd): the main run stops that far short and the trim bumps the rest (DEC-012).
-    coast: 13746,
-    margin: 191,
+    coast: 18125,
+    margin: 0,
     bump: 1,
 };
 

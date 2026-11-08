@@ -12,8 +12,10 @@
 
 namespace stpalpha {
 
-    // Image tag of this layout ("WIN6"), and the one fw<=5 wrote ("WIND", 26-byte image).
-    constexpr uint32_t kEepromMagic = 0x57494E36u;
+    // Image tag of this layout ("WIN7"; DEC-015 retired "WIN6" so a reflash adopts the new
+    // compiled-in defaults), and the older tags still refused: "WIN6" and fw<=5's "WIND".
+    constexpr uint32_t kEepromMagic = 0x57494E37u;
+    constexpr uint32_t kEepromMagicV6 = 0x57494E36u;
     constexpr uint32_t kEepromMagicV5 = 0x57494E44u;
 
     // frob:doc docs/spec/L5-component-design/SUB-03-firmware-app.md#comp-0309
@@ -63,7 +65,7 @@ namespace stpalpha {
     // frob:doc docs/spec/L5-component-design/SUB-03-firmware-app.md#comp-0309
     // Accept `s` only if tag, CRC and Params::valid() all hold; `out` is written only on OK.
     inline LoadStatus check_stored(const Stored& s, Params* out) {
-        if (s.magic == kEepromMagicV5) {
+        if (s.magic == kEepromMagicV5 || s.magic == kEepromMagicV6) {
             return LoadStatus::OLD_VERSION;
         }
         if (s.magic != kEepromMagic) {

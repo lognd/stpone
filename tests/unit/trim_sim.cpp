@@ -7,8 +7,8 @@
 //    of R pulses (R 300..1500); after the relay opens the roll decelerates at a constant rate so
 //    that it coasts C pulses from full speed (Coulomb friction): a bump that reached speed v
 //    coasts C * (v / vmax)^2, plus the distance covered during the relay opening lag (5..30 ms);
-//  * C (the TRUE full-speed coast) is drawn in 0..2*kDefaultCoastPulses (0..2*13746 pulses, twice
-//    the 72 in = 2 yd design assumption of DEC-012), or fixed by the optional third argument (e.g.
+//  * C (the TRUE full-speed coast) is drawn in 0..2*kDefaultCoastPulses (0..2*18125 pulses, twice
+//    the 96 in design assumption of DEC-014), or fixed by the optional third argument (e.g.
 //    2291 = 12 in: the assumption far larger than the truth); every coast event is jittered by
 //    +-J (0..0.3) on the friction;
 //  * the motor starts moving a random 20..200 ms after the relay closes (start lag);
@@ -59,10 +59,10 @@ struct Roll {
     double powered_at = 0;
     double powered_until = -1;
     double vmax = 3600;
-    double ramp = 800;   // R pulses
-    double coast = 0;    // C pulses at full speed
-    double jitter = 0;   // J
-    double dn = 1e12;    // current deceleration (pulses/s^2)
+    double ramp = 800; // R pulses
+    double coast = 0;  // C pulses at full speed
+    double jitter = 0; // J
+    double dn = 1e12;  // current deceleration (pulses/s^2)
     bool jammed = false;
     bool creep = false; // slipping: the roll advances 1 pulse per 450 ms whatever the motor does
     uint32_t stop_armed = Controller::kNoStop;
@@ -186,12 +186,14 @@ int main(int argc, char** argv) {
             r.vmax = 30 + rnd() % 200; // a weak motor: kTrimMaxMs decides
             r.coast = r.coast * r.vmax / 3600.0;
         }
-        const double jam_at = urand() * 4.0; // seconds after the trim started (the main run has no stall rule)
+        const double jam_at =
+            urand() * 4.0; // seconds after the trim started (the main run has no stall rule)
         const uint32_t stop_pass = 5 + rnd() % 3000;
         uint32_t now = 1000;
         bool long_wind = rnd() % 3 == 0;
         const uint32_t target = long_wind ? c.long_pulses : c.short_pulses;
-        const uint32_t goal = target + c.margin;
+        const uint32_t goal =
+            target + c.margin - kSlackPulses; // DEC-013 (== c.goal() once started)
 
         Inputs in{};
         in.pending = long_wind ? kBtn2 : kBtn1;
@@ -303,7 +305,8 @@ int main(int argc, char** argv) {
                     still_count = in.count;
                     still_since = now;
                 }
-                CHECK(fault == Fault::SLOW || now - relay_on_since <= kBumpMaxOnMs + kBumpStallMs + 200 ||
+                CHECK(fault == Fault::SLOW ||
+                          now - relay_on_since <= kBumpMaxOnMs + kBumpStallMs + 200 ||
                           now - still_since <= kBumpStallMs + 200,
                       "bump relay on for %u ms, still for %u ms", now - relay_on_since,
                       now - still_since);
@@ -321,7 +324,7 @@ int main(int argc, char** argv) {
                 res.bumps = c.bumps();
                 res.alarm_beep = o.beep == Beep::ALARM;
                 res.cancel_beep = o.beep == Beep::CANCEL;
-                res.start_beep = o.beep == Beep::START;
+                res.start_beep = o.beep == (goal < target ? Beep::SLACK : Beep::START);
                 CHECK(!o.relay && !c.relay() && c.stop_at() == Controller::kNoStop,
                       "relay/ISR armed after the end");
                 res.trim_s = trim_start ? (now - trim_start) / 1000.0 : 0;
@@ -330,9 +333,10 @@ int main(int argc, char** argv) {
             CHECK(passes < 400000, "wind did not end");
         }
         CHECK(ended, "no end");
-        // let the roll stop and the result settle
+        // let the roll stop and the result settle (a slow weak-motor or 2x96 in coast ends late;
+        // stop at the first DONE, the result expires if we keep waiting)
         uint32_t quiet_passes = 0;
-        for (int k = 0; k < 400; ++k) {
+        for (int k = 0; k < 1600; ++k) {
             for (uint32_t j = 0; j < 50 * 5; ++j) {
                 r.step();
             }
@@ -344,6 +348,9 @@ int main(int argc, char** argv) {
             o = c.step(in);
             CHECK(!o.relay && !c.relay(), "relay on in the result");
             (void)quiet_passes;
+            if (c.result() == Result::DONE) {
+                break;
+            }
         }
         res.final_count = r.count();
         res.goal = goal;
@@ -355,8 +362,9 @@ int main(int argc, char** argv) {
         const double over = static_cast<double>(res.final_count) - static_cast<double>(goal);
         if (res.outcome == Outcome::PASS) {
             CHECK(res.final_count >= goal, "PASS but final %u < goal %u", res.final_count, goal);
-            CHECK(res.final_count >= target, "PASS below the target");
-            CHECK(res.start_beep && !res.alarm_beep, "PASS beeps wrong");
+            CHECK(res.final_count + kSlackPulses >= target,
+                  "PASS more than the slack below the target");
+            CHECK(res.start_beep && !res.alarm_beep, "PASS must sound the slack beep");
             CHECK(!c.alarm(), "alarm on a PASS");
             ++n_pass;
             ++n_complete;
@@ -445,7 +453,7 @@ int main(int argc, char** argv) {
     // Legacy mode (bump = 0): the single cut at goal - coast, no guarantee, outcome NONE.
     for (wind = 0; wind < 20; ++wind) {
         Controller c;
-        c.short_pulses = 20000;
+        c.short_pulses = 20000 + kSlackPulses;
         c.coast = rnd() % 1500;
         c.margin = rnd() % 300;
         c.bump = false;
@@ -482,7 +490,8 @@ int main(int argc, char** argv) {
             now += 10;
             in = Inputs{};
             in.now_ms = now;
-            if (c.state() == MachineState::TRIM && c.relay() && c.stop_at() != Controller::kNoStop) {
+            if (c.state() == MachineState::TRIM && c.relay() &&
+                c.stop_at() != Controller::kNoStop) {
                 count += 20;
                 pending_cut = true;
                 if (c.stop_at() > c.goal()) {
@@ -662,13 +671,12 @@ int main(int argc, char** argv) {
            "trim_mean=%.1f trim_p99=%.0f trim_max=%.0f ff_n=%u ff_max_trim_s=%.1f "
            "ff_mean_trim_s=%.2f ff_max_bumps=%u ff_over_mean=%.1f ff_over_p99=%.0f "
            "ff_over_max=%.0f\n",
-           winds, n_pass, n_short, n_stopped, n_legacy, max_over,
-           n_over ? sum_over / n_over : 0.0, max_over_assumed,
-           n_over_assumed ? sum_over_assumed / n_over_assumed : 0.0, max_bumps, max_trim_s,
-           n_pass ? min_bumps : 0u, n_pass ? sum_bumps / n_pass : 0.0,
-           n_pass ? sum_trim_s / n_pass : 0.0, max_bump_on_ms, static_cast<unsigned>(nt),
-           trim_mean, trim_p99, trim_max, ff_n, ff_max_trim_s, ff_n ? ff_sum_trim_s / ff_n : 0.0,
-           ff_max_bumps, ff_over_mean, ff_over_p99, ff_over_max);
+           winds, n_pass, n_short, n_stopped, n_legacy, max_over, n_over ? sum_over / n_over : 0.0,
+           max_over_assumed, n_over_assumed ? sum_over_assumed / n_over_assumed : 0.0, max_bumps,
+           max_trim_s, n_pass ? min_bumps : 0u, n_pass ? sum_bumps / n_pass : 0.0,
+           n_pass ? sum_trim_s / n_pass : 0.0, max_bump_on_ms, static_cast<unsigned>(nt), trim_mean,
+           trim_p99, trim_max, ff_n, ff_max_trim_s, ff_n ? ff_sum_trim_s / ff_n : 0.0, ff_max_bumps,
+           ff_over_mean, ff_over_p99, ff_over_max);
     (void)n_complete;
     return 0;
 }

@@ -38,7 +38,7 @@ pub const VERIFY_TOLERANCE_PULSES: i64 = 20;
 
 /// Run-up (pulses, one turn of the encoder) a debug test wind needs beyond the coast: the firmware
 /// cuts a RUN at `length - coast`, so a length barely above the coast would never reach full speed
-/// (the factory coast is 13746 pulses = 72 in, DEC-012).
+/// (the factory coast is 18125 pulses = 96 in, DEC-014).
 const RUN_UP_PULSES: i64 = 2400;
 
 /// Shortest test wind worth making with this coast.

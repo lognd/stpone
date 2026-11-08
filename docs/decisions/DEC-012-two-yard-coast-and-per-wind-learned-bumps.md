@@ -4,6 +4,8 @@ Date: 2026-10-21. Owner: logan. Status: accepted. The numbers below come from th
 the host model in `tests/unit/trim_sim.cpp`. None comes from a bench run; the relay-drop lag, the
 true coast and the trim time on the machine are unverified.
 
+> Amended by [DEC-014](DEC-014-first-bench-calibration-wheel-coast-and-one-stop-bumps.md): default `coast` is 18125 (96 in) and the first bump is `remaining - 3F/2`.
+
 Supersedes (in part) [DEC-010](DEC-010-default-bump-trim-mode-with-minimum-amount-guarantee.md): the
 default `coast`, algorithm steps 3 and 4, and the bump/time limits.
 

@@ -36,7 +36,7 @@ namespace stpalpha {
         } else {
             STP_SNPRINTF(p.rows[1], 21, STP_FMT("                    "));
         }
-        STP_SNPRINTF(p.rows[2], 21, STP_FMT("[1] 30yd    [2] 90yd"));
+        STP_SNPRINTF(p.rows[2], 21, STP_FMT("[1] 30ft    [2] 90ft"));
         if (manual == kManualOn) {
             STP_SNPRINTF(p.rows[3], 21, STP_FMT("[4] click = auto    "));
         } else {
@@ -55,7 +55,7 @@ namespace stpalpha {
 
     // Winding / paused screen (DEC-008): all fields have fixed column positions.
     // Row 1: " 45% [#####--------]"  (percent done and a bar; the raw count is not shown)
-    // Row 2: "LEN LLLL.l/TTTT.t yd" (each number occupies exactly 4+1+1 chars)
+    // Row 2: "LEN LLLL.l/TTTT.t ft" (each number occupies exactly 4+1+1 chars)
     inline void render_winding(LCDPacket& p, uint32_t count, uint32_t target_pulses, bool paused,
                                uint8_t manual, uint16_t errors, uint32_t wheel_um, uint32_t cpr,
                                bool trimming = false) {
@@ -82,7 +82,7 @@ namespace stpalpha {
         }
         format_progress(p.rows[1], 21, pct);
         Text row2(p.rows[2], 21);
-        row2.s("LEN ").s(len).c('/').s(tgt).s(" yd");
+        row2.s("LEN ").s(len).c('/').s(tgt).s(" ft");
         row2.end();
         if (paused) {
             STP_SNPRINTF(p.rows[3], 21, STP_FMT("[1/2]STOP   [3]PLAY "));
@@ -104,6 +104,9 @@ namespace stpalpha {
             STP_SNPRINTF(p.rows[0], 21, STP_FMT(" !! UNDER TARGET !! "));
             format_short(p.rows[1], p.rows[2], 21, outcome == Outcome::STOPPED, count,
                          target_pulses, goal_pulses, wheel_um, cpr);
+        } else if (outcome == Outcome::PASS && !settling && count < target_pulses) {
+            STP_SNPRINTF(p.rows[0], 21, STP_FMT("  ** PULL SLACK **  "));
+            format_slack(p.rows[1], p.rows[2], 21, count, target_pulses, wheel_um, cpr);
         } else {
             STP_SNPRINTF(p.rows[0], 21, STP_FMT(" -= PAPER WINDER =- "));
             format_result(p.rows[1], p.rows[2], 21, settling, count, target_pulses, wheel_um, cpr);
@@ -111,7 +114,7 @@ namespace stpalpha {
         if (errors != 0) {
             STP_SNPRINTF(p.rows[3], 21, STP_FMT("!! ENC MISS:%-5u  !"), errors);
         } else {
-            STP_SNPRINTF(p.rows[3], 21, STP_FMT("[1] 30yd    [2] 90yd"));
+            STP_SNPRINTF(p.rows[3], 21, STP_FMT("[1] 30ft    [2] 90ft"));
         }
     }
 

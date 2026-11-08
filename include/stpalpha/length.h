@@ -12,15 +12,15 @@ namespace stpalpha {
 
     // pi in millionths: integer input for every length computation.
     constexpr uint64_t kPiMicro = 3141593ull;
-    // One yard and one inch in micrometres.
-    constexpr uint64_t kUmPerYd = 914400ull;
+    // One foot and one inch in micrometres (lengths are shown in feet, DEC-013).
+    constexpr uint64_t kUmPerFt = 304800ull;
     constexpr uint64_t kUmPerIn = 25400ull;
-    // Largest length shown, in tenths of a yard (9999.9 yd): the 4-digit field never overflows.
+    // Largest length shown, in tenths of a foot (9999.9 ft): the 4-digit field never overflows.
     constexpr uint32_t kMaxTenths = 99999;
     // Pulse counts above this are shown as kMaxTenths (keeps the 64-bit math in range).
     constexpr uint32_t kMaxDisplayPulses = 40000000;
-    // An over/under difference of at least this many tenths of an inch (one yard) is shown in yards.
-    constexpr uint32_t kYardInchTenths = 360;
+    // An over/under difference of at least this many tenths of an inch (one foot) is shown in feet.
+    constexpr uint32_t kFootInchTenths = 120;
     // Cells in the progress bar of the winding screen.
     constexpr uint8_t kBarCells = 13;
 
@@ -93,12 +93,12 @@ namespace stpalpha {
     }
 
     // frob:doc docs/spec/L5-component-design/SUB-03-firmware-app.md#comp-0305
-    // Length in tenths of a yard (rounded to nearest, saturating at kMaxTenths) for a pulse count.
+    // Length in tenths of a foot (rounded to nearest, saturating at kMaxTenths) for a pulse count.
     inline uint32_t pulses_to_tenths(uint32_t pulses, uint32_t wheel_um, uint32_t cpr) {
         if (cpr == 0 || pulses > kMaxDisplayPulses) {
             return kMaxTenths;
         }
-        uint64_t unit = kUmPerYd * 1000000ull;
+        uint64_t unit = kUmPerFt * 1000000ull;
         uint64_t tenths = (scaled_length(pulses, wheel_um, cpr) * 10u + unit / 2) / unit;
         return tenths > kMaxTenths ? kMaxTenths : static_cast<uint32_t>(tenths);
     }
@@ -124,7 +124,7 @@ namespace stpalpha {
     }
 
     // frob:doc docs/spec/L5-component-design/SUB-03-firmware-app.md#comp-0305
-    // Write "W.t" for a tenths-of-yards value, whole part right-aligned in `width` columns.
+    // Write "W.t" for a tenths-of-feet value, whole part right-aligned in `width` columns.
     inline void format_tenths(char* out, size_t cap, uint32_t tenths, uint8_t width) {
         Text t(out, cap);
         t.tenths(tenths, width);
@@ -148,19 +148,19 @@ namespace stpalpha {
     }
 
     // frob:doc docs/spec/L5-component-design/SUB-03-firmware-app.md#comp-0305
-    // A miss given in tenths of an inch: "W.t in" under one yard, else "W.t yd" (DEC-008).
+    // A miss given in tenths of an inch: "W.t in" under one foot, else "W.t ft" (DEC-008, DEC-013).
     inline void put_miss(Text& t, uint32_t in_tenths) {
-        if (in_tenths < kYardInchTenths) {
+        if (in_tenths < kFootInchTenths) {
             t.tenths(in_tenths).s(" in");
         } else {
-            t.tenths((in_tenths + kYardInchTenths / 20u) / (kYardInchTenths / 10u)).s(" yd");
+            t.tenths((in_tenths + kFootInchTenths / 20u) / (kFootInchTenths / 10u)).s(" ft");
         }
     }
 
     // frob:doc docs/spec/L5-component-design/SUB-03-firmware-app.md#comp-0305
     // Fill the two RESULT rows (each padded to 20 characters, `cap` >= 21): the final length
-    // against the target in yards, and the miss in inches (under one yard) or yards
-    // ("+7.2 in over", "-1.3 yd short"); "settling..." while the motor still coasts.
+    // against the target in feet, and the miss in inches (under one foot) or feet
+    // ("+7.2 in over", "-1.3 ft short"); "settling..." while the motor still coasts.
     inline void format_result(char* row1, char* row2, size_t cap, bool settling,
                               uint32_t final_pulses, uint32_t target_pulses, uint32_t wheel_um,
                               uint32_t cpr) {
@@ -170,7 +170,7 @@ namespace stpalpha {
             .tenths(pulses_to_tenths(final_pulses, wheel_um, cpr))
             .c('/')
             .tenths(pulses_to_tenths(target_pulses, wheel_um, cpr))
-            .s(" yd")
+            .s(" ft")
             .pad_to(20);
         a.end();
 
@@ -193,7 +193,7 @@ namespace stpalpha {
 
     // frob:doc docs/spec/L5-component-design/SUB-03-firmware-app.md#comp-0305
     // The two rows of a FAILED wind (DEC-010): row1 names the miss against the goal in inches
-    // (yards from one yard up) as "SHORT -x.x in" or "STOPPED -x.x in"; row2 the final length against
+    // (feet from one foot up) as "SHORT -x.x in" or "STOPPED -x.x in"; row2 the final length against
     // the target. A final count at or past the goal still reads "-0.0 in" (never a plus sign).
     inline void format_short(char* row1, char* row2, size_t cap, bool stopped,
                              uint32_t final_pulses, uint32_t target_pulses, uint32_t goal_pulses,
@@ -211,7 +211,28 @@ namespace stpalpha {
             .tenths(pulses_to_tenths(final_pulses, wheel_um, cpr))
             .c('/')
             .tenths(pulses_to_tenths(target_pulses, wheel_um, cpr))
-            .s(" yd")
+            .s(" ft")
+            .pad_to(20);
+        b.end();
+    }
+
+    // The two rows of a PASS that stopped deliberately short (DEC-013): row1 says how much paper
+    // to pull by hand ("PULL 2.0 in BY HAND"), row2 the length against the target.
+    inline void format_slack(char* row1, char* row2, size_t cap, uint32_t final_pulses,
+                             uint32_t target_pulses, uint32_t wheel_um, uint32_t cpr) {
+        Text a(row1, cap);
+        const uint32_t miss = target_pulses > final_pulses ? target_pulses - final_pulses : 0;
+        a.s("PULL ");
+        put_miss(a, pulses_to_inch_tenths(miss, wheel_um, cpr));
+        a.s(" BY HAND").pad_to(20);
+        a.end();
+
+        Text b(row2, cap);
+        b.s("LEN ")
+            .tenths(pulses_to_tenths(final_pulses, wheel_um, cpr))
+            .c('/')
+            .tenths(pulses_to_tenths(target_pulses, wheel_um, cpr))
+            .s(" ft")
             .pad_to(20);
         b.end();
     }

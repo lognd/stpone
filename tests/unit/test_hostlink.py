@@ -47,7 +47,7 @@ def test_hello_get_param_defaults(driver: Path) -> None:
     assert r[0] == "OK stpone proto=1 fw=6"
     assert r[1] == "OK state=IDLE count=-42 speed=5170 errors=3 relay=0 btn=1010 pass=-"
     assert r[2] == (
-        "OK wheel_um=101638 cpr=2400 short=206187 long=618562 coast=13746 margin=191 bump=1"
+        "OK wheel_um=102773 cpr=2400 short=67970 long=203911 coast=18125 margin=0 bump=1"
     )
 
 
@@ -56,7 +56,7 @@ def test_dump_lists_every_internal(driver: Path) -> None:
     ((text, _),) = _run(driver, "DUMP")
     for field in (
         "state=IDLE", "prev=-", "count=-42", "speed=5170", "errors=3", "relay=0", "manual=0",
-        "target=206187", "eff_target=192632", "coast=13746", "margin=191", "bump=1", "bumps=0", "trim=0", "pass=-", "btn=1010", "toggles=7,0,0,0",
+        "target=67970", "eff_target=49467", "coast=18125", "margin=0", "bump=1", "bumps=0", "trim=0", "pass=-", "btn=1010", "toggles=7,0,0,0",
         "pending=0,0,1,0", "enc_dir=-1", "uptime_ms=1234", "run=0", "stack_free=321", "pass_max_ms=47", "isr_lat_max=33",
     ):  # fmt: skip
         assert field in text.split(), field
@@ -72,10 +72,10 @@ def test_set_validates_and_applies(driver: Path) -> None:
         )
     ]  # fmt: skip
     assert r[0] == "OK"
-    assert "eff_target=205878" in r[1]  # target + margin - coast
+    assert "eff_target=67092" in r[1]  # target + margin - slack - coast
     assert r[2:8] == ["ERR bad_arg"] * 6
     assert r[8] == "OK"
-    assert "coast=13746 margin=191 bump=1" in r[9]
+    assert "coast=18125 margin=0 bump=1" in r[9]
 
 
 def test_margin_and_bump_set_validate_and_default(driver: Path) -> None:
@@ -90,11 +90,11 @@ def test_margin_and_bump_set_validate_and_default(driver: Path) -> None:
     ]  # fmt: skip
     assert r[:2] == ["OK", "OK"] and r[2] == "ERR bad_arg"
     assert r[3] == "OK" and r[4] == "ERR bad_arg" and r[5] == "OK"
-    assert r[6].endswith("coast=13746 margin=2000 bump=1")
+    assert r[6].endswith("coast=18125 margin=2000 bump=1")
     # the goal (largest target + margin) must stay within kMaxPulses = 4000000
     assert r[7] == "ERR bad_arg" and r[8] == "OK"
     assert r[9] == "OK" and r[10] == "ERR bad_arg" and r[11] == "OK" and r[12] == "OK"
-    assert r[13] == "OK" and r[14].endswith("coast=13746 margin=191 bump=1")
+    assert r[13] == "OK" and r[14].endswith("coast=18125 margin=0 bump=1")
     assert r[15:] == ["ERR bad_arg", "ERR bad_arg"]
 
 
@@ -184,19 +184,19 @@ def test_params_locked_while_running(driver: Path) -> None:
 
 
 def test_set_wheel_and_cpr_rederive_targets(driver: Path) -> None:
-    r = [x[0] for x in _run(driver, "SET wheel_um 101638", "PARAM", "SET wheel_um 101000", "PARAM",
+    r = [x[0] for x in _run(driver, "SET wheel_um 102773", "PARAM", "SET wheel_um 101000", "PARAM",
                             "SET short 150000", "PARAM", "SET cpr 4800", "PARAM")]  # fmt: skip
     assert (
         r[1]
-        == "OK wheel_um=101638 cpr=2400 short=206188 long=618563 coast=13746 margin=191 bump=1"
+        == "OK wheel_um=102773 cpr=2400 short=67970 long=203911 coast=18125 margin=0 bump=1"
     )
-    # 1080 in * 25400 um/in * 2400 / (pi * 101000 um) = 207490.14
+    # 90 ft = 1080 in * 25400 um/in * 2400 / (pi * 101000 um) = 207490.14
     assert (
         r[3]
-        == "OK wheel_um=101000 cpr=2400 short=207490 long=622470 coast=13746 margin=191 bump=1"
+        == "OK wheel_um=101000 cpr=2400 short=69163 long=207490 coast=18125 margin=0 bump=1"
     )
-    assert r[5].startswith("OK wheel_um=101000 cpr=2400 short=150000 long=622470")
-    assert r[7].startswith("OK wheel_um=101000 cpr=4800 short=414980 long=1244941")
+    assert r[5].startswith("OK wheel_um=101000 cpr=2400 short=150000 long=207490")
+    assert r[7].startswith("OK wheel_um=101000 cpr=4800 short=138327 long=414980")
 
 
 def test_debug_host_silence_times_out(driver: Path) -> None:
@@ -270,7 +270,7 @@ def test_bargraph_tracks_progress_while_winding_and_paused(driver: Path) -> None
             "@step 0 154641 0", "@step 0 103094 4", "@step 0 103094 0",
         )
     ]  # fmt: skip
-    leds = [int(x.split("leds=")[1].split()[0]) for x in r[4:]]
+    leds = [int(x.split("leds=")[1].split()[0]) for x in r[5:]]
     assert leds == [0, 1, 3, 7, 3, 3]
 
 
@@ -306,7 +306,8 @@ def test_speed_meter_divides_by_the_real_elapsed_time(driver: Path) -> None:
 
 def _results(driver: Path, *lines: str) -> list[dict[str, int]]:
     out = []
-    for text, _ in _run(driver, *lines):
+    pre = () if any(x.startswith("SET short") for x in lines) else _OLDGOAL
+    for text, _ in _run(driver, *pre, *lines)[len(pre) :]:
         if text.startswith("@debug="):
             out.append({k: int(v) for k, v in (t.split("=") for t in text[1:].split())})
         else:
@@ -314,7 +315,15 @@ def _results(driver: Path, *lines: str) -> list[dict[str, int]]:
     return out
 
 
-_LEGACY = ("SET coast 0", "SET margin 0", "SET bump 0")  # the single cut at the target
+# The firmware now stops kSlackPulses (378) short of target + margin on purpose (DEC-013).
+# These legacy scenarios were written for the old goal, so they raise the target by the slack.
+_SLACK = 378
+_OLDGOAL = (
+    f"SET short {206187 + _SLACK}",
+    "SET margin 191",
+    "SET coast 13746",
+)  # goal 206378 as before
+_LEGACY = (f"SET short {206187 + _SLACK}", "SET coast 0", "SET margin 0", "SET bump 0")
 
 
 def test_result_settles_then_done_then_expires(driver: Path) -> None:
@@ -329,7 +338,7 @@ def test_result_settles_then_done_then_expires(driver: Path) -> None:
         "@step 60999 206300 0",
         "@step 61000 206300 0",  # 60 s after the stop: gone, count zeroed
     )
-    r = r[3:]
+    r = r[4:]
     assert r[1]["stopped"] == 1 and r[1]["result"] == 1 and r[1]["reset"] == 0
     assert r[2]["result"] == 1
     assert r[3]["result"] == 1
@@ -344,7 +353,7 @@ def test_result_restarts_when_the_count_moves_again(driver: Path) -> None:
         *_LEGACY, "@wind", "@step 0 206187 0", "@step 600 206200 0", "@step 1100 206200 0",
         "@step 1200 206250 0", "@step 1700 206250 0",
     )  # fmt: skip
-    assert [x["result"] for x in r[4:]] == [1, 1, 2, 1, 2]
+    assert [x["result"] for x in r[5:]] == [1, 1, 2, 1, 2]
 
 
 def test_result_clears_on_manual_and_new_wind_and_debug(driver: Path) -> None:
@@ -365,7 +374,7 @@ def test_dump_reply_fits_the_firmware_reply_buffer_at_its_widest(driver: Path) -
     assert (
         len(r[2]) < 335
     )  # main.cpp g_reply is 352 bytes; the widest real line is ~325
-    assert r[2].endswith("isr_lat_max=65535 margin=191 bump=1 bumps=0 trim=0 pass=-")
+    assert r[2].endswith("isr_lat_max=65535 margin=0 bump=1 bumps=0 trim=0 pass=-")
 
 
 def test_the_5s_lease_and_speed_hold_with_a_long_780ms_lcd_pass(driver: Path) -> None:
@@ -406,7 +415,7 @@ def _settled_into_first_bump(*extra: str) -> list[str]:
     ]
 
 
-def test_trim_main_cut_settles_then_bumps_the_gap_less_twice_the_main_coast(
+def test_trim_main_cut_settles_then_bumps_the_gap_less_the_main_coast(
     driver: Path,
 ) -> None:
     r = _results(driver, *_settled_into_first_bump())
@@ -419,11 +428,11 @@ def test_trim_main_cut_settles_then_bumps_the_gap_less_twice_the_main_coast(
     )
     assert cut["stop_at"] == _NOSTOP and cut["outcome"] == 0
     assert moving["relay"] == 0 and moving["stop_at"] == _NOSTOP
-    # remaining = 206378 - 193632 = 12746, F = 1000: b = 12746 - 2 * 1000 = 10746
+    # remaining = 206378 - 193632 = 12746, F = 1000: b = 12746 - 1000 = 11746 (DEC-015)
     assert (
         bump["relay"] == 1
         and bump["bumps"] == 1
-        and bump["stop_at"] == _SETTLED + 10746
+        and bump["stop_at"] == _SETTLED + 11746
     )
 
 
@@ -431,22 +440,22 @@ def test_trim_bump_is_cut_by_the_isr_then_probes_then_sizes_by_ratio(
     driver: Path,
 ) -> None:
     r = _results(
-        driver, *_settled_into_first_bump(), "@step 700 200000 0", "@step 800 204378 0",
-        "@step 1000 205000 0", "@step 1500 205000 0", "@step 1600 205002 0",
-        "@step 1700 205042 0", "@step 2200 205042 0",
+        driver, *_settled_into_first_bump(), "@step 700 200000 0", "@step 800 205378 0",
+        "@step 1000 205900 0", "@step 1500 205900 0", "@step 1600 205902 0",
+        "@step 1700 205942 0", "@step 2200 205942 0",
     )  # fmt: skip
     mid, cut, moving, probe = r[4], r[5], r[6], r[7]
-    assert mid["relay"] == 1 and mid["stop_at"] == 204378
+    assert mid["relay"] == 1 and mid["stop_at"] == 205378
     assert cut["relay"] == 0 and cut["stop_at"] == _NOSTOP and cut["bumps"] == 1
     assert moving["relay"] == 0
-    # remaining 1378 < 2F = 2000 and no probe measured yet: a kMinBump (2) probe
+    # remaining 478 <= F = 1000 and no probe measured yet: a kMinBump (2) probe
     assert (
-        probe["relay"] == 1 and probe["bumps"] == 2 and probe["stop_at"] == 205000 + 2
+        probe["relay"] == 1 and probe["bumps"] == 2 and probe["stop_at"] == 205900 + 2
     )
-    # the probe followed through 40 pulses (ratio 20): b = (1336 - 2 * 40) / (1 + 2 * 20) = 30
+    # the probe followed through 40 pulses (ratio 20): b = (436 - 2 * 40) / (1 + 2 * 20) = 8
     ratio = r[10]
     assert (
-        ratio["relay"] == 1 and ratio["bumps"] == 3 and ratio["stop_at"] == 205042 + 30
+        ratio["relay"] == 1 and ratio["bumps"] == 3 and ratio["stop_at"] == 205942 + 8
     )
 
 
@@ -468,8 +477,8 @@ def test_trim_near_the_goal_steps_are_short_and_pass_only_at_or_over_it(
     assert last["outcome"] == 0 and last["stopped"] == 0
     done = r[9]
     assert (
-        done["stopped"] == 1 and done["outcome"] == 1 and done["beep"] == 1
-    )  # PASS, START
+        done["stopped"] == 1 and done["outcome"] == 1 and done["beep"] == 4
+    )  # PASS, SLACK (the goal is kSlackPulses short of the target: DEC-013)
     assert done["result"] == 2 and done["relay"] == 0 and done["stop_at"] == _NOSTOP
 
 
@@ -513,9 +522,9 @@ def test_trim_pause_resume_keeps_the_trim_and_caps_manual_at_the_goal(
     assert resumed["state"] == 3 and resumed["trim"] == 1 and resumed["relay"] == 0
     assert settling["relay"] == 0 and settling["stopped"] == 0
     # the trim resumed where it was: 500 ms of quiet later the next bump starts, still sized
-    # from the main coast F = 1000: 12346 - 2000
+    # from the main coast F = 1000: 12346 - 1000
     assert (
-        again["relay"] == 1 and again["bumps"] == 1 and again["stop_at"] == at + 10346
+        again["relay"] == 1 and again["bumps"] == 1 and again["stop_at"] == at + 11346
     )
 
 
@@ -603,5 +612,8 @@ def test_eeprom_image_old_corrupt_or_foreign_is_refused(driver: Path) -> None:
     assert (
         _image(driver, "@imagev5")["image"] == 1
     )  # OLD_VERSION: fall back to defaults
+    assert (
+        _image(driver, "@imagev6")["image"] == 1
+    )  # WIN6 (DEC-015): defaults on reflash
     assert _image(driver, "@imagemagic")["image"] == 2  # BAD_MAGIC
     assert _image(driver, "@imagecrc")["image"] == 3  # BAD_CRC

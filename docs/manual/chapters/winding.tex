@@ -15,12 +15,12 @@
 \begin{lcd}
  -= PAPER WINDER =-
 
-[1] 30yd    [2] 90yd
+[1] 30ft    [2] 90ft
 [4] click = manual
 \end{lcd}
 
 \section{Start a wind}
-Push \btn{1} for a \textbf{30 yard} roll or \btn{2} for a \textbf{90 yard}
+Push \btn{1} for a \textbf{30 foot} roll or \btn{2} for a \textbf{90 foot}
 roll. One push is enough. Starting a wind also silences any buzzer that was
 still sounding.
 
@@ -29,7 +29,7 @@ The relay closes, the motor runs and the screen shows the progress:
 \begin{lcd}
      WINDING...
  45% [#####--------]
-LEN   12.3/  30.0 yd
+LEN   12.3/  30.0 ft
 [1/2]STOP   [3]PAUSE
 \end{lcd}
 
@@ -41,8 +41,8 @@ Section~\ref{sec:screen-winding}).
 \index{trim}\index{coast}
 The motor cannot stop the roll instantly. After the relay opens the roll
 keeps turning for a short distance, called the \textbf{coast} (set at the
-factory to 2 yards, more than the roll is expected to glide). So the machine
-switches the motor off about one coast \emph{before} the target, and lets the
+factory to 8 feet, more than the roll is expected to glide). So the machine
+switches the motor off about one coast \emph{before} the goal, and lets the
 roll glide towards it.
 
 Then it \textbf{trims}:
@@ -51,35 +51,62 @@ Then it \textbf{trims}:
         for the paper to stop.
   \item If the length is not yet enough, it gives the motor a bump and
         waits again. It measures how far the roll glided after the motor
-        stopped and sizes each bump so that even twice that glide stays
-        short of the goal, so the bumps get shorter as the gap closes and the
+        stopped and sizes each bump so that the glide lands at the goal, so the bumps get shorter as the gap closes and the
         last ones are tiny. It repeats this until the length is at least the
-        target plus the safety margin (1 inch from the factory). This can
+        goal: the target plus the safety margin (0 from the factory), less the 2 inch
+        slack (see Section~\ref{sec:slack}). This can
         take up to about half a minute. What it measures is used for this
         roll only; turning the roll by hand while the machine is idle
         changes nothing.
-  \item When the length is enough, it beeps \textbf{three short beeps} and
-        shows \shows{DONE}.
+  \item When the length is enough, it beeps and shows the result:
+        \textbf{two long beeps} and \shows{** PULL SLACK **} if the roll is a
+        little short of the label on purpose (the usual case),
+        or \textbf{three short beeps} and \shows{DONE} if the roll reached
+        the label length.
 \end{enumerate}
 
 \begin{lcd}
      TRIMMING...
  99% [############-]
-LEN   29.9/  30.0 yd
+LEN   29.9/  30.0 ft
 [1/2]STOP   [3]PAUSE
 \end{lcd}
+
+\section{Stopping short on purpose: pull the slack}\label{sec:slack}
+\index{slack}\index{pull slack}
+The machine aims for the target length \emph{minus 2 inches} (the
+\textbf{slack}). It does this so that it never over-winds, and so that the
+paper is slightly slack between the wheel and the roll for you to tidy up.
+When the wind ends 2 inches or so short of the label, the machine makes it
+obvious:
+\begin{itemize}
+  \item two \textbf{long beeps} (0.7 s each), once;
+  \item the screen shows \shows{** PULL SLACK **} and, on the next row,
+        \shows{PULL 2.0 in BY HAND} (the figure is the actual shortfall).
+\end{itemize}
+\begin{lcd}
+  ** PULL SLACK **
+PULL 2.0 in BY HAND
+LEN 29.9/30.0 ft
+[1] 30ft    [2] 90ft
+\end{lcd}
+\textbf{Pull that much paper out by hand} (gently, so the wheel is not
+lifted) to take up the slack, then cut the paper and remove the roll. This is
+a good result and the usual one. If the roll happens to end on or past the
+label length, there is nothing to pull and you get \shows{DONE} with three
+short beeps instead.
 
 \section{Finished}
 \begin{lcd}
  -= PAPER WINDER =-
-DONE 30.1/30.0 yd
+DONE 30.1/30.0 ft
 +4.3 in over
-[1] 30yd    [2] 90yd
+[1] 30ft    [2] 90ft
 \end{lcd}
 
 The second row shows the measured length and the target. The third row says
 how far over (or short) the roll is compared with the target, in inches (or in
-yards when it is a yard or more). Just after the motor stops the screen shows
+feet when it is a foot or more). Just after the motor stops the screen shows
 \shows{NOW} and \shows{settling...} for a moment while the roll comes to rest;
 then \shows{DONE} and the final figure. Cut the paper and remove the roll. The result stays on the screen
 for 60 seconds, then the normal idle screen returns. You can start the next
@@ -101,8 +128,8 @@ wind straight away; a button still sitting pushed in is fine.
 \index{stop}
 Push \btn{1} or \btn{2}. The motor stops at once. What you see next:
 \begin{itemize}
-  \item If the roll had already reached the full length plus margin, it is
-        reported as \shows{DONE} as usual.
+  \item If the roll had already reached the goal, it is reported as usual:
+        \shows{** PULL SLACK **} or \shows{DONE}.
   \item Otherwise the screen shows \shows{!! UNDER TARGET !!} with
         \shows{STOPPED} and how much is missing. There is no alarm sound for a
         stop you made yourself. The screen stays until you push a button.
@@ -112,20 +139,20 @@ Push \btn{1} or \btn{2}. The motor stops at once. What you see next:
 \index{under target}\index{short roll}
 If the trim cannot finish (the paper does not move when bumped, too many
 bumps, or the trim takes longer than 45 seconds), the machine gives up and
-sounds the \textbf{under-target alarm}: three long beeps, repeated every 6
+sounds the \textbf{under-target alarm} (not to be confused with the two beeps of the slack notice): three long beeps, repeated every 6
 seconds for about a minute.
 
 \begin{lcd}
  !! UNDER TARGET !!
 SHORT -8.2 in
-LEN 29.8/30.0 yd
-[1] 30yd    [2] 90yd
+LEN 29.8/30.0 ft
+[1] 30ft    [2] 90ft
 \end{lcd}
 
 What to do:
 \begin{enumerate}
   \item Push any button to silence the alarm. (That push also does its
-        normal job, so \btn{1} would start a new 30 yard wind. Push \btn{3}
+        normal job, so \btn{1} would start a new 30 foot wind. Push \btn{3}
         if you only want to clear the screen.)
   \item Switch the power off and look for the cause: paper run out, a jam,
         the wheel lifted off the paper, a torn web.

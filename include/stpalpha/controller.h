@@ -10,31 +10,33 @@
 namespace stpalpha {
 
     // frob:doc docs/spec/L5-component-design/SUB-03-firmware-app.md#comp-0303
-    enum class Beep : uint8_t { NONE, START, CANCEL, ALARM };
+    enum class Beep : uint8_t { NONE, START, CANCEL, ALARM, SLACK };
 
     // Why debug mode ended on its own (DEC-005): the host went silent, or the
     // operator pushed BTN1/BTN2 while the host held the motor.
     enum class DebugExit : uint8_t { NONE, TIMEOUT, PANEL };
 
-    // Compiled-in defaults (30 yd / 90 yd on the 4.0015 in wheel, 2400 counts/rev).
-    constexpr uint32_t kDefaultShortPulses = 206187;
-    constexpr uint32_t kDefaultLongPulses = 618562;
+    // Compiled-in defaults (30 ft / 90 ft on the 4.0462 in wheel, 2400 counts/rev; DEC-013).
+    constexpr uint32_t kDefaultShortPulses = 67970;
+    constexpr uint32_t kDefaultLongPulses = 203911;
+    // The wind deliberately stops this far short of the target (DEC-013): 2.0 in = 50800 um =
+    // 50800 / 322870.9 * 2400 = 377.6 -> 378 pulses. The operator takes the slack out by hand.
+    constexpr uint32_t kSlackPulses = 378;
     // Largest pulse count any target or test run may have (Params::valid()).
     constexpr uint32_t kMaxPulses = 4000000;
     // The result screen (DEC-006): the count must hold still this long before it is final,
     // and the screen clears itself this long after the wind stopped.
     constexpr uint32_t kResultSettleMs = 500;
     constexpr uint32_t kResultHoldMs = 60000;
-    // Follow-through assumed when nothing is calibrated (DEC-012, superseding DEC-010's 12 in): the
-    // main run cuts 72 in (2 yd) short of the goal on purpose, so several converging bumps finish
-    // the wind. With the firmware's own integer wheel math (Params::derive_targets, kPiMicro):
-    // 72 in = 1828800 um, circumference 3141593 * 101638 / 1e6 = 319305.2 um per 2400 counts, so
-    // 1828800 * 2400 / 319305.2 = 13745.84 -> 13746 pulses (round half up).
-    constexpr uint32_t kDefaultCoastPulses = 13746;
-    // Safety allowance added to the target (goal = target + margin): 1.0 in = 25400 um =
-    // 25400 / 319305.2 * 2400 = 190.9 -> 191 pulses. The encoder measures the wheel, not the paper,
-    // so wheel wear or a wrong diameter makes the machine over-count; the margin absorbs that.
-    constexpr uint32_t kDefaultMarginPulses = 191;
+    // Follow-through assumed when nothing is calibrated (DEC-014, superseding DEC-012's 72 in): the
+    // first bench wind overshot its goal by 8.9 in with 72 in assumed, so the main run now cuts 96 in
+    // (8 ft) short of the goal. With the firmware's integer wheel math (Params::derive_targets,
+    // kPiMicro): 96 in = 2438400 um, circumference 3141593 * 102773 / 1e6 = 322870.9 um per 2400
+    // counts, so 2438400 * 2400 / 322870.9 = 18125.2 -> 18125 pulses.
+    constexpr uint32_t kDefaultCoastPulses = 18125;
+    // Allowance added to the target (goal = target + margin - kSlackPulses). Default 0 (DEC-013): the
+    // wind is meant to stop kSlackPulses short, so there is no over-count allowance by default.
+    constexpr uint32_t kDefaultMarginPulses = 0;
     // Largest margin a parameter set may carry.
     constexpr uint32_t kMaxMarginPulses = 2000;
     // Trim (bump) mode on by default: 0 restores the legacy single cut with no guarantee.
@@ -50,6 +52,12 @@ namespace stpalpha {
     // Safety factor on every learned follow-through (DEC-012): a bump is sized so that twice the
     // worst follow-through seen this wind still lands at or short of the goal.
     constexpr uint32_t kCoastSafety = 2;
+    // Safety on the measured full-speed follow-through F alone (DEC-015 = 1; DEC-014 3/2; was 2):
+    // a bump starts from rest so it nominally coasts no further than F, so the first bump aims
+    // at the goal and closes the whole gap in one stop/start. Friction jitter can carry it past
+    // the goal by up to the jitter on F; an overshoot raises F (learn()).
+    constexpr uint32_t kFullSafetyNum = 1;
+    constexpr uint32_t kFullSafetyDen = 1;
     // The whole trim must end within this long (pauses excluded). DEC-012 raised it from 30 s: the
     // short, safety-sized bumps of a long (up to 8 ft) follow-through take up to about 28 s in the
     // model, and a slow wind must still PASS; jams and stalls are caught by the stall rule below.
@@ -124,9 +132,15 @@ namespace stpalpha {
         uint32_t target() const {
             return target_;
         }
-        // Count a panel wind must reach to PASS: the target plus the safety margin.
+        // Count a panel wind must reach to PASS: the target plus the margin, less the deliberate
+        // stop-short slack (DEC-013).
         uint32_t goal() const {
-            return target_ + margin;
+            const uint32_t t = target_ + margin;
+            return t > kSlackPulses ? t - kSlackPulses : 0;
+        }
+        // True when a PASS leaves the paper short of the target, so the operator must pull the slack.
+        bool takes_slack() const {
+            return goal() < target_;
         }
         // Count at which the main run's relay drops: the goal (a debug RUN: the target) minus the
         // follow-through.
@@ -499,7 +513,8 @@ namespace stpalpha {
 
         // Size the next bump from a settled count below the goal (DEC-012). Only follow-through
         // measured in this wind after a relay cut is used, always with kCoastSafety:
-        //  * the full-speed follow-through F of the main run (no bump coasts further): b = rem - 2F;
+        //  * the full-speed follow-through F of the main run (no bump coasts further):
+        //    b = rem - F (kFullSafetyNum/Den);
         //  * once a kMinBump probe has been measured, the bound P + r * b (P the probe's
         //    follow-through, r the per-pulse ratio of the last ratio-sized bump, the probe's own
         //    ratio before that): b = (rem - 2P) / (1 + 2r).
@@ -507,8 +522,9 @@ namespace stpalpha {
         // first one is the probe). The stop is never armed past the goal.
         uint32_t bump_size(uint32_t rem, bool& by_ratio) const {
             uint32_t b = 0;
-            if (full_known_ && rem > kCoastSafety * full_coast_) {
-                b = rem - kCoastSafety * full_coast_;
+            const uint32_t margin = full_coast_ * kFullSafetyNum / kFullSafetyDen;
+            if (full_known_ && rem > margin) {
+                b = rem - margin;
             }
             by_ratio = false;
             if (probe_known_ && rem > kCoastSafety * probe_over_) {
@@ -599,7 +615,8 @@ namespace stpalpha {
         Outputs trim_settled(const Inputs& in, Outputs o) {
             learn(in.count);
             if (in.count >= goal()) {
-                return end_wind(in, o, Beep::START, Outcome::PASS, true);
+                return end_wind(in, o, takes_slack() ? Beep::SLACK : Beep::START, Outcome::PASS,
+                                true);
             }
             if (bumps_ >= kMaxBumps) {
                 return fail_trim(in, o, false, true);

@@ -23,13 +23,13 @@
 // live wheel diameter and counts/rev are g_link.params (SET wheel_um / cpr, EEPROM); the
 // defaults in Params reproduce these numbers.
 
-static constexpr float kWheelDiamIn = 4.0015f;                 // measured 4.001 / 4.002 in
+static constexpr float kWheelDiamIn = 4.0462f; // bench-corrected (DEC-014)
 static constexpr float kCircumIn = 3.14159265f * kWheelDiamIn; // ~12.571 in
 static constexpr float kCountsPerRev = 2400.0f;                // 600 PPR * 4x
-static constexpr float kShortLengthIn = 1080.0f;               // BTN1: 30 yd
-static constexpr float kLongLengthIn = 3240.0f;                // BTN2: 90 yd
-static constexpr uint16_t kShortTenthsYd = 300;                // 30.0 yd
-static constexpr uint16_t kLongTenthsYd = 900;                 // 90.0 yd
+static constexpr float kShortLengthIn = 360.0f;                // BTN1: 30 ft
+static constexpr float kLongLengthIn = 1080.0f;                // BTN2: 90 ft
+static constexpr uint16_t kShortTenthsFt = 300;                // 30.0 ft
+static constexpr uint16_t kLongTenthsFt = 900;                 // 90.0 ft
 
 // ---- Buttons ----
 // The panel buttons are LATCHING switches; a push flips the contact and it stays flipped. A
@@ -59,6 +59,8 @@ static constexpr uint16_t kAlarmMs = 700;
 static constexpr uint16_t kAlarmGapMs = 250;
 static constexpr uint32_t kAlarmEveryMs = 6000;
 static constexpr uint8_t kAlarmRepeats = 10;
+// Slack notice (DEC-013): two long beeps once, when a wind PASSes deliberately short of the target.
+static constexpr uint8_t kSlackBeeps = 2;
 
 // Sentinel for "no count rendered yet", forcing the first winding redraw.
 static constexpr uint32_t kNoCount = 0xFFFFFFFFu;
@@ -137,6 +139,16 @@ static void start_alarm_sequence(void) {
     g_beep_gap = kAlarmGapMs;
     g_alarm_at = g_uptime_ms;
     ++g_alarm_count;
+    buzz(g_beep_len);
+}
+
+// The "pull the slack" pattern: two long beeps, once (same length as the alarm, but only two and
+// never repeated, so it reads as a prompt and not a failure).
+static void start_slack_sequence(void) {
+    g_beep_remaining = kSlackBeeps - 1;
+    g_beep_in_gap = false;
+    g_beep_len = kAlarmMs;
+    g_beep_gap = kAlarmGapMs;
     buzz(g_beep_len);
 }
 
@@ -253,6 +265,8 @@ static void apply(const Outputs& o) {
     } else if (o.beep == Beep::ALARM) {
         g_alarm_count = 0;
         start_alarm_sequence();
+    } else if (o.beep == Beep::SLACK) {
+        start_slack_sequence();
     }
     if (o.changed) {
         g_redraw = true;

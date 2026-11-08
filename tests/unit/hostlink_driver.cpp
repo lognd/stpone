@@ -90,10 +90,13 @@ int main() {
             continue;
         }
         if (!strncmp(line, "@image", 6)) { // test hook: EEPROM image checks on the current params
-            // @image = round trip; @imagev5 = fw<=5 tag; @imagecrc = flipped bit; @imagemagic = junk tag
+            // @image = round trip; @imagev5 = fw<=5 tag; @imagev6 = WIN6 tag; @imagecrc = flipped bit; @imagemagic = junk tag
             Stored img = make_stored(h.params);
             if (!strcmp(line, "@imagev5")) {
                 img.magic = kEepromMagicV5;
+                img.crc = stored_crc(img);
+            } else if (!strcmp(line, "@imagev6")) {
+                img.magic = kEepromMagicV6;
                 img.crc = stored_crc(img);
             } else if (!strcmp(line, "@imagecrc")) {
                 img.params.margin ^= 1u;
@@ -117,16 +120,17 @@ int main() {
             in.pending = static_cast<uint8_t>(pend);
             in.cut = cut != 0;
             Outputs o = c.step(in);
-            printf("@debug=%d relay=%d run=%d run_stopped=%d at_stop=%lu exit=%d reset=%d leds=%u "
-                   "stop_at=%lu result=%d changed=%d stopped=%d state=%d bumps=%u trim=%d outcome=%d "
-                   "beep=%d manual=%d alarm=%d\n",
-                   c.debug() ? 1 : 0, o.relay ? 1 : 0, c.running() ? 1 : 0, o.run_stopped ? 1 : 0,
-                   static_cast<unsigned long>(o.at_stop), static_cast<int>(o.debug_exit),
-                   o.reset_count ? 1 : 0, o.leds, static_cast<unsigned long>(c.stop_at()),
-                   static_cast<int>(c.result()), o.changed ? 1 : 0, o.stopped ? 1 : 0,
-                   static_cast<int>(c.state()), static_cast<unsigned>(c.bumps()),
-                   c.trimming() ? 1 : 0, static_cast<int>(c.outcome()), static_cast<int>(o.beep),
-                   c.manual() ? 1 : 0, c.alarm() ? 1 : 0);
+            printf(
+                "@debug=%d relay=%d run=%d run_stopped=%d at_stop=%lu exit=%d reset=%d leds=%u "
+                "stop_at=%lu result=%d changed=%d stopped=%d state=%d bumps=%u trim=%d outcome=%d "
+                "beep=%d manual=%d alarm=%d\n",
+                c.debug() ? 1 : 0, o.relay ? 1 : 0, c.running() ? 1 : 0, o.run_stopped ? 1 : 0,
+                static_cast<unsigned long>(o.at_stop), static_cast<int>(o.debug_exit),
+                o.reset_count ? 1 : 0, o.leds, static_cast<unsigned long>(c.stop_at()),
+                static_cast<int>(c.result()), o.changed ? 1 : 0, o.stopped ? 1 : 0,
+                static_cast<int>(c.state()), static_cast<unsigned>(c.bumps()), c.trimming() ? 1 : 0,
+                static_cast<int>(c.outcome()), static_cast<int>(o.beep), c.manual() ? 1 : 0,
+                c.alarm() ? 1 : 0);
             continue;
         }
         h.handle(c, s, line, out, sizeof(out));

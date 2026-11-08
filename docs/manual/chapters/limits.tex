@@ -16,17 +16,20 @@ This machine is honest about what it cannot do. Please read these points.
         (under about 2 inches past the goal while the real coast is under
         about 5 feet, at most about 3 inches for a roll finished by bumps)
         comes from the design calculations and has not yet been confirmed on
-        the bench. If the real coast is longer than the 2 yard setting, the
-        roll is over by about the difference (for a 3 yard coast, about 1
-        yard). The trim time (up to about 25 seconds) is also an estimate.
+        the bench. If the real coast is longer than the 6 foot setting, the
+        roll is over by about the difference (for a 9 foot coast, about 3
+        feet). The trim time (up to about 25 seconds) is also an estimate.
   \item \textbf{On/off motor only.} There is no speed control, so the motor
         always winds at full speed and coasts at the end.
   \item \textbf{Screen glitches.} Relay noise can garble the screen briefly. It
         repairs itself within about 2 seconds; the wind is not affected.
   \item \textbf{A reset loses the result.} After a power cut or watchdog reset
         the machine forgets the wind in progress and its result.
-  \item \textbf{Two lengths on the panel.} Only the short (30 yd) and long
-        (90 yd) targets are on buttons. Other lengths need the settings changed
+  \item \textbf{Short by design.} The wind stops about 2 inches short of the
+        label and asks you to pull the slack out by hand
+        (Section~\ref{sec:slack}). The machine cannot pull it for you.
+  \item \textbf{Two lengths on the panel.} Only the short (30 ft) and long
+        (90 ft) targets are on buttons. Other lengths need the settings changed
         from the PC, or a manual run.
   \item \textbf{Margin and legacy mode are not in the PC program.} They can only
         be changed by a technician over the serial command line.

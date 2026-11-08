@@ -108,7 +108,7 @@ fn full_auto_success_then_save() {
         res.residual_pulses.unwrap().abs() <= VERIFY_TOLERANCE_PULSES,
         "{res:?}"
     );
-    // The old coast was the factory 13746 (72 in), so the test winds missed by about the true
+    // The old coast was the factory 18125 (72 in), so the test winds missed by about the true
     // follow-through minus it (far short here).
     assert!(
         (res.residual_before_pulses.unwrap() - (3000 - FACTORY.coast)).abs() <= 300,
@@ -220,7 +220,7 @@ fn keepalive_holds_test_mode_while_waiting_for_a_measurement() {
 
 #[test]
 fn length_check_fits_the_factory_72_inch_coast() {
-    // DEC-012: the factory coast (13746) is longer than a 36 in wind, so the check drives the
+    // DEC-012: the factory coast (18125) is longer than a 36 in wind, so the check drives the
     // coast plus 36 in; a calibrated short coast keeps the plain 36 in wind.
     let p36 = pulses_for_inches(&FACTORY, CHECK_INCHES);
     assert!(p36 < FACTORY.coast);

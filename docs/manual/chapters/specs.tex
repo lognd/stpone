@@ -10,16 +10,16 @@
 \midrule
 \endhead
 \multicolumn{2}{@{}l}{\textbf{Winding}} \\
-Preset lengths & 30 yd (\btn{1}), 90 yd (\btn{2}); changeable from the PC \\
-Safety margin & 1.0 in added to every roll (factory) \\
-Coast allowance & 72 in = 2 yd (factory; set by calibration) \\
+Preset lengths & 30 ft (\btn{1}), 90 ft (\btn{2}); changeable from the PC \\
+Safety margin & 0 added to every roll (factory); wind stops 2.0 in short by design \\
+Coast allowance & 96 in = 8 ft (factory; set by calibration) \\
 Length resolution & about 0.005 in (191 counts per inch) \\
 Trim & bumps until the length is reached; gives up after 2 stalls,
   24 bumps or 45 s \\
 Result screen & clears after 60 s (good result); held until a push (short result) \\
 \midrule
 \multicolumn{2}{@{}l}{\textbf{Measuring}} \\
-Measuring wheel & 4.0015 in diameter, about 12.57 in per turn \\
+Measuring wheel & 4.0462 in diameter, about 12.71 in per turn \\
 Encoder & 600 lines per turn, read 4 times each = 2400 counts per turn;
   either direction of rotation works \\
 \midrule
@@ -30,7 +30,7 @@ Panel & 4 latching push buttons, 4 LEDs, buzzer \\
 Button debounce & about 16 ms \\
 Motor switching & relay, on/off \\
 Watchdog & resets the controller after 0.5 s without response; relay opens \\
-Settings memory & kept without power, with a check code (format WIN6) \\
+Settings memory & kept without power, with a check code (format WIN7) \\
 \midrule
 \multicolumn{2}{@{}l}{\textbf{PC connection}} \\
 Serial link & 115200 baud, 8 data bits, no parity, 1 stop bit; 5 V logic;

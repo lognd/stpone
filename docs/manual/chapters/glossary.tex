@@ -10,7 +10,7 @@
   \item[Coast] How far the roll keeps turning after the motor is switched off.
   \item[Count (encoder count)] The machine's unit of length: one small step of
     the measuring wheel, about 0.005 inch.
-  \item[DONE] The result screen for a complete roll (full length plus margin).
+  \item[DONE] The result screen for a complete roll that reached the label length.
   \item[Encoder] The rotation sensor on the measuring wheel.
   \item[ENC MISS / ERR] Encoder signals the controller could not read.
   \item[Firmware] The program inside the controller board. This manual covers
@@ -18,12 +18,13 @@
   \item[Flashing] Loading new firmware into the controller.
   \item[Goal] Target length plus margin. A roll must reach the goal to be
     \shows{DONE}.
-  \item[Idle] Ready and waiting; the screen shows \shows{[1] 30yd [2] 90yd}.
+  \item[Idle] Ready and waiting; the screen shows \shows{[1] 30ft [2] 90ft}.
   \item[Latching button] A push button that stays in after one push and pops
     out after the next. On this machine every push counts as one click.
   \item[Legacy mode] Setting \setting{bump} at 0: no trim and no guarantee.
   \item[Manual mode] Motor on by hand with \btn{4}, without counting.
-  \item[Margin] The extra length (factory 1 inch) added to every roll.
+  \item[Margin] The extra length (factory 0) added to every roll. The 2 inch slack is taken off the goal.
+  Margin 0 means the wind aims 2 inches short of the label.
   \item[Measuring wheel] The rubber wheel riding on the paper that measures
     length.
   \item[Relay] The electrical switch the controller uses to turn the motor on
@@ -31,7 +32,7 @@
   \item[Serial adapter] A USB gadget that lets a PC talk to the controller over
     three wires.
   \item[Settling] The moment after the motor stops while the roll comes to rest.
-  \item[Target] The length on the label: 30 yd or 90 yd.
+  \item[Target] The length on the label: 30 ft or 90 ft.
   \item[Test mode] The PC program has control of the motor; the panel cannot
     start a wind (shows \shows{DEBUG: HOST CONTROL}).
   \item[Trim] The end of a wind: wait, check the length, bump if needed.

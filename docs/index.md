@@ -48,6 +48,9 @@ Start with the specification cascade; everything else hangs off it.
 - [DEC-010 default bump (trim) mode with a minimum-amount guarantee, margin, loud failure](decisions/DEC-010-default-bump-trim-mode-with-minimum-amount-guarantee.md)
 - [DEC-011 latching buttons: every edge is one click, state kept in software](decisions/DEC-011-latching-buttons-every-edge-one-click.md)
 - [DEC-012 2 yd assumed coast, per-wind learned bump sizing, probe and short final steps](decisions/DEC-012-two-yard-coast-and-per-wind-learned-bumps.md)
+- [DEC-013 30 ft / 90 ft bindings and a stop-short slack the operator pulls by hand](decisions/DEC-013-feet-bindings-and-stop-short-slack.md)
+- [DEC-014 First bench calibration: wheel 4.0462 in, 96 in coast, slack 378, bumps sized by 3F/2](decisions/DEC-014-first-bench-calibration-wheel-coast-and-one-stop-bumps.md)
+- [DEC-015 One-bump sizing and WIN7 settings tag](decisions/DEC-015-one-bump-first-bump-and-win7-settings-tag.md)
 
 ## Working in this repository
 

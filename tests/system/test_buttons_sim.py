@@ -322,13 +322,13 @@ def test_one_push_starts_the_next_wind_after_a_finished_wind(
     """A wind that ended on its own count leaves the switch latched; the next push still starts."""
     b = Bench(firmware, tmp_path, levels=(level, 0, 0, 0))
     b.at(400)
-    for line in ("SET bump 0", "SET coast 0", "SET margin 0", "SET short 1000"):
+    for line in ("SET bump 0", "SET coast 0", "SET margin 0", "SET short 1382"):
         b.send(line, line)
     b.push(1).dump("start").pulses(1100).wait(_PUSH_SETTLE_MS).dump("finished")
     b.push(1).dump("next wind").push(1).dump("stopped")
     b.run()
 
-    for line in ("SET bump 0", "SET coast 0", "SET margin 0", "SET short 1000"):
+    for line in ("SET bump 0", "SET coast 0", "SET margin 0", "SET short 1382"):
         assert b.replies[line]["status"] == "OK", (line, b.replies[line])
     _assert_state(b, "start", state="WINDING", relay=1)
     _assert_state(b, "finished", state="IDLE", relay=0)
@@ -361,7 +361,7 @@ def test_manual_nudge_past_the_stop_while_paused_waits_for_play(
     """Pausing, then nudging with manual past eff_target, never lets the trim bump by itself."""
     b = Bench(firmware, tmp_path)
     b.at(400)
-    for line in ("SET bump 1", "SET margin 0", "SET coast 300", "SET short 1000"):
+    for line in ("SET bump 1", "SET margin 0", "SET coast 300", "SET short 1382"):
         b.send(line, line)
     b.push(1).pulses(500).push(3).dump("paused")
     b.push(4).pulses(300).wait(_PUSH_SETTLE_MS).dump("past stop")
@@ -370,7 +370,7 @@ def test_manual_nudge_past_the_stop_while_paused_waits_for_play(
     b.push(1).dump("stopped")
     b.run()
 
-    for line in ("SET bump 1", "SET margin 0", "SET coast 300", "SET short 1000"):
+    for line in ("SET bump 1", "SET margin 0", "SET coast 300", "SET short 1382"):
         assert b.replies[line]["status"] == "OK", (line, b.replies[line])
     _assert_state(b, "paused", state="PAUSED", relay=0)
     assert b.replies["past stop"]["state"] == "PAUSED", b.replies["past stop"]

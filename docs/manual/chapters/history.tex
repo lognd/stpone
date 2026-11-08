@@ -15,10 +15,10 @@ fw=5 & Saving settings no longer pauses the machine; more diagnostics for the
   PC program. \\
 fw=6 & Trim mode with the minimum-amount guarantee: safety margin, final
   bumps, \shows{DONE} / \shows{!! UNDER TARGET !!} screens and the alarm.
-  New settings format (WIN6): settings from older firmware are not used;
+  New settings format (WIN6, WIN7 from the first bench calibration): settings from older firmware are not used;
   calibrate once after updating. Panel buttons: every push of a latching
   button is one click; a button pushed in at power-up is ignored.
-  Later fw=6 builds: factory coast 2 yards and bumps sized from the glide
+  Later fw=6 builds: factory coast 6 feet (72 in) and bumps sized from the glide
   measured in the same roll (shorter final bumps, trim up to 45 s); saved
   settings keep their old coast until \ui{Reset to factory settings} and
   Save. \\
@@ -34,8 +34,12 @@ fw=6 & Trim mode with the minimum-amount guarantee: safety margin, final
 \textbf{Revision} & \textbf{Changes} \\
 \midrule
 2026-10-20 & First edition, for firmware fw=6. \\
-\revdate & Factory coast 2 yards, learned bump sizing, trim limits 24 bumps
+\revdate & Factory coast 6 feet, learned bump sizing, trim limits 24 bumps
   and 45 s. \\
+\revdate & Buttons are 30 ft and 90 ft (were 30 yd and 90 yd); lengths in
+  feet; factory margin 0; the wind stops about 2 inches short on purpose and
+  shows \shows{** PULL SLACK **} with two long beeps. Boards with saved
+  settings need \ui{Reset to factory settings} and Save. \\
 \bottomrule
 \end{tabularx}
 \end{center}

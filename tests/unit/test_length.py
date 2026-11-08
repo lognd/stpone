@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 _ROOT = Path(__file__).resolve().parents[2]
-_DEFAULT = (101638, 2400, 206187)  # wheel_um, cpr, 30 yd in pulses
+_DEFAULT = (102773, 2400, 203911)  # wheel_um, cpr, 90 ft in pulses
 
 
 @pytest.fixture(scope="module")
@@ -39,49 +39,49 @@ def test_tenths_match_a_float_model_and_round_to_nearest(driver: Path) -> None:
     pulses = [0, 1, 1000, short - 1, short, short + 1000, 3 * short]
     rows = _rows(driver, *[(p, wheel, cpr, short) for p in pulses])
     for p, row in zip(pulses, rows, strict=True):
-        yards = p * math.pi * wheel / 25400 / cpr / 36
-        assert abs(int(row[0]) - yards * 10) <= 0.51, (p, row)
+        feet = p * math.pi * wheel / 25400 / cpr / 12
+        assert abs(int(row[0]) - feet * 10) <= 0.51, (p, row)
     assert (
-        rows[4][0] == "300"
-    )  # 30.0 yd exactly at the target (truncation would say 29.9)
+        rows[4][0] == "900"
+    )  # 90.0 ft exactly at the target (truncation would say 29.9)
 
 
 def test_len_field_is_four_digits_and_saturates_without_wrapping(driver: Path) -> None:
     wheel, cpr, short = _DEFAULT
     rows = _rows(driver, (short, wheel, cpr, short), (short * 40, wheel, cpr, short),
                  (4000000000, wheel, cpr, short), (5, wheel, 0, short))  # fmt: skip
-    assert rows[0][1] == "  30.0"
-    assert rows[1][1] == "1200.0"  # well past the target: keeps counting
+    assert rows[0][1] == "  90.0"
+    assert rows[1][1] == "3600.0"  # well past the target: keeps counting
     assert rows[2][0] == "99999" and rows[2][1] == "9999.9"  # saturates, never wraps
     assert rows[3][0] == "99999"  # a zero cpr cannot divide by zero
 
 
 def test_result_rows_over_short_on_target_and_settling(driver: Path) -> None:
     wheel, cpr, short = _DEFAULT
-    one_tenth = round(short / 300)  # pulses in 0.1 yd (3.6 in)
+    one_tenth = round(short / 900)  # pulses in 0.1 ft (1.2 in)
     rows = _rows(
         driver,
         (short + one_tenth, wheel, cpr, short),
         (short - 2 * one_tenth, wheel, cpr, short),
         (short, wheel, cpr, short),
     )  # fmt: skip
-    # Under a yard the miss is in inches (tenths), not in whole tenths of a yard.
-    assert rows[0][2:4] == ["DONE 30.1/30.0 yd".ljust(20), "+3.6 in over".ljust(20)]
-    assert rows[1][2:4] == ["DONE 29.8/30.0 yd".ljust(20), "-7.2 in short".ljust(20)]
-    assert rows[2][2:4] == ["DONE 30.0/30.0 yd".ljust(20), "on target".ljust(20)]
-    assert rows[0][4:6] == ["NOW  30.1/30.0 yd".ljust(20), "settling...".ljust(20)]
+    # Under a foot the miss is in inches (tenths), not in whole tenths of a foot.
+    assert rows[0][2:4] == ["DONE 90.1/90.0 ft".ljust(20), "+1.2 in over".ljust(20)]
+    assert rows[1][2:4] == ["DONE 89.8/90.0 ft".ljust(20), "-2.4 in short".ljust(20)]
+    assert rows[2][2:4] == ["DONE 90.0/90.0 ft".ljust(20), "on target".ljust(20)]
+    assert rows[0][4:6] == ["NOW  90.1/90.0 ft".ljust(20), "settling...".ljust(20)]
     assert all(len(cell) == 20 for row in rows for cell in row[2:])
 
 
-def test_miss_switches_to_yards_at_one_yard_and_never_prints_empty_numbers(
+def test_miss_switches_to_feet_at_one_foot_and_never_prints_empty_numbers(
     driver: Path,
 ) -> None:
     wheel, cpr, short = _DEFAULT
     per_in = cpr / (math.pi * wheel / 25400)  # pulses per inch of paper
     cases = [
-        (short + round(35.9 * per_in), "+35.9 in over"),
-        (short + round(46.8 * per_in), "+1.3 yd over"),  # 46.8 in = 1.3 yd
-        (short - round(12.4 * per_in), "-12.4 in short"),
+        (short + round(11.9 * per_in), "+11.9 in over"),
+        (short + round(15.6 * per_in), "+1.3 ft over"),  # 15.6 in = 1.3 ft
+        (short - round(9.4 * per_in), "-9.4 in short"),
     ]
     rows = _rows(
         driver,
@@ -94,7 +94,7 @@ def test_miss_switches_to_yards_at_one_yard_and_never_prints_empty_numbers(
         20
     )  # under half a tenth of an inch is on target
     for row in rows:
-        # The AVR once printed " / yd" (empty numbers) because printf lacked %*d.
+        # The AVR once printed " / ft" (empty numbers) because printf lacked %*d.
         assert any(ch.isdigit() for ch in row[1]) and any(
             ch.isdigit() for ch in row[2]
         ), row

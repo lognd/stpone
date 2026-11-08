@@ -106,12 +106,12 @@ def test_trim_and_failed_wind_screens_have_the_documented_rows(
         assert r[0] == " !! UNDER TARGET !! "
         assert "DONE" not in "".join(r) and "on target" not in "".join(r)
     # count 203187 (3000 under the target) -> goal 206378 is 3191 pulses = 16.7 in away
-    assert short[1][1].startswith("SHORT -16.7 in") and stopped[1][1].startswith(
-        "STOPPED -16.7 in"
+    assert short[1][1].startswith("SHORT -1.4 ft") and stopped[1][1].startswith(
+        "STOPPED -1.4 ft"
     )
-    assert short[1][2].startswith("LEN 29.6/30.0 yd")
-    # a settling failed wind still reads like any settling wind; a PASS keeps the DONE wording
+    assert short[1][2].startswith("LEN 88.7/90.0 ft")
+    # a settling failed wind still reads like any settling wind; a PASS that stops short shows PULL SLACK (DEC-013)
     settling = next(rows(x) for x in host_lines if x.startswith("short-s|"))
     assert settling[0] == " -= PAPER WINDER =- " and settling[1].startswith("NOW ")
     passed = next(rows(x) for x in host_lines if x.startswith("pass|"))
-    assert passed[1].startswith("DONE ") and passed[0] == " -= PAPER WINDER =- "
+    assert passed[1].startswith("PULL ") and passed[0] == "  ** PULL SLACK **  "

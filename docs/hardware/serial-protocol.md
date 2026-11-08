@@ -43,8 +43,8 @@ USB CDC transport can replace the UART later without changes here.
 | `HELLO` | `OK stpone proto=1 fw=<ver>` | Identify; use to probe the port. |
 | `GET` | `OK state=<IDLE\|WINDING\|TRIM\|PAUSED\|DEBUG> count=<n> speed=<n> errors=<n> relay=<0\|1> btn=<4 bits BTN4..BTN1> pass=<1\|0\|->` | Live snapshot. Poll at <= 20 Hz. `TRIM` is the bump phase after the main run (a paused trim reports `PAUSED`). `pass` (`fw>=6`) is the verdict of the last panel wind: `1` PASS (settled `abs(count) >= target + margin`), `0` SHORT or STOPPED (shown as UNDER TARGET on the panel), `-` while a wind runs, before any wind, after a power-up/reset, or in legacy mode (`bump=0`). It is cleared when the next wind starts. |
 | `PARAM` | `OK wheel_um=<n> cpr=<n> short=<pulses> long=<pulses> coast=<pulses> margin=<pulses> bump=<0\|1>` | Current parameters (`margin`, `bump`: `fw>=6`). |
-| `SET <name> <int>` | `OK` | Set a parameter in RAM. Names: `wheel_um` (wheel diameter in micrometres), `cpr`, `short`, `long` (target pulses), `coast`, `margin`, `bump`. `coast` is the follow-through: the main run drops the relay when `abs(count) >= goal - coast` with `goal = target + margin` (a debug `RUN`: `target - coast`). `margin` (0..2000 pulses, default 191 = 1.0 in) is a safety allowance added to the target, because the encoder measures the wheel, not the paper. `bump` (0 or 1, default 1) switches the trim mode (DEC-010): 1 = after the main run the machine bumps until the settled count is at least the goal and reports PASS, else UNDER TARGET; 0 = the legacy single cut at `goal - coast` with no guarantee. `max(short,long) + margin` must stay within 4000000. Valid only in IDLE (no panel wind, no RUN active), else `ERR bad_state`. `wheel_um` and `cpr` (counts per revolution) re-derive `short` and `long` for 30 yd and 90 yd (1080 in / 3240 in); a later `SET short`/`long` overrides. A set that fails `Params::valid()` is `ERR bad_arg`. |
-| `SAVE` | `OK` / `ERR io` | Persist parameters to EEPROM (CRC-16 protected). The 34 bytes (tag `WIN6`; an image written by `fw<=5` is refused and `LOAD` answers `ERR no_data`) are written 4 per main-loop pass (an EEPROM byte takes up to 3.4 ms; DEC-009), so the reply comes ~7 passes (about 25-100 ms) later, after a read-back check; `ERR io` if the EEPROM did not take them. Lines sent meanwhile are not read (the host is synchronous, so it never does). |
+| `SET <name> <int>` | `OK` | Set a parameter in RAM. Names: `wheel_um` (wheel diameter in micrometres), `cpr`, `short`, `long` (target pulses), `coast`, `margin`, `bump`. `coast` is the follow-through: the main run drops the relay when `abs(count) >= goal - coast` with `goal = target + margin - 378` (DEC-013: the 2 in stop-short slack; a debug `RUN`: `target - coast`). `margin` (0..2000 pulses, default 0) is an allowance added to the target, because the encoder measures the wheel, not the paper. `bump` (0 or 1, default 1) switches the trim mode (DEC-010): 1 = after the main run the machine bumps until the settled count is at least the goal and reports PASS, else UNDER TARGET; 0 = the legacy single cut at `goal - coast` with no guarantee. `max(short,long) + margin` must stay within 4000000. Valid only in IDLE (no panel wind, no RUN active), else `ERR bad_state`. `wheel_um` and `cpr` (counts per revolution) re-derive `short` and `long` for 30 ft and 90 ft (360 in / 1080 in); a later `SET short`/`long` overrides. A set that fails `Params::valid()` is `ERR bad_arg`. |
+| `SAVE` | `OK` / `ERR io` | Persist parameters to EEPROM (CRC-16 protected). The 34 bytes (tag `WIN7`; an image written by `fw<=6` with an older tag is refused and `LOAD` answers `ERR no_data`) are written 4 per main-loop pass (an EEPROM byte takes up to 3.4 ms; DEC-009), so the reply comes ~7 passes (about 25-100 ms) later, after a read-back check; `ERR io` if the EEPROM did not take them. Lines sent meanwhile are not read (the host is synchronous, so it never does). |
 | `LOAD` | `OK` / `ERR no_data` | Reload parameters from EEPROM; `ERR no_data` (RAM unchanged) when nothing valid is stored. Only when nothing is running (IDLE, or DEBUG without a RUN), else `ERR bad_state`. |
 | `DEFAULTS` | `OK` | Restore the compiled-in defaults in RAM (does not save). Same rule as `LOAD`. |
 | `DEBUG <0\|1>` | `OK` | Enter or leave debug mode. In debug mode the panel buttons cannot start anything and the host owns the relay. Leaving (this command, the panel emergency stop, or the host timeout) returns to a pristine IDLE: relay and manual off, count and error counter cleared. `DEBUG 0` during a RUN also reports it with `EVT stop`. Only from IDLE or DEBUG. `DEBUG 1` while already in debug mode is accepted and silently drops a RUN and the relay (no `EVT stop`; the count is kept). Debug mode is a lease: see Fail-safes. |
@@ -85,8 +85,8 @@ its reply before pipelining), `ERR io` (SAVE), `ERR no_data` (LOAD).
   sends `ABORT`, `RELAY 0` and `DEBUG 0` itself. (The 5 s lease alone cannot
   do this, because the host's own polling would renew it.)
 - `SET wheel_um` always re-derives `short` and `long` (even when the value is
-  unchanged: 101638 derives 206188 / 618563, one more than the compiled
-  defaults 206187 / 618562). A host that restores an earlier configuration
+  unchanged: 102773 derives 67970 / 203911, equal to the compiled
+  defaults 67970 / 203911; other wheels may differ from the float32 build by up to 2 pulses). A host that restores an earlier configuration
   sets `coast` down first, then `wheel_um`, then `short` and `long`
   explicitly, then `coast` last (`margin` and `bump` are independent of the others, but `short`/`long` plus `margin` must stay within 4000000).
 - `SAVE` is sent only if `PARAM` still equals the numbers the operator
@@ -138,12 +138,12 @@ within a tolerance of each other (for example three in a row within 5 %).
 4. `SET` the suggestions (`SET wheel_um` also re-derives `short` and `long`;
    `SET coast` last, since it is validated against them), then `SAVE`, then `DEBUG 0`.
 
-Units: 1 inch = 25400 um. Defaults: wheel 4.0015 in = 101638 um, cpr 2400,
-short 206187, long 618562, coast 13746 (72 in, DEC-012), margin 191 (1.0 in), bump 1. The test winds of the
+Units: 1 inch = 25400 um. Defaults: wheel 4.0462 in = 102773 um, cpr 2400,
+short 67970 (30 ft), long 203911 (90 ft), coast 18125 (96 in, DEC-014), margin 0, bump 1; the wind stops 378 pulses (2.0 in) short of target + margin (DEC-013). The test winds of the
 calibration are debug `RUN`s, so they cut at `length - coast`: use lengths of at least `coast + 2400`
-(the tool does); with the factory coast a `RUN` of 13746 pulses or less answers
+(the tool does); with the factory coast a `RUN` of 18125 pulses or less answers
 `ERR bad_arg`. A board that has `SAVE`d parameters keeps its stored coast after a firmware update:
-`DEFAULTS` then `SAVE` (or `SET coast 13746` then `SAVE`) adopts the new default.
+`DEFAULTS` then `SAVE` (or `SET coast 18125` then `SAVE`) adopts the new default.
 
 ## Trim (bump) mode as seen over the link (`fw=6`, DEC-010, DEC-012)
 

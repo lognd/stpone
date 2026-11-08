@@ -1,5 +1,7 @@
 # DEC-015 -- One-bump sizing (first bump = remaining - F) and the WIN7 settings tag
 
+> Amended by [DEC-016](DEC-016-zero-shot-carried-follow-through.md): first-bump safety is 3/2 again.
+
 Date: 2026-11-07. Owner: logan. Status: accepted. Basis: the second bench review of the 30 ft roll
 (three bumps: two large, one small) and the host model in `tests/unit/trim_sim.cpp`.
 

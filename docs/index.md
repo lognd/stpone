@@ -51,6 +51,7 @@ Start with the specification cascade; everything else hangs off it.
 - [DEC-013 30 ft / 90 ft bindings and a stop-short slack the operator pulls by hand](decisions/DEC-013-feet-bindings-and-stop-short-slack.md)
 - [DEC-014 First bench calibration: wheel 4.0462 in, 96 in coast, slack 378, bumps sized by 3F/2](decisions/DEC-014-first-bench-calibration-wheel-coast-and-one-stop-bumps.md)
 - [DEC-015 One-bump sizing and WIN7 settings tag](decisions/DEC-015-one-bump-first-bump-and-win7-settings-tag.md)
+- [DEC-016 Zero-shot winds from a carried follow-through; first-bump safety 3/2](decisions/DEC-016-zero-shot-carried-follow-through.md)
 
 ## Working in this repository
 

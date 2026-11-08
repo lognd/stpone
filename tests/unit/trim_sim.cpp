@@ -562,7 +562,7 @@ int main(int argc, char** argv) {
         }
         CHECK(bumped && c.bumps() >= 1, "m1: the trim bumps after play");
     }
-    // Scenario (DEC-012): everything the trim learns is per wind. A deterministic plant: the main
+    // Scenario (DEC-012, DEC-016): the bump learning is per wind (only the zero-shot F carries, below). A deterministic plant: the main
     // run coasts `main_over` past its cut, a bump of b pulses coasts `off + b * pct / 100` past its
     // cut. Wind B on a controller that first wound A (a huge follow-through), saw counts move in
     // IDLE and ran a debug RUN must arm exactly the stops of wind B on a fresh controller.
@@ -660,6 +660,27 @@ int main(int argc, char** argv) {
         in.count = 0;
         (void)used.step(in);
         CHECK(wind_b(used) == want, "wind B inherited state from an earlier wind or a debug RUN");
+        // Zero-shot (DEC-016): a steady plant (main run coasts 15000 past its cut). Wind 0
+        // characterizes and bumps; winds 1..kCarryWinds cut on the carried F and land past the goal
+        // with no bump but never past the label (goal + kSlackPulses); the next one characterizes
+        // again; a fresh controller (power-up) carries nothing.
+        Controller z;
+        for (int w = 0; w <= kCarryWinds + 1; ++w) {
+            std::vector<uint32_t> st;
+            const uint32_t end = scripted(z, 15000, 3, 1, st);
+            CHECK(z.outcome() == Outcome::PASS, "carry wind %d did not pass", w);
+            if (w == 0 || w == kCarryWinds + 1) {
+                CHECK(z.bumps() >= 1, "carry wind %d should characterize with bumps", w);
+            } else {
+                CHECK(z.bumps() == 0, "carry wind %d needed %u bumps", w, z.bumps());
+                CHECK(end >= z.goal() && end <= z.goal() + kSlackPulses,
+                      "carry wind %d landed %u outside [goal %u, label]", w, end, z.goal());
+            }
+        }
+        Controller power_up;
+        std::vector<uint32_t> st0;
+        (void)scripted(power_up, 15000, 3, 1, st0);
+        CHECK(power_up.bumps() >= 1, "a fresh controller must not start zero-shot");
     }
     double trim_mean = 0, trim_p99 = 0, trim_max = 0;
     const size_t nt = summarize(trim_overs, trim_mean, trim_p99, trim_max);

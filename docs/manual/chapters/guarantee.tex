@@ -37,9 +37,11 @@ says. Every wind ends in one of three ways:
   \item After the paper has stopped, the machine compares the count with the
         goal. If it is short, it bumps the motor briefly and checks again. It
         watches how far the roll glides after each stop and sizes the next
-        bump so that the glide it expects lands at the goal; the last
-        bumps are tiny. What it learns is used for that roll only and
-        forgotten when the next wind starts.
+        bump so that even half again that glide stays short of the goal; the last
+        bumps are tiny. The bump sizes are used for that roll only. The glide
+        of the main run is remembered (until power-off) so that the next ten
+        winds cut early enough to stop just past the goal with no bump at all;
+        the eleventh measures it again.
   \item It only reports a good roll when the stopped count is at or past the
         goal: \shows{** PULL SLACK **} if that is still short of the label
         length (pull the slack out by hand), \shows{DONE} if the label length

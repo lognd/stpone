@@ -52,12 +52,20 @@ namespace stpalpha {
     // Safety factor on every learned follow-through (DEC-012): a bump is sized so that twice the
     // worst follow-through seen this wind still lands at or short of the goal.
     constexpr uint32_t kCoastSafety = 2;
-    // Safety on the measured full-speed follow-through F alone (DEC-015 = 1; DEC-014 3/2; was 2):
-    // a bump starts from rest so it nominally coasts no further than F, so the first bump aims
-    // at the goal and closes the whole gap in one stop/start. Friction jitter can carry it past
-    // the goal by up to the jitter on F; an overshoot raises F (learn()).
-    constexpr uint32_t kFullSafetyNum = 1;
-    constexpr uint32_t kFullSafetyDen = 1;
+    // Safety on the measured full-speed follow-through F alone (DEC-014 3/2; DEC-015 tried 1 and
+    // overshot, DEC-016 returns to 3/2): a bump starts from rest so it coasts no further than F;
+    // 3/2 F also covers the friction jitter between coasts. The characterization wind uses it;
+    // later winds are zero-shot (below). An overshoot still raises F (learn()).
+    constexpr uint32_t kFullSafetyNum = 3;
+    constexpr uint32_t kFullSafetyDen = 2;
+    // Zero-shot (DEC-016): the follow-through F measured on a clean main run is carried in RAM and
+    // the next kCarryWinds panel winds cut at goal + kZeroAim - F, aiming to land just past the
+    // goal with no bump. A wind that ends short of the goal refreshes F; one that ends more than
+    // kZeroOver past the goal drops it; after kCarryWinds winds the next one re-characterizes.
+    // Power-up clears it (RAM only). 94 pulses is about 0.5 in; kSlackPulses is 2 in.
+    constexpr uint8_t kCarryWinds = 10;
+    constexpr uint32_t kZeroAim = 94;
+    constexpr uint32_t kZeroOver = kSlackPulses;
     // The whole trim must end within this long (pauses excluded). DEC-012 raised it from 30 s: the
     // short, safety-sized bumps of a long (up to 8 ft) follow-through take up to about 28 s in the
     // model, and a slow wind must still PASS; jams and stalls are caught by the stall rule below.
@@ -145,8 +153,12 @@ namespace stpalpha {
         // Count at which the main run's relay drops: the goal (a debug RUN: the target) minus the
         // follow-through.
         uint32_t eff_target() const {
-            uint32_t base = (run_ || debug_) ? target_ : goal();
-            return base > coast ? base - coast : 0;
+            if (run_ || debug_) {
+                return target_ > coast ? target_ - coast : 0;
+            }
+            const uint32_t base = use_carry_ ? goal() + kZeroAim : goal();
+            const uint32_t c = use_carry_ ? cut_carry_ : coast;
+            return base > c ? base - c : 0;
         }
         // How the last panel wind ended (NONE while running, never run, or legacy mode).
         Outcome outcome() const {
@@ -403,6 +415,7 @@ namespace stpalpha {
             trim_ = false;
             bumps_ = 0;
             forget();
+            pick_carry();
             state_ = MachineState::WINDING;
             manual_ = false;
             relay_ = true;
@@ -569,6 +582,7 @@ namespace stpalpha {
                 full_coast_ = settled > cut ? settled - cut : 0;
                 full_known_ = true;
                 learn_main_ = false;
+                update_carry(settled);
             }
             if (learn_) {
                 const uint32_t move = settled > bump_from_ ? settled - bump_from_ : 0;
@@ -592,7 +606,31 @@ namespace stpalpha {
             }
         }
 
-        // Drop everything learned: called at every wind start, so no wind inherits another's.
+        // Zero-shot (DEC-016): decide at wind start whether this main run cuts on the carried F.
+        void pick_carry() {
+            use_carry_ = carry_known_ && coast == carry_param_ && carry_used_ < kCarryWinds;
+            if (use_carry_) {
+                ++carry_used_;
+                cut_carry_ = carry_coast_;
+            }
+        }
+
+        // Keep, refresh or drop the carried F after a clean main run settled at `settled`.
+        void update_carry(uint32_t settled) {
+            if (!use_carry_) { // a characterization wind: adopt what it measured
+                carry_coast_ = full_coast_;
+                carry_param_ = coast;
+                carry_known_ = true;
+                carry_used_ = 0;
+            } else if (settled < goal()) { // landed short: the carried F was too large
+                carry_coast_ = full_coast_;
+            } else if (settled > goal() + kZeroOver) { // far past: re-characterize next wind
+                carry_known_ = false;
+            }
+        }
+
+        // Drop everything learned this wind: called at every wind start. The carried F is not
+        // per-wind: it lives until kCarryWinds winds, a far overshoot, a coast change or power-up.
         void forget() {
             main_clean_ = true;
             learn_main_ = false;
@@ -712,8 +750,15 @@ namespace stpalpha {
         bool probe_known_ = false;   // probe_over_ and ratio16_ are measured
         bool bump_by_ratio_ = false; // the current bump was sized by the ratio rule
         uint32_t full_coast_ = 0;    // full-speed follow-through seen this wind (pulses)
-        uint32_t probe_over_ = 0;    // worst follow-through of a kMinBump step (pulses)
-        uint32_t ratio16_ = 0;       // follow-through per bump pulse, x16 (see bump_size)
+        // zero-shot carry (DEC-016), kept across winds, RAM only
+        bool use_carry_ = false;
+        bool carry_known_ = false;
+        uint8_t carry_used_ = 0;
+        uint32_t carry_coast_ = 0;
+        uint32_t cut_carry_ = 0;
+        uint32_t carry_param_ = 0; // the `coast` setting the carry was measured under
+        uint32_t probe_over_ = 0;  // worst follow-through of a kMinBump step (pulses)
+        uint32_t ratio16_ = 0;     // follow-through per bump pulse, x16 (see bump_size)
         Outcome outcome_ = Outcome::NONE;
         uint8_t bumps_ = 0;
         uint8_t stalls_ = 0;

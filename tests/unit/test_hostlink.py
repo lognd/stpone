@@ -428,11 +428,11 @@ def test_trim_main_cut_settles_then_bumps_the_gap_less_the_main_coast(
     )
     assert cut["stop_at"] == _NOSTOP and cut["outcome"] == 0
     assert moving["relay"] == 0 and moving["stop_at"] == _NOSTOP
-    # remaining = 206378 - 193632 = 12746, F = 1000: b = 12746 - 1000 = 11746 (DEC-015)
+    # remaining = 206378 - 193632 = 12746, F = 1000: b = 12746 - 1500 = 11246 (DEC-014)
     assert (
         bump["relay"] == 1
         and bump["bumps"] == 1
-        and bump["stop_at"] == _SETTLED + 11746
+        and bump["stop_at"] == _SETTLED + 11246
     )
 
 
@@ -440,12 +440,12 @@ def test_trim_bump_is_cut_by_the_isr_then_probes_then_sizes_by_ratio(
     driver: Path,
 ) -> None:
     r = _results(
-        driver, *_settled_into_first_bump(), "@step 700 200000 0", "@step 800 205378 0",
+        driver, *_settled_into_first_bump(), "@step 700 200000 0", "@step 800 204878 0",
         "@step 1000 205900 0", "@step 1500 205900 0", "@step 1600 205902 0",
         "@step 1700 205942 0", "@step 2200 205942 0",
     )  # fmt: skip
     mid, cut, moving, probe = r[4], r[5], r[6], r[7]
-    assert mid["relay"] == 1 and mid["stop_at"] == 205378
+    assert mid["relay"] == 1 and mid["stop_at"] == 204878
     assert cut["relay"] == 0 and cut["stop_at"] == _NOSTOP and cut["bumps"] == 1
     assert moving["relay"] == 0
     # remaining 478 <= F = 1000 and no probe measured yet: a kMinBump (2) probe
@@ -522,9 +522,9 @@ def test_trim_pause_resume_keeps_the_trim_and_caps_manual_at_the_goal(
     assert resumed["state"] == 3 and resumed["trim"] == 1 and resumed["relay"] == 0
     assert settling["relay"] == 0 and settling["stopped"] == 0
     # the trim resumed where it was: 500 ms of quiet later the next bump starts, still sized
-    # from the main coast F = 1000: 12346 - 1000
+    # from the main coast F = 1000: 12346 - 1500
     assert (
-        again["relay"] == 1 and again["bumps"] == 1 and again["stop_at"] == at + 11346
+        again["relay"] == 1 and again["bumps"] == 1 and again["stop_at"] == at + 10846
     )
 
 

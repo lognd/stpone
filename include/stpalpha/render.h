@@ -25,16 +25,18 @@ namespace stpalpha {
             row[20] = '\0';
     }
 
-    // Idle screen: the two start buttons and the manual hint; row 1 reports manual / encoder faults.
-    inline void render_idle(LCDPacket& p, uint8_t manual, uint16_t errors) {
+    // Idle screen: the two start buttons and the manual hint; row 1 reports manual / encoder faults, else the calibration (BTN3 forgets it).
+    inline void render_idle(LCDPacket& p, uint8_t manual, uint16_t errors, bool cal = false) {
         init_packet(p);
         STP_SNPRINTF(p.rows[0], 21, STP_FMT(" -= PAPER WINDER =- "));
         if (manual == kManualOn) {
             STP_SNPRINTF(p.rows[1], 21, STP_FMT("MANUAL: motor ON    "));
         } else if (errors != 0) {
             STP_SNPRINTF(p.rows[1], 21, STP_FMT("!! ENC MISS:%-5u  !"), errors);
+        } else if (cal) {
+            STP_SNPRINTF(p.rows[1], 21, STP_FMT("[3] new roll: cal ok"));
         } else {
-            STP_SNPRINTF(p.rows[1], 21, STP_FMT("                    "));
+            STP_SNPRINTF(p.rows[1], 21, STP_FMT("cal: learns next    "));
         }
         STP_SNPRINTF(p.rows[2], 21, STP_FMT("[1] 30ft    [2] 90ft"));
         if (manual == kManualOn) {

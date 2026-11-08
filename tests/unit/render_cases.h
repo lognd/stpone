@@ -15,20 +15,19 @@ namespace render_cases {
     using namespace stpalpha;
 
     // emit(line) gets one NUL-terminated line per case, without a newline.
-    template <class Emit>
-    void run(Emit emit) {
+    template <class Emit> void run(Emit emit) {
         constexpr uint32_t kWheel = 102773;
         constexpr uint32_t kCpr = 2400;
         constexpr uint32_t kShort = 203911;
         constexpr uint32_t kLong = 618562;
         static const uint16_t kErrors[] = {0, 3, 65535};
         static const uint32_t kWindCounts[] = {0u, 1u, 51547u, 206186u, kShort, 400000u, 40000000u};
-        static const uint32_t kResultCounts[] = {0u, kShort - 3000, kShort, kShort + 213,
-                                                 kShort + 1900, kShort + 9000, 1000000u};
-        static const char* const kCommands[] = {"HELLO", "GET", "PARAM", "DUMP", "SET coast 500",
-                                                "DUMP", "SET short 5", "BOGUS", "DEBUG 1",
-                                                "RUN 5000", "GET", "RELAY 1", "SET margin 0", "SET bump 0",
-                                                "PARAM", "GET"};
+        static const uint32_t kResultCounts[] = {
+            0u, kShort - 3000, kShort, kShort + 213, kShort + 1900, kShort + 9000, 1000000u};
+        static const char* const kCommands[] = {
+            "HELLO",        "GET",        "PARAM",   "DUMP",     "SET coast 500", "DUMP",
+            "SET short 5",  "BOGUS",      "DEBUG 1", "RUN 5000", "GET",           "RELAY 1",
+            "SET margin 0", "SET bump 0", "PARAM",   "GET"};
         char line[112];
         LCDPacket p;
         auto rows = [&](const char* name) {
@@ -49,6 +48,8 @@ namespace render_cases {
             for (uint16_t errors : kErrors) {
                 render_idle(p, manual, errors);
                 rows(manual ? "idle-m" : "idle");
+                render_idle(p, manual, errors, true);
+                rows(manual ? "idle-mc" : "idle-c");
             }
         }
         render_debug(p);

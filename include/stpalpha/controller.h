@@ -59,12 +59,15 @@ namespace stpalpha {
     constexpr uint32_t kFullSafetyNum = 3;
     constexpr uint32_t kFullSafetyDen = 2;
     // Zero-shot (DEC-016): the follow-through F measured on a clean main run is carried in RAM and
-    // the next kCarryWinds panel winds cut at goal + kZeroAim - F, aiming to land just past the
-    // goal with no bump. A wind that ends short of the goal refreshes F; one that ends more than
+    // the next kCarryWinds panel winds cut at goal - kZeroAim - F, aiming to land just BEFORE the
+    // goal (DEC-017: paper cannot be unwound, only wound more by hand) and pass with no bump. A
+    // wind that ends outside [goal - kZeroTol, goal] refreshes F; one that ends more than
     // kZeroOver past the goal drops it; after kCarryWinds winds the next one re-characterizes.
     // Power-up clears it (RAM only). 94 pulses is about 0.5 in; kSlackPulses is 2 in.
     constexpr uint8_t kCarryWinds = 10;
     constexpr uint32_t kZeroAim = 94;
+    // A zero-shot wind passes this far below the goal (about 1 in) without a bump (DEC-017).
+    constexpr uint32_t kZeroTol = 188;
     constexpr uint32_t kZeroOver = kSlackPulses;
     // The whole trim must end within this long (pauses excluded). DEC-012 raised it from 30 s: the
     // short, safety-sized bumps of a long (up to 8 ft) follow-through take up to about 28 s in the
@@ -81,7 +84,7 @@ namespace stpalpha {
     // Bits of Inputs::pending and of the button masks (BTN1..BTN4).
     constexpr uint8_t kBtn1 = 1 << 0; // wind short; stop while running
     constexpr uint8_t kBtn2 = 1 << 1; // wind long; stop while running
-    constexpr uint8_t kBtn3 = 1 << 2; // pause / play
+    constexpr uint8_t kBtn3 = 1 << 2; // pause / play; in IDLE: forget the calibration
     constexpr uint8_t kBtn4 = 1 << 3; // manual: every click toggles manual mode in software
 
     // What the IDLE display holds after a panel wind (DEC-006): nothing, the live count while the
@@ -146,6 +149,17 @@ namespace stpalpha {
             const uint32_t t = target_ + margin;
             return t > kSlackPulses ? t - kSlackPulses : 0;
         }
+        // Count at which the settled wind passes: the goal, or kZeroTol below it on a zero-shot wind
+        // (DEC-017: landing short is fine, the operator winds the rest by hand; paper cannot be
+        // unwound).
+        uint32_t pass_at() const {
+            const uint32_t g = goal();
+            return use_carry_ && g > kZeroTol ? g - kZeroTol : g;
+        }
+        // True when the next wind will cut on a carried follow-through (zero-shot).
+        bool calibrated() const {
+            return carry_known_ && coast == carry_param_ && carry_used_ < kCarryWinds;
+        }
         // True when a PASS leaves the paper short of the target, so the operator must pull the slack.
         bool takes_slack() const {
             return goal() < target_;
@@ -156,7 +170,8 @@ namespace stpalpha {
             if (run_ || debug_) {
                 return target_ > coast ? target_ - coast : 0;
             }
-            const uint32_t base = use_carry_ ? goal() + kZeroAim : goal();
+            const uint32_t g = goal();
+            const uint32_t base = use_carry_ ? (g > kZeroAim ? g - kZeroAim : 0) : g;
             const uint32_t c = use_carry_ ? cut_carry_ : coast;
             return base > c ? base - c : 0;
         }
@@ -394,6 +409,13 @@ namespace stpalpha {
             if (start & kBtn2) {
                 return begin(long_pulses, o);
             }
+            if (in.pending & kBtn3) {
+                // New roll or bad calibration (DEC-017): forget the carried follow-through so the
+                // next wind measures it again.
+                carry_known_ = false;
+                o.beep = Beep::CANCEL;
+                o.changed = true;
+            }
             if (in.pending & kBtn4) {
                 manual_ = !manual_;
                 o.changed = true;
@@ -622,10 +644,10 @@ namespace stpalpha {
                 carry_param_ = coast;
                 carry_known_ = true;
                 carry_used_ = 0;
-            } else if (settled < goal()) { // landed short: the carried F was too large
-                carry_coast_ = full_coast_;
             } else if (settled > goal() + kZeroOver) { // far past: re-characterize next wind
                 carry_known_ = false;
+            } else if (settled < pass_at() || settled > goal()) { // outside the window: re-aim
+                carry_coast_ = full_coast_;
             }
         }
 
@@ -652,7 +674,7 @@ namespace stpalpha {
         // The relay is off and the count quiet: learn from the last bump, then pass, give up or bump.
         Outputs trim_settled(const Inputs& in, Outputs o) {
             learn(in.count);
-            if (in.count >= goal()) {
+            if (in.count >= pass_at()) {
                 return end_wind(in, o, takes_slack() ? Beep::SLACK : Beep::START, Outcome::PASS,
                                 true);
             }

@@ -1,5 +1,7 @@
 # DEC-016 -- Zero-shot winds from a carried follow-through; first-bump safety back to 3/2
 
+> Amended by [DEC-017](DEC-017-zero-shot-lands-before-the-goal-and-btn3-forgets-calibration.md): the cut lands BEFORE the goal; BTN3 forgets the carry.
+
 Date: 2026-11-07. Owner: logan. Status: accepted. Basis: the third bench wind of a 30 ft roll
 (+2.7 in by the estimate, +4 in actual, again two large bumps and one small) and the owner's
 direction: stop short (it is easy to roll more, hard to unroll), the towel damper makes a

@@ -212,6 +212,7 @@ static LCDPacket g_lcd;
 static uint32_t g_last_count = kNoCount;
 static uint16_t g_last_errors = 0;
 static uint8_t g_last_manual = 0;
+static bool g_last_cal = false;
 static bool g_redraw = true;
 
 // Take at most one pending toggle per button: the controller's per-pass input. The panel
@@ -575,6 +576,7 @@ static __attribute__((noinline)) void draw(uint32_t count) {
     MachineState st = g_ctl.state();
     uint16_t errors = read_enc_errors();
     uint8_t manual = g_ctl.manual() ? stpalpha::kManualOn : stpalpha::kManualOff;
+    const bool cal = g_ctl.calibrated();
     const uint32_t wheel = g_link.params.wheel_um;
     const uint32_t cpr = g_link.params.cpr;
     if (g_ctl.debug()) {
@@ -590,8 +592,9 @@ static __attribute__((noinline)) void draw(uint32_t count) {
             g_last_errors = errors;
         }
     } else if (st == MachineState::IDLE) {
-        if (g_redraw || manual != g_last_manual || errors != g_last_errors) {
-            stpalpha::render_idle(g_lcd, manual, errors);
+        if (g_redraw || manual != g_last_manual || errors != g_last_errors || cal != g_last_cal) {
+            stpalpha::render_idle(g_lcd, manual, errors, cal);
+            g_last_cal = cal;
             g_last_manual = manual;
             g_last_errors = errors;
         }

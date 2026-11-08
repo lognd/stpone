@@ -661,9 +661,9 @@ int main(int argc, char** argv) {
         (void)used.step(in);
         CHECK(wind_b(used) == want, "wind B inherited state from an earlier wind or a debug RUN");
         // Zero-shot (DEC-016): a steady plant (main run coasts 15000 past its cut). Wind 0
-        // characterizes and bumps; winds 1..kCarryWinds cut on the carried F and land past the goal
-        // with no bump but never past the label (goal + kSlackPulses); the next one characterizes
-        // again; a fresh controller (power-up) carries nothing.
+        // characterizes and bumps; winds 1..kCarryWinds cut on the carried F and land just BEFORE the
+        // goal (within kZeroTol, DEC-017) with no bump, never past it; the next one characterizes
+        // again; a fresh controller (power-up) carries nothing; BTN3 in IDLE forgets it.
         Controller z;
         for (int w = 0; w <= kCarryWinds + 1; ++w) {
             std::vector<uint32_t> st;
@@ -673,9 +673,26 @@ int main(int argc, char** argv) {
                 CHECK(z.bumps() >= 1, "carry wind %d should characterize with bumps", w);
             } else {
                 CHECK(z.bumps() == 0, "carry wind %d needed %u bumps", w, z.bumps());
-                CHECK(end >= z.goal() && end <= z.goal() + kSlackPulses,
-                      "carry wind %d landed %u outside [goal %u, label]", w, end, z.goal());
+                CHECK(end + kZeroTol >= z.goal() && end <= z.goal(),
+                      "carry wind %d landed %u outside [goal %u - tol, goal]", w, end, z.goal());
             }
+        }
+        {
+            Controller f;
+            std::vector<uint32_t> s1;
+            (void)scripted(f, 15000, 3, 1, s1);
+            (void)scripted(f, 15000, 3, 1, s1);
+            CHECK(f.bumps() == 0 && f.calibrated(), "the second wind should be zero-shot");
+            now += 10;
+            Inputs in{};
+            in.now_ms = now;
+            in.pending = kBtn3;
+            const Outputs o = f.step(in);
+            CHECK(!f.calibrated() && o.beep == Beep::CANCEL && f.state() == MachineState::IDLE &&
+                      !o.relay,
+                  "BTN3 in IDLE must forget the calibration and not start anything");
+            (void)scripted(f, 15000, 3, 1, s1);
+            CHECK(f.bumps() >= 1, "after BTN3 the next wind characterizes with bumps");
         }
         Controller power_up;
         std::vector<uint32_t> st0;

@@ -52,6 +52,7 @@ Start with the specification cascade; everything else hangs off it.
 - [DEC-014 First bench calibration: wheel 4.0462 in, 96 in coast, slack 378, bumps sized by 3F/2](decisions/DEC-014-first-bench-calibration-wheel-coast-and-one-stop-bumps.md)
 - [DEC-015 One-bump sizing and WIN7 settings tag](decisions/DEC-015-one-bump-first-bump-and-win7-settings-tag.md)
 - [DEC-016 Zero-shot winds from a carried follow-through; first-bump safety 3/2](decisions/DEC-016-zero-shot-carried-follow-through.md)
+- [DEC-017 Zero-shot winds land before the goal; BTN3 forgets the calibration](decisions/DEC-017-zero-shot-lands-before-the-goal-and-btn3-forgets-calibration.md)
 
 ## Working in this repository
 

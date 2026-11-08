@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
         bool long_wind = rnd() % 3 == 0;
         const uint32_t target = long_wind ? c.long_pulses : c.short_pulses;
         const uint32_t goal =
-            target + c.margin - kSlackPulses; // DEC-013 (== c.goal() once started)
+            target + c.margin - kSlackPulses - kStartPulses; // DEC-013/020 (== c.goal() once started)
 
         Inputs in{};
         in.pending = long_wind ? kBtn2 : kBtn1;
@@ -362,7 +362,7 @@ int main(int argc, char** argv) {
         const double over = static_cast<double>(res.final_count) - static_cast<double>(goal);
         if (res.outcome == Outcome::PASS) {
             CHECK(res.final_count >= goal, "PASS but final %u < goal %u", res.final_count, goal);
-            CHECK(res.final_count + kSlackPulses >= target,
+            CHECK(res.final_count + kSlackPulses + kStartPulses >= target,
                   "PASS more than the slack below the target");
             CHECK(res.start_beep && !res.alarm_beep, "PASS must sound the slack beep");
             CHECK(!c.alarm(), "alarm on a PASS");
@@ -453,7 +453,7 @@ int main(int argc, char** argv) {
     // Legacy mode (bump = 0): the single cut at goal - coast, no guarantee, outcome NONE.
     for (wind = 0; wind < 20; ++wind) {
         Controller c;
-        c.short_pulses = 20000 + kSlackPulses;
+        c.short_pulses = 20000 + kSlackPulses + kStartPulses;
         c.coast = rnd() % 1500;
         c.margin = rnd() % 300;
         c.bump = false;

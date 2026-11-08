@@ -22,6 +22,9 @@ namespace stpalpha {
     // The wind deliberately stops this far short of the target (DEC-013): 4.0 in = 101600 um =
     // 101600 / 322870.9 * 2400 = 755.2 -> 755 pulses (DEC-018, was 2 in). The operator takes the slack out by hand.
     constexpr uint32_t kSlackPulses = 755;
+    // Loading the roll already unrolls about 3 in (DEC-020): the screen counts from there (main.cpp
+    // adds it for display) and the goal is that much shorter on the wheel (3 in = 566 pulses).
+    constexpr uint32_t kStartPulses = 566;
     // Largest pulse count any target or test run may have (Params::valid()).
     constexpr uint32_t kMaxPulses = 4000000;
     // The result screen (DEC-006): the count must hold still this long before it is final,
@@ -63,13 +66,15 @@ namespace stpalpha {
     // the next kCarryWinds panel winds cut at goal - kZeroAim - F, aiming to land just BEFORE the
     // goal (DEC-017: paper cannot be unwound, only wound more by hand) and pass with no bump. A
     // wind that ends outside [goal - kZeroTol, goal] refreshes F; one that ends more than
-    // kZeroOver (0: never past the goal) past the goal drops it; after kCarryWinds winds the next one re-characterizes.
+    // kZeroOver (DEC-019: 2 in, still 2 in short of the target) past the goal drops it; one inside
+    // that band only refreshes F, so ordinary scatter does not force a re-characterization. After
+    // kCarryWinds winds the next one re-characterizes.
     // Power-up clears it (RAM only). 94 pulses is about 0.5 in; kSlackPulses is 4 in.
     constexpr uint8_t kCarryWinds = 10;
     constexpr uint32_t kZeroAim = 94;
     // A zero-shot wind passes this far below the goal (about 1 in) without a bump (DEC-017).
     constexpr uint32_t kZeroTol = 188;
-    constexpr uint32_t kZeroOver = 0;
+    constexpr uint32_t kZeroOver = 377;
     // The whole trim must end within this long (pauses excluded). DEC-012 raised it from 30 s: the
     // short, safety-sized bumps of a long (up to 8 ft) follow-through take up to about 28 s in the
     // model, and a slow wind must still PASS; jams and stalls are caught by the stall rule below.
@@ -148,7 +153,8 @@ namespace stpalpha {
         // stop-short slack (DEC-013).
         uint32_t goal() const {
             const uint32_t t = target_ + margin;
-            return t > kSlackPulses ? t - kSlackPulses : 0;
+            const uint32_t less = kSlackPulses + kStartPulses;
+            return t > less ? t - less : 0;
         }
         // Count at which the settled wind passes: the goal, or kZeroTol below it on a zero-shot wind
         // (DEC-017: landing short is fine, the operator winds the rest by hand; paper cannot be
@@ -631,7 +637,8 @@ namespace stpalpha {
 
         // Zero-shot (DEC-016): decide at wind start whether this main run cuts on the carried F.
         void pick_carry() {
-            use_carry_ = carry_known_ && coast == carry_param_ && carry_used_ < kCarryWinds;
+            use_carry_ = carry_known_ && coast == carry_param_ && target_ == carry_target_ &&
+                         carry_used_ < kCarryWinds;
             if (use_carry_) {
                 ++carry_used_;
                 cut_carry_ = carry_coast_;
@@ -643,9 +650,10 @@ namespace stpalpha {
             if (!use_carry_) { // a characterization wind: adopt what it measured
                 carry_coast_ = full_coast_;
                 carry_param_ = coast;
+                carry_target_ = target_;
                 carry_known_ = true;
                 carry_used_ = 0;
-            } else if (settled > goal() + kZeroOver) { // far past: re-characterize next wind
+            } else if (settled > goal() + kZeroOver) { // well past: re-characterize next wind
                 carry_known_ = false;
             } else if (settled < pass_at() || settled > goal()) { // outside the window: re-aim
                 carry_coast_ = full_coast_;
@@ -779,9 +787,10 @@ namespace stpalpha {
         uint8_t carry_used_ = 0;
         uint32_t carry_coast_ = 0;
         uint32_t cut_carry_ = 0;
-        uint32_t carry_param_ = 0; // the `coast` setting the carry was measured under
-        uint32_t probe_over_ = 0;  // worst follow-through of a kMinBump step (pulses)
-        uint32_t ratio16_ = 0;     // follow-through per bump pulse, x16 (see bump_size)
+        uint32_t carry_target_ = 0; // the target length the carry was measured on
+        uint32_t carry_param_ = 0;  // the `coast` setting the carry was measured under
+        uint32_t probe_over_ = 0;   // worst follow-through of a kMinBump step (pulses)
+        uint32_t ratio16_ = 0;      // follow-through per bump pulse, x16 (see bump_size)
         Outcome outcome_ = Outcome::NONE;
         uint8_t bumps_ = 0;
         uint8_t stalls_ = 0;

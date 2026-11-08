@@ -76,8 +76,28 @@ static constexpr uint8_t kWatchdogTimeout = WDTO_500MS;
 // frob:waive TEST001 reason="AVR-only symbol -- bench evidence docs/runbooks/hardware-tests.md P8"
 static void wdt_early_off(void) __attribute__((naked, used, section(".init3")));
 static void wdt_early_off(void) {
+    // keep the reset-cause flags in GPIOR0 (survives to main) before clearing them
+    __asm__ __volatile__("in r24, %0\n\t"
+                         "out %1, r24\n\t"
+                         :
+                         : "I"(_SFR_IO_ADDR(MCUSR)), "I"(_SFR_IO_ADDR(GPIOR0))
+                         : "r24");
     MCUSR = 0;
     wdt_disable();
+}
+
+// Reset cause for the boot screen: a blip shows as BOR/PWR, a hang as WDT (DEC-019).
+static const char* reset_cause(uint8_t f) {
+    if (f & _BV(WDRF)) {
+        return "WDT hang";
+    }
+    if (f & _BV(BORF)) {
+        return "BOR brown-out";
+    }
+    if (f & _BV(EXTRF)) {
+        return "EXT reset";
+    }
+    return "PWR power-on";
 }
 
 // ---- Atomics ----
@@ -579,16 +599,19 @@ static __attribute__((noinline)) void draw(uint32_t count) {
     const bool cal = g_ctl.calibrated();
     const uint32_t wheel = g_link.params.wheel_um;
     const uint32_t cpr = g_link.params.cpr;
+    // The roll already has kStartPulses (3 in) unrolled at load: panel winds show the length
+    // from there, so a finished wind reads the nominal length (DEC-020). Debug and idle are raw.
+    const uint32_t shown = count + stpalpha::kStartPulses;
     if (g_ctl.debug()) {
         if (g_redraw) {
             stpalpha::render_debug(g_lcd);
         }
     } else if (st == MachineState::IDLE && g_ctl.result() != stpalpha::Result::NONE) {
-        if (g_redraw || (paint_ok && (count != g_last_count || errors != g_last_errors))) {
-            stpalpha::render_result(g_lcd, count, g_ctl.target(),
+        if (g_redraw || (paint_ok && (shown != g_last_count || errors != g_last_errors))) {
+            stpalpha::render_result(g_lcd, shown, g_ctl.target(),
                                     g_ctl.result() == stpalpha::Result::SETTLING, errors, wheel,
-                                    cpr, g_ctl.outcome(), g_ctl.goal());
-            g_last_count = count;
+                                    cpr, g_ctl.outcome(), g_ctl.goal() + stpalpha::kStartPulses);
+            g_last_count = shown;
             g_last_errors = errors;
         }
     } else if (st == MachineState::IDLE) {
@@ -599,10 +622,10 @@ static __attribute__((noinline)) void draw(uint32_t count) {
             g_last_errors = errors;
         }
     } else if (g_redraw || manual != g_last_manual || errors != g_last_errors ||
-               (paint_ok && count != g_last_count)) {
-        stpalpha::render_winding(g_lcd, count, g_ctl.target(), st == MachineState::PAUSED, manual,
+               (paint_ok && shown != g_last_count)) {
+        stpalpha::render_winding(g_lcd, shown, g_ctl.target(), st == MachineState::PAUSED, manual,
                                  errors, wheel, cpr, st == MachineState::TRIM);
-        g_last_count = count;
+        g_last_count = shown;
         g_last_errors = errors;
         g_last_manual = manual;
     }
@@ -642,6 +665,23 @@ int main(void) {
     paint_stack();
     lcd_init();
     lcd_clear();
+    // A cold power-up shows nothing; a brown-out, watchdog or external reset (a blip that clears
+    // the RAM-held calibration) is shown for a moment.
+    if (GPIOR0 & (_BV(WDRF) | _BV(BORF) | _BV(EXTRF))) {
+        const char* msg = reset_cause(GPIOR0);
+        lcd_set_cursor(0, 0);
+        for (const char* q = "reset: "; *q; ++q) {
+            lcd_write_char(*q);
+        }
+        for (const char* q = msg; *q; ++q) {
+            lcd_write_char(*q);
+        }
+        uint32_t t0 = millis();
+        while (millis() - t0 < 1200) {
+            wdt_reset();
+        }
+        lcd_clear();
+    }
 
     // Latching buttons hold their last physical state across power cycles.
     // Wait past the 16 ms debounce window (plus margin) so the ISR has

@@ -54,6 +54,8 @@ Start with the specification cascade; everything else hangs off it.
 - [DEC-016 Zero-shot winds from a carried follow-through; first-bump safety 3/2](decisions/DEC-016-zero-shot-carried-follow-through.md)
 - [DEC-017 Zero-shot winds land before the goal; BTN3 forgets the calibration](decisions/DEC-017-zero-shot-lands-before-the-goal-and-btn3-forgets-calibration.md)
 - [DEC-018 Four inch stop-short slack; never past the target](decisions/DEC-018-four-inch-slack-never-past-the-target.md)
+- [DEC-019 Tolerate scatter in the carried follow-through; show the reset cause](decisions/DEC-019-tolerate-scatter-and-show-the-reset-cause.md)
+- [DEC-020 Count starts at 3 in; carry per roll length](decisions/DEC-020-start-at-three-inches-and-carry-per-length.md)
 
 ## Working in this repository
 

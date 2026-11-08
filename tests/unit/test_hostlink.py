@@ -56,7 +56,7 @@ def test_dump_lists_every_internal(driver: Path) -> None:
     ((text, _),) = _run(driver, "DUMP")
     for field in (
         "state=IDLE", "prev=-", "count=-42", "speed=5170", "errors=3", "relay=0", "manual=0",
-        "target=67970", "eff_target=49090", "coast=18125", "margin=0", "bump=1", "bumps=0", "trim=0", "pass=-", "btn=1010", "toggles=7,0,0,0",
+        "target=67970", "eff_target=48524", "coast=18125", "margin=0", "bump=1", "bumps=0", "trim=0", "pass=-", "btn=1010", "toggles=7,0,0,0",
         "pending=0,0,1,0", "enc_dir=-1", "uptime_ms=1234", "run=0", "stack_free=321", "pass_max_ms=47", "isr_lat_max=33",
     ):  # fmt: skip
         assert field in text.split(), field
@@ -72,7 +72,7 @@ def test_set_validates_and_applies(driver: Path) -> None:
         )
     ]  # fmt: skip
     assert r[0] == "OK"
-    assert "eff_target=66715" in r[1]  # target + margin - slack - coast
+    assert "eff_target=66149" in r[1]  # target + margin - slack - coast
     assert r[2:8] == ["ERR bad_arg"] * 6
     assert r[8] == "OK"
     assert "coast=18125 margin=0 bump=1" in r[9]
@@ -317,7 +317,7 @@ def _results(driver: Path, *lines: str) -> list[dict[str, int]]:
 
 # The firmware now stops kSlackPulses (755) short of target + margin on purpose (DEC-013).
 # These legacy scenarios were written for the old goal, so they raise the target by the slack.
-_SLACK = 755
+_SLACK = 755 + 566  # slack plus the 3 in already unrolled at load (DEC-020)
 _OLDGOAL = (
     f"SET short {206187 + _SLACK}",
     "SET margin 191",

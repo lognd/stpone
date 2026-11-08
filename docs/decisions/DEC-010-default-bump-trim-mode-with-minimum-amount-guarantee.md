@@ -191,7 +191,7 @@ Earlier decisions:
 - The calibration jobs still work with the factory coast 2291: test winds are made with the debug
   `RUN`, which cuts at `length - coast`, so the shortest test wind is `coast + 2400` pulses (one
   encoder turn of run-up) and the base length is 50000 pulses.
-- UI-visible changes: see the done report; the UI agent updates the copy and adds the settings.
+- UI-visible changes: see the done report; the UI work updates the copy and adds the settings.
 - Owner decisions to confirm: that the shortfall on the alarm screen is measured against the GOAL (target + margin),
   not the target; the 2.0 in final window (more overshoot, fewer bumps) and the failure alarm
   repeat count.

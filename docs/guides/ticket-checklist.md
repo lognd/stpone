@@ -1,8 +1,7 @@
-# Agent playbook (per-ticket checklist)
+# Per-ticket checklist
 
-The contract is `CLAUDE.md` at the repository root; this is the
-per-ticket checklist it points to. The agent is a leaf worker: it does all
-the work of its ticket itself and reports back in at most 15 lines.
+This is the checklist for working one ticket. The worker does all the
+work of its ticket itself and reports back in at most 15 lines.
 
 ## 0. Setup
 
@@ -29,7 +28,7 @@ the work of its ticket itself and reports back in at most 15 lines.
   procedure; their executable evidence is `tests/system/test_firmware.py`.
   Run `cmake --build build --target format` before committing.
 - Stay inside the ticket's `scope` globs. Anything else discovered along the way:
-  `frob ticket new --origin agent` with a tight scope, one paragraph.
+  `frob ticket new` with a tight scope, one paragraph.
 - Logging: module logger (`stpone.logging.get_logger`), log every
   meaningful branch and error path. typani `Result` for anything that
   can fail; `DeveloperException` only for programmer errors.

@@ -9,7 +9,7 @@ The HAL is C with avr-libc's crt and ISR() bindings (DEC-001): the vector table,
  README.md                                          |   8 +-
  docs/decisions/DEC-001-avr-libc-startup.md         |  51 ++++
  docs/decisions/DEC-002-m1-port-bootstrap.md        |  31 +++
- docs/guides/agent-playbook.md                      |  45 ++++
+ docs/guides/ticket-checklist.md                      |  45 ++++
  docs/hardware/pinout.md                            |  30 +++
  docs/index.md                                      |  47 ++++
  docs/runbooks/flash.md                             |  57 +++++

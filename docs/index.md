@@ -53,14 +53,14 @@ Start with the specification cascade; everything else hangs off it.
 - [DEC-015 One-bump sizing and WIN7 settings tag](decisions/DEC-015-one-bump-first-bump-and-win7-settings-tag.md)
 - [DEC-016 Zero-shot winds from a carried follow-through; first-bump safety 3/2](decisions/DEC-016-zero-shot-carried-follow-through.md)
 - [DEC-017 Zero-shot winds land before the goal; BTN3 forgets the calibration](decisions/DEC-017-zero-shot-lands-before-the-goal-and-btn3-forgets-calibration.md)
+- [DEC-018 Four inch stop-short slack; never past the target](decisions/DEC-018-four-inch-slack-never-past-the-target.md)
 
 ## Working in this repository
 
-- [CLAUDE.md](../CLAUDE.md) at the root is the agent contract; [docs/guides/agent-playbook.md](guides/agent-playbook.md) is the per-ticket checklist.
+- [docs/guides/ticket-checklist.md](guides/ticket-checklist.md) is the per-ticket checklist.
 - `FROBLEMS.md` (gitignored) records friction with frob itself.
 - Root directories read by tools outside the source graph:
 
 <!-- frob:external-reader dir=".github" reason="GitHub Actions reads the workflows under .github/workflows" -->
 <!-- frob:external-reader dir="cmake" reason="cmake reads the AVR toolchain file named on the scripts/flash.py command line" -->
-<!-- frob:external-reader dir="invariants" reason="frob's invariant gate reads invariants/ by convention" -->
 <!-- frob:external-reader dir="tickets" reason="frob's ticket ledger, read by frob ticket" -->

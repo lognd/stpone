@@ -45,10 +45,6 @@ path = "Makefile"
 reason = "bootstrap target invoked by humans, not referenced from source"
 
 [[refs.entrypoint]]
-path = "invariants/.gitkeep"
-reason = "keeps the empty invariants/ directory tracked by git"
-
-[[refs.entrypoint]]
 path = "README.md"
 reason = "read by humans/GitHub; a single pyproject.toml reference is expected"
 

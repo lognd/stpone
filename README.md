@@ -24,7 +24,6 @@ Start with [docs/index.md](docs/index.md); flashing is described in
 decisions behind this repository in
 [docs/decisions/DEC-001-avr-libc-startup.md](docs/decisions/DEC-001-avr-libc-startup.md)
 and [docs/decisions/DEC-002-m1-port-bootstrap.md](docs/decisions/DEC-002-m1-port-bootstrap.md).
-Agents start at [CLAUDE.md](CLAUDE.md).
 
 ## Layout
 

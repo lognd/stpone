@@ -217,7 +217,7 @@ namespace stpalpha {
     }
 
     // The two rows of a PASS that stopped deliberately short (DEC-013): row1 says how much paper
-    // to pull by hand ("PULL 2.0 in BY HAND"), row2 the length against the target.
+    // to pull by hand ("PULL 4.0 in BY HAND"), row2 the length against the target.
     inline void format_slack(char* row1, char* row2, size_t cap, uint32_t final_pulses,
                              uint32_t target_pulses, uint32_t wheel_um, uint32_t cpr) {
         Text a(row1, cap);

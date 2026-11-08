@@ -51,7 +51,7 @@ Then it \textbf{trims}:
         for the paper to stop.
   \item If the length is not yet enough, it gives the motor a bump and
         waits again. It measures how far the roll glided after the motor
-        stopped and sizes each bump so that even half again that glide stays
+        stopped and sizes each bump so that even three-quarters again that glide stays
         short of the goal, so the bumps get shorter as the gap closes and the
         last ones are tiny. It repeats this until the length is at least the
         goal: the target plus the safety margin (0 from the factory), less the 2 inch
@@ -83,11 +83,11 @@ obvious:
 \begin{itemize}
   \item two \textbf{long beeps} (0.7 s each), once;
   \item the screen shows \shows{** PULL SLACK **} and, on the next row,
-        \shows{PULL 2.0 in BY HAND} (the figure is the actual shortfall).
+        \shows{PULL 4.0 in BY HAND} (the figure is the actual shortfall).
 \end{itemize}
 \begin{lcd}
   ** PULL SLACK **
-PULL 2.0 in BY HAND
+PULL 4.0 in BY HAND
 LEN 29.9/30.0 ft
 [1] 30ft    [2] 90ft
 \end{lcd}

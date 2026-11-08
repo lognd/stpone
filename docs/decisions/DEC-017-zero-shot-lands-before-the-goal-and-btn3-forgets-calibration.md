@@ -1,5 +1,7 @@
 # DEC-017 -- Zero-shot winds land before the goal; BTN3 in IDLE forgets the calibration
 
+> Amended by [DEC-018](DEC-018-four-inch-slack-never-past-the-target.md): slack 4 in, `kZeroOver` 0, first-bump safety 7/4.
+
 Date: 2026-11-07. Owner: logan. Status: accepted. Basis: owner direction after DEC-016: paper is
 easy to wind on by hand and impossible to unwind, so a zero-shot wind must land just BEFORE the goal,
 never after; and the operator needs a button to throw the stored measurement away for a new roll or

@@ -22,7 +22,7 @@ _MAX_COAST = 2 * _ASSUMED_COAST
 _COAST_BOUND = int(_MAX_COAST * _JITTER) + 400
 # DEC-012 trim target: a fault-free wind that needed bumps lands within ~3 in; 800 pulses (~4.2 in)
 # is the gate (DEC-016 returned the first-bump safety to 3/2 after DEC-015's 1 overshot).
-_TRIM_OVER_MAX = 800
+_TRIM_OVER_MAX = 755
 # controller.h kMaxBumps and kTrimMaxMs (DEC-012).
 _MAX_BUMPS = 24
 _TRIM_LIMIT_S = 45.1

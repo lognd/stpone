@@ -139,7 +139,7 @@ within a tolerance of each other (for example three in a row within 5 %).
    `SET coast` last, since it is validated against them), then `SAVE`, then `DEBUG 0`.
 
 Units: 1 inch = 25400 um. Defaults: wheel 4.0462 in = 102773 um, cpr 2400,
-short 67970 (30 ft), long 203911 (90 ft), coast 18125 (96 in, DEC-014), margin 0, bump 1; the wind stops 378 pulses (2.0 in) short of target + margin (DEC-013). The test winds of the
+short 67970 (30 ft), long 203911 (90 ft), coast 18125 (96 in, DEC-014), margin 0, bump 1; the wind stops 755 pulses (4.0 in) short of target + margin (DEC-013). The test winds of the
 calibration are debug `RUN`s, so they cut at `length - coast`: use lengths of at least `coast + 2400`
 (the tool does); with the factory coast a `RUN` of 18125 pulses or less answers
 `ERR bad_arg`. A board that has `SAVE`d parameters keeps its stored coast after a firmware update:

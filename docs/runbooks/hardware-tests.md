@@ -20,7 +20,7 @@ Wiring reference: `docs/hardware/pinout.md`.
    `     WINDING...     ` with `  0% [-------------]` and `LEN    0.0/  30.0 ft` (DEC-008: no `CNT:` row).
 3. Turn the wheel. Expect the count to climb, the percent to follow, and
    LEDs to add one per quarter (25/50/75/100 %).
-4. Let it reach the goal, 67592 counts (30 ft = 67970 less the 378 pulse = 2.0 in slack, DEC-013). Expect the relay to open, the
+4. Let it reach the goal, 67215 counts (30 ft = 67970 less the 755 pulse = 4.0 in slack, DEC-013). Expect the relay to open, the
    RESULT screen (P9) to replace the winding screen, and, because the wind ends short of 30 ft, two
    700 ms beeps (250 ms gap) with `** PULL SLACK **` (P11); three beeps (300 ms
    on, 150 ms off) with `DONE` only if the count reached 67970.
@@ -29,7 +29,7 @@ Wiring reference: `docs/hardware/pinout.md`.
    wind to start from zero.
 6. Pull paper backwards: the length still grows (magnitude of the count)
    and `ERR` never appears. Repeat with BTN2: stops at the 90 ft goal
-   (203911 less 378 = 203533 counts).
+   (203911 less 755 = 203156 counts).
 7. Start only on press-down: after a wind, latch BTN1 back UP. Expect
    no start. Push it DOWN again: a new wind starts. A BTN1 or BTN2
    toggle (either direction) mid-wind stops it.
@@ -52,7 +52,7 @@ Wiring reference: `docs/hardware/pinout.md`.
     counts: with the factory `coast = 18125` the main run is cut about
     8 ft short of the goal, and `SET bump 0` + `SET coast 0` gives the old
     single cut, whose final count is at most a few counts above the goal
-    (67592 / 203533, i.e. 2 in under 67970 / 203911) plus the motor's mechanical follow-through; measure that with P7
+    (67215 / 203156, i.e. 4 in under 67970 / 203911) plus the motor's mechanical follow-through; measure that with P7
     `RUN`/`EVT settled`). The default trim is P11.
 12. Fast double push: push BTN3 twice within 100 ms. Expect two toggles
     (paused then playing again), not one merged push.
@@ -240,7 +240,7 @@ this is run. One tenth of a foot (1.2 in) is about 229 pulses.
    figure for 3 winds each at 30 and 90 ft: a late stop shows as `over`.
 3. Early stop: wind with BTN1, press BTN1 again at about 40000 counts. After
    the settle (default trim mode, DEC-010) the display is the held failure screen:
-   ` !! UNDER TARGET !! `, `STOPPED -12.4 ft` (the shortfall against the goal 67592; a miss of
+   ` !! UNDER TARGET !! `, `STOPPED -12.4 ft` (the shortfall against the goal 67215; a miss of
    one foot or more is shown in feet, under one foot in inches), `LEN 17.5/30.0 ft` (values follow where you stopped); in
    legacy mode (`SET bump 0`) it is the old `DONE 17.5/30.0 ft` / `-12.5 ft short`. Same with BTN2/90 ft and a stop with BTN3 pause first.
 4. Hold-and-clear: leave the result for 60 s. The idle screen returns on its own
@@ -311,19 +311,19 @@ panel supply, or floating I2C lines when no pull-ups are fitted). Expected value
 
 Check added by DEC-008 (P1/P9): on every wind screen the `LEN` row shows digits
 (`LEN    0.0/  30.0 ft`, never ` / ft`) and the result row shows a number
-(`+3.6 in over`, `-7.2 in short`, `+1.3 ft over`, `PULL 2.0 in BY HAND`); if either prints empty, the
+(`+3.6 in over`, `-7.2 in short`, `+1.3 ft over`, `PULL 4.0 in BY HAND`); if either prints empty, the
 firmware is not using `length.h`'s printf-free formatter.
 
 ## P11 -- default bump (trim) mode and the minimum-amount guarantee (`firmware`, DEC-010, DEC-012, DEC-013)
 
 Expected values come from the source (defaults wheel 102773 um, cpr 2400, `coast = 18125` = 96 in,
-`margin = 0`, `kSlackPulses = 378` = 2.0 in, 30 ft = 67970 pulses so goal = 67970 + 0 - 378 = 67592 and the main cut is at 49467), not
+`margin = 0`, `kSlackPulses = 755` = 4.0 in, 30 ft = 67970 pulses so goal = 67970 + 0 - 755 = 67215 and the main cut is at 49090), not
 from a bench run. A board that has `SAVE`d parameters keeps its old coast: check `PARAM` shows
 `coast=18125` first (`DEFAULTS`, `SAVE` if not; this also adopts the 30 ft / 90 ft buttons and margin 0, DEC-013): record the actual figures when this is run. Use a paper roll that feeds freely and
 `GET`/`DUMP` over the host link to read `state`, `bumps`, `trim` and `pass`.
 
 1. Normal wind: press BTN1 (latch DOWN). The motor runs at full speed and the relay opens about
-   8 ft (96 in) before the goal (count 49467; `DUMP` `eff_target=49467`). Row 0 changes from
+   8 ft (96 in) before the goal (count 49090; `DUMP` `eff_target=49090`). Row 0 changes from
    `     WINDING...     ` to `     TRIMMING...    ` (state `TRIM`), the percent stays 98-100 and
    `LEN` keeps updating. Then you see and hear the relay: a pause of about half a second, then
    bumps that get shorter as the gap closes, ending in tiny 2-pulse steps (the number is `bumps=`;
@@ -331,12 +331,12 @@ from a bench run. A board that has `SAVE`d parameters keeps its old coast: check
    8 ft), each followed by half a second of quiet; the trim may take up to about 25 s. Record
    `bumps=` and the trim time for each wind.
    The bargraph is full. The wind ends with the slack pattern (DEC-013): two 700 ms beeps, row 0 `  ** PULL SLACK **  `,
-   row 1 `PULL x.x in BY HAND` (about 2.0 in or less) and row 2 `LEN 30.0/30.0 ft` (typically 29.9 or 30.0); if the final count
+   row 1 `PULL x.x in BY HAND` (about 4.0 in or less) and row 2 `LEN 30.0/30.0 ft` (typically 29.9 or 30.0); if the final count
    reaches 67970 the ending is the three-beep `DONE 30.0/30.0 ft` with `+x.x in over` instead (a true coast over 8 ft
    overshoots by the excess in the main run). `GET` shows `pass=1`
-   and `state=IDLE` either way. The final count is at least 67592: write it down for 5 winds each of 30 and
+   and `state=IDLE` either way. The final count is at least 67215: write it down for 5 winds each of 30 and
    90 ft, then repeat one 30 ft wind: the second wind must behave like the first (nothing is
-   carried over), also after turning the roll by hand in IDLE. If it is ever below 67592 with `pass=1`, that is a firmware bug: stop and report it.
+   carried over), also after turning the roll by hand in IDLE. If it is ever below 67215 with `pass=1`, that is a firmware bug: stop and report it.
 2. Pause inside the trim: during the bumps press BTN3. The relay opens at once, `PAUSED` shows,
    `GET` shows `state=PAUSED` and the same `bumps=`; BTN4 clicks nudge the paper by hand and never
    past the goal; BTN3 again resumes (`TRIMMING...`, half a second of quiet, then the next bump).
@@ -362,6 +362,6 @@ from a bench run. A board that has `SAVE`d parameters keeps its old coast: check
 9. `DUMP` after a normal wind shows `margin=0 bump=1 bumps=<n> trim=0 pass=1`; during it `trim=1`.
 10. Slack notice (DEC-013): with the defaults, a wind that ends short of 67970 (`PULL SLACK`) beeps twice
     (700 ms each, 250 ms gap) exactly once and the beeps do not repeat; pulling the amount shown by hand
-    brings the roll to the label length (measure it). `SET margin 378` + `SET coast 18125`: the same wind now ends
+    brings the roll to the label length (measure it). `SET margin 755` + `SET coast 18125`: the same wind now ends
     with the three-beep `DONE`. Pressing any button during the two beeps stops them. Boards with saved
     settings: `DEFAULTS`, `SAVE` first.

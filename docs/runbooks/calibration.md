@@ -88,7 +88,7 @@ The factory coast is the 96 in estimate of the default trim mode (DEC-012), so t
 test winds are made with `coast = 18125` (the calibration winds are at least coast + 2400
 pulses long, so the roll is up to speed when the relay drops); after calibration the measured
 coast replaces it. The calibration never changes `margin` or `bump`.
-The wind stops 378 pulses (2.0 in) short of target + margin on purpose (DEC-013); a normal PASS then
+The wind stops 755 pulses (4.0 in) short of target + margin on purpose (DEC-013); a normal PASS then
 beeps twice and shows `** PULL SLACK **`, which is not a calibration error. Pull the slack by hand.
 
 ## Chromebook (Linux / Crostini) -- UNVERIFIED on real hardware

@@ -12,7 +12,7 @@ says. Every wind ends in one of three ways:
 \textbf{Result} & \textbf{What it promises} \\
 \midrule
 \shows{** PULL SLACK **}, two long beeps &
-  The roll is within the slack (2 inches) of the full length \textbf{plus the
+  The roll is within the slack (4 inches) of the full length \textbf{plus the
   margin} (margin 0 from the factory). It is short only by the amount shown;
   pull that much paper out by hand and the roll is full length. \\
 \shows{DONE}, three short beeps &
@@ -28,8 +28,8 @@ says. Every wind ends in one of three ways:
 \section{How it works}
 \begin{enumerate}
   \item The \textbf{goal} is the target length plus the margin, less the
-        \textbf{slack} of 2 inches. With the factory margin of 0, a 30 foot
-        roll has a goal of 30 feet less 2 inches.
+        \textbf{slack} of 4 inches. With the factory margin of 0, a 30 foot
+        roll has a goal of 30 feet less 4 inches.
   \item The motor runs until the paper is one \emph{coast} (8 feet from the
         factory) short of the goal, then it is switched off and the roll glides
         on. The coast is set generously on purpose: running short is fixed by
@@ -37,7 +37,7 @@ says. Every wind ends in one of three ways:
   \item After the paper has stopped, the machine compares the count with the
         goal. If it is short, it bumps the motor briefly and checks again. It
         watches how far the roll glides after each stop and sizes the next
-        bump so that even half again that glide stays short of the goal; the last
+        bump so that even three-quarters again that glide stays short of the goal; the last
         bumps are tiny. The bump sizes are used for that roll only. The glide
         of the main run is remembered (until power-off) so that the next ten
         winds cut early enough to stop just \emph{before} the goal (the paper
@@ -62,11 +62,11 @@ The guarantee is only as good as the measurement. It assumes:
 \end{itemize}
 
 \section{How much over?}
-A normal roll is within about 2 inches of the label, usually a little short
+A normal roll is within about 4 inches of the label, usually a little short
 (the slack you pull out by hand) or a little over from the glide after the
 last bump. When the real coast of your machine is under
 about 5 feet the design estimate is well under an inch past the goal on
-average and no more than about 2 inches past the goal; a roll that finishes with bumps is
+average and never past the goal; a roll that finishes with bumps is
 at most about 3 inches past the goal. If the real coast is longer than the
 6 foot setting, the main run itself goes past the goal by the difference,
 and the trim cannot take that back. These figures are estimates from the design and have not yet been

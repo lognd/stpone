@@ -19,9 +19,9 @@ namespace stpalpha {
     // Compiled-in defaults (30 ft / 90 ft on the 4.0462 in wheel, 2400 counts/rev; DEC-013).
     constexpr uint32_t kDefaultShortPulses = 67970;
     constexpr uint32_t kDefaultLongPulses = 203911;
-    // The wind deliberately stops this far short of the target (DEC-013): 2.0 in = 50800 um =
-    // 50800 / 322870.9 * 2400 = 377.6 -> 378 pulses. The operator takes the slack out by hand.
-    constexpr uint32_t kSlackPulses = 378;
+    // The wind deliberately stops this far short of the target (DEC-013): 4.0 in = 101600 um =
+    // 101600 / 322870.9 * 2400 = 755.2 -> 755 pulses (DEC-018, was 2 in). The operator takes the slack out by hand.
+    constexpr uint32_t kSlackPulses = 755;
     // Largest pulse count any target or test run may have (Params::valid()).
     constexpr uint32_t kMaxPulses = 4000000;
     // The result screen (DEC-006): the count must hold still this long before it is final,
@@ -52,23 +52,24 @@ namespace stpalpha {
     // Safety factor on every learned follow-through (DEC-012): a bump is sized so that twice the
     // worst follow-through seen this wind still lands at or short of the goal.
     constexpr uint32_t kCoastSafety = 2;
-    // Safety on the measured full-speed follow-through F alone (DEC-014 3/2; DEC-015 tried 1 and
-    // overshot, DEC-016 returns to 3/2): a bump starts from rest so it coasts no further than F;
-    // 3/2 F also covers the friction jitter between coasts. The characterization wind uses it;
-    // later winds are zero-shot (below). An overshoot still raises F (learn()).
-    constexpr uint32_t kFullSafetyNum = 3;
-    constexpr uint32_t kFullSafetyDen = 2;
+    // Safety on the measured full-speed follow-through F alone (DEC-018 7/4; DEC-016 3/2; DEC-015
+    // tried 1 and overshot; was 2): a bump starts from rest so it coasts no further than F; 7/4 F
+    // keeps the model's jittered coast from carrying a bump past the 4 in slack, i.e. past the
+    // target. Only the characterizing wind bumps; later winds are zero-shot (below). An overshoot
+    // still raises F (learn()).
+    constexpr uint32_t kFullSafetyNum = 7;
+    constexpr uint32_t kFullSafetyDen = 4;
     // Zero-shot (DEC-016): the follow-through F measured on a clean main run is carried in RAM and
     // the next kCarryWinds panel winds cut at goal - kZeroAim - F, aiming to land just BEFORE the
     // goal (DEC-017: paper cannot be unwound, only wound more by hand) and pass with no bump. A
     // wind that ends outside [goal - kZeroTol, goal] refreshes F; one that ends more than
-    // kZeroOver past the goal drops it; after kCarryWinds winds the next one re-characterizes.
-    // Power-up clears it (RAM only). 94 pulses is about 0.5 in; kSlackPulses is 2 in.
+    // kZeroOver (0: never past the goal) past the goal drops it; after kCarryWinds winds the next one re-characterizes.
+    // Power-up clears it (RAM only). 94 pulses is about 0.5 in; kSlackPulses is 4 in.
     constexpr uint8_t kCarryWinds = 10;
     constexpr uint32_t kZeroAim = 94;
     // A zero-shot wind passes this far below the goal (about 1 in) without a bump (DEC-017).
     constexpr uint32_t kZeroTol = 188;
-    constexpr uint32_t kZeroOver = kSlackPulses;
+    constexpr uint32_t kZeroOver = 0;
     // The whole trim must end within this long (pauses excluded). DEC-012 raised it from 30 s: the
     // short, safety-sized bumps of a long (up to 8 ft) follow-through take up to about 28 s in the
     // model, and a slow wind must still PASS; jams and stalls are caught by the stall rule below.
